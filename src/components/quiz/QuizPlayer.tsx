@@ -141,6 +141,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
           <Button
             variant="outline"
             className="rounded-xl"
+            nativeButton={false}
             render={<Link href="/" />}
           >
             Back to home
@@ -197,6 +198,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
           <Button
             variant="outline"
             className="rounded-xl"
+            nativeButton={false}
             render={<Link href="/" />}
           >
             Back to home

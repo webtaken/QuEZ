@@ -340,6 +340,7 @@ function QuizCard({ quiz }: { quiz: Quiz }) {
         <Button
           className="mt-auto w-full rounded-xl"
           variant="secondary"
+          nativeButton={false}
           render={<Link href={`/play/${quiz.id}`} />}
         >
           Play Quiz
