@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState, KeyboardEvent } from 'react'
+import { useRef, useEffect, useMemo, useState, KeyboardEvent } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport, type UIMessage } from 'ai'
 import ReactMarkdown from 'react-markdown'
@@ -9,27 +9,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { TypingIndicator } from './TypingIndicator'
 import { Send, Bot } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-type QuizData = {
-  title: string
-  description: string
-  topic: string
-  audience: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  coverEmoji: string
-  questions: Array<{
-    order: number
-    text: string
-    type: 'multiple_choice' | 'true_false'
-    options: string[]
-    correctIndex: number
-    explanation: string
-    timeLimit: number
-  }>
-}
+import type { QuizPayload } from '@/lib/quiz-schema'
 
 interface ChatPanelProps {
-  onQuizUpdate: (quiz: QuizData) => void
+  onQuizUpdate: (quiz: QuizPayload) => void
+  initialQuiz?: QuizPayload
 }
 
 const GREETING = `Hi! I'm your QuEZ AI builder. Tell me about the quiz you want to create.
@@ -45,12 +29,29 @@ function getTextFromMessage(message: UIMessage): string {
     .join('')
 }
 
-export function ChatPanel({ onQuizUpdate }: ChatPanelProps) {
+export function ChatPanel({ onQuizUpdate, initialQuiz }: ChatPanelProps) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const quizRef = useRef<QuizPayload | undefined>(initialQuiz)
+
+  useEffect(() => {
+    quizRef.current = initialQuiz
+  }, [initialQuiz])
+
+  /* eslint-disable react-hooks/refs */
+  // body callback is invoked at send-time, not render-time
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: '/api/chat',
+        body: () => (quizRef.current ? { existingQuiz: quizRef.current } : {}),
+      }),
+    []
+  )
+  /* eslint-enable react-hooks/refs */
 
   const { messages, sendMessage, status, error } = useChat({
-    transport: new DefaultChatTransport({ api: '/api/chat' }),
+    transport,
     onError: (err) => {
       console.error('[ChatPanel] useChat error raw:', err)
       console.error('[ChatPanel] err.message:', err?.message)
@@ -73,21 +74,24 @@ export function ChatPanel({ onQuizUpdate }: ChatPanelProps) {
 
   const isLoading = status === 'submitted' || status === 'streaming'
 
-  // Watch ALL assistant messages for tool output, not only last
+  // Forward each completed tool-updateQuiz exactly once
+  const seenToolCallsRef = useRef<Set<string>>(new Set())
   useEffect(() => {
     for (const msg of messages) {
       if (msg.role !== 'assistant') continue
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const parts: any[] = (msg as any).parts ?? []
       for (const part of parts) {
-        if (part.type === 'tool-updateQuiz') {
-          console.log('[ChatPanel] tool-updateQuiz part — state:', part.state, 'has output:', !!part.output, 'output keys:', part.output && Object.keys(part.output))
-          const quiz = part.output?.quiz
-          if (quiz) {
-            console.log('[ChatPanel] forwarding quiz — questions:', quiz.questions?.length)
-            onQuizUpdate(quiz)
-          }
-        }
+        if (part.type !== 'tool-updateQuiz') continue
+        if (part.state !== 'output-available') continue
+        const id: string | undefined = part.toolCallId
+        const key = id ?? `${msg.id}:noid`
+        if (seenToolCallsRef.current.has(key)) continue
+        const quiz = part.output?.quiz
+        if (!quiz) continue
+        seenToolCallsRef.current.add(key)
+        console.log('[ChatPanel] forwarding quiz — questions:', quiz.questions?.length, 'toolCallId:', id)
+        onQuizUpdate(quiz)
       }
     }
   }, [messages, onQuizUpdate])

@@ -4,6 +4,7 @@ import { db } from '@/db'
 import { quizzes, questions, users } from '@/db/schema'
 import { and, count, eq, ilike, or, sql } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
+import { quizPayloadWithFlagsSchema } from '@/lib/quiz-schema'
 
 const PAGE_SIZE = 12
 
@@ -64,57 +65,61 @@ export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await req.json()
-  const {
-    title,
-    description,
-    topic,
-    audience,
-    difficulty,
-    coverEmoji,
-    isPublic,
-    questions: questionList,
-  } = body
+  const json = await req.json().catch(() => null)
+  if (!json) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
 
-  const [quiz] = await db
-    .insert(quizzes)
-    .values({
-      userId: session.user.id,
-      title,
-      description,
-      topic,
-      audience,
-      difficulty,
-      coverEmoji,
-      isPublic: !!isPublic,
-      language: 'en',
-    })
-    .returning()
+  const parsed = quizPayloadWithFlagsSchema.safeParse(json)
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Validation failed', details: parsed.error.flatten() },
+      { status: 400 }
+    )
+  }
 
-  if (questionList?.length) {
-    await db.insert(questions).values(
-      questionList.map(
-        (q: {
-          order: number
-          text: string
-          type: string
-          options: string[]
-          correctIndex: number
-          explanation: string
-          timeLimit: number
-        }) => ({
+  const data = parsed.data
+
+  for (const q of data.questions) {
+    if (q.correctIndex >= q.options.length) {
+      return NextResponse.json(
+        { error: `correctIndex out of range for question order ${q.order}` },
+        { status: 400 }
+      )
+    }
+  }
+
+  const id = await db.transaction(async (tx) => {
+    const [quiz] = await tx
+      .insert(quizzes)
+      .values({
+        userId: session.user.id,
+        title: data.title,
+        description: data.description,
+        topic: data.topic,
+        audience: data.audience,
+        difficulty: data.difficulty,
+        coverEmoji: data.coverEmoji,
+        isPublic: !!data.isPublic,
+        language: 'en',
+      })
+      .returning()
+
+    if (data.questions.length) {
+      await tx.insert(questions).values(
+        data.questions.map((q, i) => ({
           quizId: quiz.id,
-          order: q.order,
+          order: i + 1,
           text: q.text,
           type: q.type,
           options: q.options,
           correctIndex: q.correctIndex,
           explanation: q.explanation,
           timeLimit: q.timeLimit,
-        })
+        }))
       )
-    )
-  }
+    }
 
-  return NextResponse.json({ id: quiz.id })
+    return quiz.id
+  })
+
+  return NextResponse.json({ id })
 }

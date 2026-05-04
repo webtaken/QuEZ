@@ -5,28 +5,11 @@ import { useRouter } from 'next/navigation'
 import { ChatPanel } from '@/components/builder/ChatPanel'
 import { QuizPreview } from '@/components/builder/QuizPreview'
 import { toast } from 'sonner'
-
-type QuizData = {
-  title: string
-  description: string
-  topic: string
-  audience: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  coverEmoji: string
-  questions: Array<{
-    order: number
-    text: string
-    type: 'multiple_choice' | 'true_false'
-    options: string[]
-    correctIndex: number
-    explanation: string
-    timeLimit: number
-  }>
-}
+import type { QuizPayload } from '@/lib/quiz-schema'
 
 export default function NewQuizPage() {
   const router = useRouter()
-  const [quiz, setQuiz] = useState<QuizData | null>(null)
+  const [quiz, setQuiz] = useState<QuizPayload | null>(null)
   const [saving, setSaving] = useState(false)
 
   async function handleSave(isPublic: boolean) {
