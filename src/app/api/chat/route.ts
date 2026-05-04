@@ -3,10 +3,22 @@ import { openrouter } from '@openrouter/ai-sdk-provider'
 import { z } from 'zod'
 
 export async function POST(req: Request) {
+  console.log('[chat] POST hit')
   const { messages }: { messages: UIMessage[] } = await req.json()
+  console.log('[chat] messages count:', messages?.length, 'last role:', messages?.[messages.length - 1]?.role)
+  console.log('[chat] OPENROUTER_API_KEY present:', !!process.env.OPENROUTER_API_KEY, 'len:', process.env.OPENROUTER_API_KEY?.length)
+
+  const modelId = 'deepseek/deepseek-v4-flash'
+  console.log('[chat] using model:', modelId)
 
   const result = streamText({
-    model: openrouter('deepseek/deepseek-v4-flash'),
+    model: openrouter(modelId),
+    onChunk: ({ chunk }) => {
+      console.log('[chat] chunk type:', chunk.type)
+    },
+    onFinish: ({ finishReason, usage, text, toolCalls }) => {
+      console.log('[chat] finish reason:', finishReason, 'usage:', usage, 'text len:', text?.length, 'toolCalls:', toolCalls?.length)
+    },
     system: `You are QuEZ AI, an expert quiz builder assistant. When the user describes a quiz they want, call the updateQuiz tool to output the full structured quiz data.
 
 Always:
@@ -52,6 +64,7 @@ If the user asks to change something, call updateQuiz again with the updated qui
           ),
         }),
         execute: async (quizData) => {
+          console.log('[chat] updateQuiz tool called — title:', quizData.title, 'questions:', quizData.questions?.length)
           return { success: true, quiz: quizData }
         },
       }),
@@ -72,7 +85,17 @@ If the user asks to change something, call updateQuiz again with the updated qui
           )
         }
       }
-      return error instanceof Error ? error.message : String(error)
+      // Forward full readable detail to client (was returning [object Object])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyErr = error as any
+      const parts = [
+        anyErr?.name,
+        anyErr?.message,
+        anyErr?.statusCode && `status=${anyErr.statusCode}`,
+        anyErr?.responseBody && `body=${typeof anyErr.responseBody === 'string' ? anyErr.responseBody : JSON.stringify(anyErr.responseBody)}`,
+        anyErr?.cause?.message,
+      ].filter(Boolean)
+      return parts.join(' | ') || String(error)
     },
   })
 }

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { PublishToggle } from '@/components/quiz/PublishToggle'
 
 export default async function EditQuizPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params
@@ -42,13 +43,16 @@ export default async function EditQuizPage(props: { params: Promise<{ id: string
         </h1>
       </div>
 
-      <div className="flex gap-2 mb-8">
+      <div className="flex flex-wrap items-center gap-2 mb-8">
         <Badge variant="secondary">{quiz.topic}</Badge>
         <Badge variant="secondary">{quiz.audience}</Badge>
         <Badge variant="secondary">{quiz.difficulty}</Badge>
         <Badge variant={quiz.isPublic ? 'default' : 'secondary'}>
           {quiz.isPublic ? 'Public' : 'Draft'}
         </Badge>
+        <div className="ml-auto">
+          <PublishToggle quizId={quiz.id} initialIsPublic={quiz.isPublic} />
+        </div>
       </div>
 
       <div className="space-y-4">

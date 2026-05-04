@@ -49,30 +49,48 @@ export function ChatPanel({ onQuizUpdate }: ChatPanelProps) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({ api: '/api/chat' }),
+    onError: (err) => {
+      console.error('[ChatPanel] useChat error raw:', err)
+      console.error('[ChatPanel] err.message:', err?.message)
+      console.error('[ChatPanel] err.cause:', (err as unknown as { cause?: unknown })?.cause)
+      console.error('[ChatPanel] err keys:', err && Object.getOwnPropertyNames(err))
+      try {
+        console.error('[ChatPanel] err json:', JSON.stringify(err, Object.getOwnPropertyNames(err as object), 2))
+      } catch (e) {
+        console.error('[ChatPanel] err stringify failed:', e)
+      }
+    },
+    onFinish: ({ message }) => {
+      console.log('[ChatPanel] onFinish — parts:', (message as unknown as { parts?: unknown[] }).parts?.length)
+    },
   })
+
+  useEffect(() => {
+    console.log('[ChatPanel] status:', status, 'messages:', messages.length, 'error:', error?.message)
+  }, [status, messages.length, error])
 
   const isLoading = status === 'submitted' || status === 'streaming'
 
-  // Watch messages for completed tool invocations
+  // Watch ALL assistant messages for tool output, not only last
   useEffect(() => {
-    if (status !== 'ready') return
-    const last = messages[messages.length - 1]
-    if (!last || last.role !== 'assistant') return
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parts: any[] = (last as any).parts ?? []
-    for (const part of parts) {
-      if (
-        part.type === 'tool-invocation' &&
-        part.toolInvocation?.toolName === 'updateQuiz' &&
-        part.toolInvocation?.state === 'result'
-      ) {
-        onQuizUpdate(part.toolInvocation.output?.quiz ?? part.toolInvocation.result?.quiz)
+    for (const msg of messages) {
+      if (msg.role !== 'assistant') continue
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const parts: any[] = (msg as any).parts ?? []
+      for (const part of parts) {
+        if (part.type === 'tool-updateQuiz') {
+          console.log('[ChatPanel] tool-updateQuiz part — state:', part.state, 'has output:', !!part.output, 'output keys:', part.output && Object.keys(part.output))
+          const quiz = part.output?.quiz
+          if (quiz) {
+            console.log('[ChatPanel] forwarding quiz — questions:', quiz.questions?.length)
+            onQuizUpdate(quiz)
+          }
+        }
       }
     }
-  }, [messages, status, onQuizUpdate])
+  }, [messages, onQuizUpdate])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -81,6 +99,7 @@ export function ChatPanel({ onQuizUpdate }: ChatPanelProps) {
   function submit() {
     const text = input.trim()
     if (!text || isLoading) return
+    console.log('[ChatPanel] submit:', text)
     setInput('')
     sendMessage({ role: 'user', parts: [{ type: 'text', text }] })
   }

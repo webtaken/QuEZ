@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import Link from 'next/link'
 import { Search, X, Gamepad2, BookOpen } from 'lucide-react'
 
 const TOPICS = ['Mathematics', 'Science', 'Biology', 'History', 'Programming', 'Geography', 'Literature', 'Philosophy', 'Economics']
@@ -337,18 +337,13 @@ function QuizCard({ quiz }: { quiz: Quiz }) {
         </Badge>
 
         {/* CTA */}
-        <Tooltip>
-          <TooltipTrigger render={<div className="mt-auto w-full" />}>
-            <Button
-              className="w-full rounded-xl opacity-60 pointer-events-none"
-              variant="secondary"
-              tabIndex={-1}
-            >
-              Play Quiz
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Coming Soon</TooltipContent>
-        </Tooltip>
+        <Button
+          className="mt-auto w-full rounded-xl"
+          variant="secondary"
+          render={<Link href={`/play/${quiz.id}`} />}
+        >
+          Play Quiz
+        </Button>
       </div>
     </div>
   )
