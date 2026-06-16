@@ -15,9 +15,9 @@ const DIFFICULTIES = ['Easy', 'Medium', 'Hard']
 const LANGUAGES = ['English', 'Spanish', 'French', 'Portuguese']
 
 const DIFFICULTY_COLOR: Record<string, string> = {
-  easy: 'bg-green-500',
-  medium: 'bg-yellow-500',
-  hard: 'bg-red-500',
+  easy: 'bg-success',
+  medium: 'bg-warning',
+  hard: 'bg-destructive',
 }
 
 type Quiz = {
@@ -190,7 +190,7 @@ export function QuizDirectory({ initialQuizzes, total }: QuizDirectoryProps) {
             .map((f) => (
               <span
                 key={f.key}
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[oklch(0.93_0.22_127/15%)] text-[oklch(0.93_0.22_127)] text-xs font-medium border border-[oklch(0.93_0.22_127/30%)]"
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-accent-lime/15 text-accent-lime text-xs font-medium border border-accent-lime/30"
               >
                 {f.label}
                 <button onClick={() => updateParam(f.key, '')} aria-label={`Remove ${f.key} filter`}>
@@ -263,8 +263,8 @@ function FilterGroup({
           onClick={() => onSelect(opt)}
           className={`px-3 py-1 rounded-full text-xs border transition-colors ${
             value.toLowerCase() === opt.toLowerCase()
-              ? 'bg-[oklch(0.93_0.22_127)] text-[oklch(0.13_0.03_264)] border-transparent font-semibold'
-              : 'border-border text-muted-foreground hover:border-[oklch(0.93_0.22_127/50%)] hover:text-foreground'
+              ? 'bg-accent-lime text-accent-lime-foreground border-transparent font-semibold'
+              : 'border-border text-muted-foreground hover:border-accent-lime/50 hover:text-foreground'
           }`}
         >
           {opt}
@@ -285,9 +285,9 @@ function QuizCard({ quiz }: { quiz: Quiz }) {
   return (
     <div className="card-glow rounded-2xl border border-border bg-card overflow-hidden flex flex-col">
       {/* Cover */}
-      <div className="relative h-28 bg-purple-900/30 flex items-center justify-center text-5xl">
+      <div className="relative h-28 bg-secondary flex items-center justify-center text-5xl">
         {quiz.coverEmoji}
-        <Badge className="absolute top-3 left-3 bg-purple-600/80 text-white border-none text-xs">
+        <Badge className="absolute top-3 left-3 bg-accent-lime/80 text-accent-lime-foreground border-none text-xs">
           {quiz.topic}
         </Badge>
       </div>
@@ -300,7 +300,7 @@ function QuizCard({ quiz }: { quiz: Quiz }) {
 
         {/* Author */}
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+          <div className="w-6 h-6 rounded-full bg-accent-lime flex items-center justify-center text-accent-lime-foreground text-xs font-bold flex-shrink-0">
             {initials}
           </div>
           <span className="text-xs text-muted-foreground truncate">{quiz.authorName}</span>
@@ -376,7 +376,7 @@ function EmptyState() {
         Be the first to create one!
       </p>
       <Button
-        className="bg-[oklch(0.93_0.22_127)] text-[oklch(0.13_0.03_264)] rounded-full px-8"
+        className="bg-accent-lime text-accent-lime-foreground rounded-full px-8"
         onClick={() => router.push('/dashboard/quizzes/new')}
       >
         Create a Quiz

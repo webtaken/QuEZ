@@ -48,7 +48,7 @@ export default async function DashboardPage() {
           <p className="text-muted-foreground mt-1">Manage your quizzes and track performance</p>
         </div>
         <Link href="/dashboard/quizzes/new">
-          <Button className="bg-[oklch(0.93_0.22_127)] text-[oklch(0.13_0.03_264)] rounded-full gap-2 font-semibold">
+          <Button className="bg-accent-lime text-accent-lime-foreground rounded-full gap-2 font-semibold">
             <Sparkles className="w-4 h-4" />
             New Quiz
           </Button>
@@ -77,9 +77,9 @@ export default async function DashboardPage() {
         {userQuizzes.map((quiz) => (
           <div
             key={quiz.id}
-            className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:border-[oklch(0.93_0.22_127/30%)] transition-colors"
+            className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:border-accent-lime/30 transition-colors"
           >
-            <div className="w-12 h-12 rounded-xl bg-purple-900/30 flex items-center justify-center text-2xl shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">
               {quiz.coverEmoji}
             </div>
             <div className="flex-1 min-w-0">
@@ -106,7 +106,7 @@ export default async function DashboardPage() {
                 variant={quiz.isPublic ? 'default' : 'secondary'}
                 className={
                   quiz.isPublic
-                    ? 'bg-[oklch(0.93_0.22_127/20%)] text-[oklch(0.93_0.22_127)] border-[oklch(0.93_0.22_127/30%)]'
+                    ? 'bg-accent-lime/20 text-accent-lime border-accent-lime/30'
                     : ''
                 }
               >
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
 
       {/* FAB */}
       <Link href="/dashboard/quizzes/new">
-        <button className="fixed bottom-8 right-8 flex items-center gap-2 bg-[oklch(0.93_0.22_127)] text-[oklch(0.13_0.03_264)] rounded-full px-5 h-12 font-semibold shadow-lg shadow-[oklch(0.93_0.22_127/30%)] hover:bg-[oklch(0.88_0.22_127)] transition-colors">
+        <button className="fixed bottom-8 right-8 flex items-center gap-2 bg-accent-lime text-accent-lime-foreground rounded-full px-5 h-12 font-semibold shadow-lg shadow-accent-lime/30 hover:bg-accent-lime/90 transition-colors">
           <Plus className="w-4 h-4" />
           New Quiz
         </button>
@@ -144,7 +144,7 @@ function EmptyDashboard() {
         Use the AI quiz builder to generate your first quiz in seconds.
       </p>
       <Link href="/dashboard/quizzes/new">
-        <Button className="bg-[oklch(0.93_0.22_127)] text-[oklch(0.13_0.03_264)] rounded-full px-8 h-12 font-semibold gap-2 text-base shadow-lg shadow-[oklch(0.93_0.22_127/20%)]">
+        <Button className="bg-accent-lime text-accent-lime-foreground rounded-full px-8 h-12 font-semibold gap-2 text-base shadow-lg shadow-accent-lime/20">
           <Sparkles className="w-5 h-5" />
           Create My First Quiz
         </Button>

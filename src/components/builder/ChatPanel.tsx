@@ -119,8 +119,8 @@ export function ChatPanel({ onQuizUpdate, initialQuiz }: ChatPanelProps) {
     <div className="flex flex-col h-full bg-card border-r border-border">
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border px-5 py-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-[oklch(0.93_0.22_127/20%)] flex items-center justify-center">
-          <Bot className="w-4 h-4 text-[oklch(0.93_0.22_127)]" />
+        <div className="w-8 h-8 rounded-full bg-accent-lime/20 flex items-center justify-center">
+          <Bot className="w-4 h-4 text-accent-lime" />
         </div>
         <div>
           <p className="font-semibold text-sm text-foreground">QuEZ AI</p>
@@ -152,7 +152,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz }: ChatPanelProps) {
                 className={cn(
                   'max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed',
                   msg.role === 'user'
-                    ? 'bg-[oklch(0.93_0.22_127)] text-[oklch(0.13_0.03_264)] rounded-tr-sm font-medium'
+                    ? 'bg-accent-lime text-accent-lime-foreground rounded-tr-sm font-medium'
                     : 'bg-secondary text-foreground rounded-tl-sm'
                 )}
               >
@@ -190,7 +190,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz }: ChatPanelProps) {
             onClick={submit}
             size="icon"
             disabled={isLoading || !input.trim()}
-            className="shrink-0 bg-[oklch(0.93_0.22_127)] text-[oklch(0.13_0.03_264)] hover:bg-[oklch(0.88_0.22_127)] w-11 h-11"
+            className="shrink-0 bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 w-11 h-11"
           >
             <Send className="w-4 h-4" />
           </Button>

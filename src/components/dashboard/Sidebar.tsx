@@ -78,8 +78,8 @@ export function AppSidebar() {
             className="inline-flex items-baseline group-data-[collapsible=icon]:hidden"
           >
             <span className="font-[family-name:var(--font-syne)] font-bold text-2xl text-sidebar-foreground">
-              <span className="text-[oklch(0.93_0.22_127)] text-3xl">Q</span>uE
-              <span className="inline-block -rotate-6 text-[oklch(0.93_0.22_127)]">
+              <span className="text-accent-lime text-3xl">Q</span>uE
+              <span className="inline-block -rotate-6 text-accent-lime">
                 Z
               </span>
             </span>
@@ -94,7 +94,7 @@ export function AppSidebar() {
       <div className="flex items-center gap-3 px-4 py-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:justify-center">
         <Avatar className="w-9 h-9 shrink-0 group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7">
           <AvatarImage src={user?.image ?? undefined} />
-          <AvatarFallback className="bg-purple-600 text-white text-sm">
+          <AvatarFallback className="bg-accent-lime text-accent-lime-foreground text-sm">
             {initials ?? "?"}
           </AvatarFallback>
         </Avatar>
@@ -128,7 +128,7 @@ export function AppSidebar() {
                         item.disabled
                           ? "opacity-40 pointer-events-none"
                           : item.accent
-                            ? "text-[oklch(0.93_0.22_127)] hover:text-[oklch(0.93_0.22_127)] hover:bg-[oklch(0.93_0.22_127/10%)] data-active:bg-[oklch(0.93_0.22_127/15%)] data-active:text-[oklch(0.93_0.22_127)]"
+                            ? "text-accent-lime hover:text-accent-lime hover:bg-accent-lime/10 data-active:bg-accent-lime/15 data-active:text-accent-lime"
                             : ""
                       }
                       render={

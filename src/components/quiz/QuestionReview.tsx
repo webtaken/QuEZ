@@ -27,10 +27,10 @@ export function QuestionReview({
 
   const statusLabel = isCorrect ? '✓ Correct' : wasSkipped ? '⏱ Skipped' : '✗ Wrong'
   const statusColor = isCorrect
-    ? 'text-green-500'
+    ? 'text-success'
     : wasSkipped
-      ? 'text-yellow-500'
-      : 'text-red-500'
+      ? 'text-warning'
+      : 'text-destructive'
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -39,10 +39,10 @@ export function QuestionReview({
           className={cn(
             'flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center',
             isCorrect
-              ? 'bg-green-500/20 text-green-400'
+              ? 'bg-success/20 text-success'
               : wasSkipped
-                ? 'bg-yellow-500/20 text-yellow-400'
-                : 'bg-red-500/20 text-red-400'
+                ? 'bg-warning/20 text-warning'
+                : 'bg-destructive/20 text-destructive'
           )}
         >
           {order}
@@ -65,9 +65,9 @@ export function QuestionReview({
               className={cn(
                 'flex items-center gap-3 px-4 py-2.5 rounded-xl border text-sm',
                 isCorrectOpt
-                  ? 'border-green-500/40 bg-green-500/10 text-green-400'
+                  ? 'border-success/40 bg-success/10 text-success'
                   : isSelectedWrong
-                    ? 'border-red-500/40 bg-red-500/10 text-red-400'
+                    ? 'border-destructive/40 bg-destructive/10 text-destructive'
                     : 'border-border bg-secondary/50 text-muted-foreground'
               )}
             >
@@ -76,12 +76,12 @@ export function QuestionReview({
               </span>
               <span className="flex-1">{opt}</span>
               {isCorrectOpt && (
-                <span className="text-xs text-green-500 font-medium shrink-0">
+                <span className="text-xs text-success font-medium shrink-0">
                   ✓ Correct
                 </span>
               )}
               {isSelectedWrong && (
-                <span className="text-xs text-red-500 font-medium shrink-0">
+                <span className="text-xs text-destructive font-medium shrink-0">
                   Your pick
                 </span>
               )}

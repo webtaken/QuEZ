@@ -27,7 +27,7 @@ export function QuestionCard({ question, onDelete }: QuestionCardProps) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5 animate-fade-up">
       <div className="flex items-start gap-3 mb-4">
-        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[oklch(0.93_0.22_127/20%)] text-[oklch(0.93_0.22_127)] text-xs font-bold flex items-center justify-center">
+        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-accent-lime/20 text-accent-lime text-xs font-bold flex items-center justify-center">
           {question.order}
         </span>
         <p className="font-[family-name:var(--font-syne)] font-semibold text-foreground leading-snug flex-1">
@@ -59,7 +59,7 @@ export function QuestionCard({ question, onDelete }: QuestionCardProps) {
             className={cn(
               'flex items-center gap-3 px-4 py-2.5 rounded-xl border text-sm transition-colors',
               i === question.correctIndex
-                ? 'border-green-500/40 bg-green-500/10 text-green-400'
+                ? 'border-success/40 bg-success/10 text-success'
                 : 'border-border bg-secondary/50 text-muted-foreground'
             )}
           >
@@ -68,7 +68,7 @@ export function QuestionCard({ question, onDelete }: QuestionCardProps) {
             </span>
             {opt}
             {i === question.correctIndex && (
-              <span className="ml-auto text-xs text-green-500 font-medium">✓ Correct</span>
+              <span className="ml-auto text-xs text-success font-medium">✓ Correct</span>
             )}
           </div>
         ))}

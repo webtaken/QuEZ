@@ -25,9 +25,9 @@ export function Hero() {
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden dot-grid px-6">
       {/* Ambient glows */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-[oklch(0.93_0.22_127/8%)] blur-3xl" />
-        <div className="absolute top-1/3 -left-20 w-80 h-80 rounded-full bg-purple-600/10 blur-3xl" />
-        <div className="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-purple-600/10 blur-3xl" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-accent-lime/8 blur-3xl" />
+        <div className="absolute top-1/3 -left-20 w-80 h-80 rounded-full bg-accent-lime/10 blur-3xl" />
+        <div className="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-accent-lime/10 blur-3xl" />
       </div>
 
       {/* Floating decorative cards */}
@@ -42,7 +42,7 @@ export function Hero() {
       <div className="relative z-10 max-w-4xl text-center">
         {/* Logo */}
         <div className="mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-card text-sm text-muted-foreground">
-          <Sparkles className="w-3.5 h-3.5 text-[oklch(0.93_0.22_127)]" />
+          <Sparkles className="w-3.5 h-3.5 text-accent-lime" />
           AI-Powered Quiz Builder
         </div>
 
@@ -51,7 +51,7 @@ export function Hero() {
           style={{ animationDelay: '0ms' }}
         >
           Build Quizzes.{' '}
-          <span className="text-[oklch(0.93_0.22_127)]">Share Knowledge.</span>{' '}
+          <span className="text-accent-lime">Share Knowledge.</span>{' '}
           Play Together.
         </h1>
 
@@ -65,7 +65,7 @@ export function Hero() {
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center animate-fade-up animate-fade-up-delay-2">
           <Button
             size="lg"
-            className="bg-[oklch(0.93_0.22_127)] text-[oklch(0.13_0.03_264)] hover:bg-[oklch(0.88_0.22_127)] font-semibold rounded-full px-8 text-base h-12 shadow-lg shadow-[oklch(0.93_0.22_127/20%)]"
+            className="bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 font-semibold rounded-full px-8 text-base h-12 shadow-lg shadow-accent-lime/20"
             onClick={handleGetStarted}
           >
             Get Started
@@ -123,10 +123,10 @@ function MockQuizCard({
 }) {
   return (
     <div className="w-56 rounded-2xl border border-border bg-card p-4 shadow-2xl">
-      <div className="w-full h-20 rounded-xl bg-purple-600/20 flex items-center justify-center text-3xl mb-3">
+      <div className="w-full h-20 rounded-xl bg-secondary flex items-center justify-center text-3xl mb-3">
         {emoji}
       </div>
-      <div className="text-xs font-medium text-[oklch(0.93_0.22_127)] mb-1">{topic}</div>
+      <div className="text-xs font-medium text-accent-lime mb-1">{topic}</div>
       <div className="font-[family-name:var(--font-syne)] font-semibold text-sm text-foreground leading-tight">
         {title}
       </div>

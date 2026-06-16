@@ -42,9 +42,9 @@ export function QuizPreview({ quiz, onSave, saving }: QuizPreviewProps) {
   }
 
   const difficultyColor: Record<string, string> = {
-    easy: 'bg-green-500/20 text-green-400',
-    medium: 'bg-yellow-500/20 text-yellow-400',
-    hard: 'bg-red-500/20 text-red-400',
+    easy: 'bg-success/20 text-success',
+    medium: 'bg-warning/20 text-warning',
+    hard: 'bg-destructive/20 text-destructive',
   }
 
   function deleteQuestion(i: number) {
@@ -116,7 +116,7 @@ export function QuizPreview({ quiz, onSave, saving }: QuizPreviewProps) {
               </Button>
               <Button
                 size="sm"
-                className="rounded-full bg-[oklch(0.93_0.22_127)] text-[oklch(0.13_0.03_264)] gap-1.5 font-semibold"
+                className="rounded-full bg-accent-lime text-accent-lime-foreground gap-1.5 font-semibold"
                 onClick={() => handleSave(true)}
                 disabled={saving}
               >

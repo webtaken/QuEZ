@@ -182,7 +182,7 @@ export function QuizEditor({ initialQuiz, initialQuestions }: QuizEditorProps) {
                 onClick={handleSave}
                 disabled={saving || !dirty}
                 size="sm"
-                className="gap-1.5 rounded-full bg-[oklch(0.93_0.22_127)] text-[oklch(0.13_0.03_264)] hover:bg-[oklch(0.88_0.22_127)] font-semibold"
+                className="gap-1.5 rounded-full bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 font-semibold"
               >
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 {dirty ? 'Save changes' : 'Saved'}

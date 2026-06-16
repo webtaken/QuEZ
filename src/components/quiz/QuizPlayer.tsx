@@ -133,7 +133,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
   if (phase === 'error') {
     return (
       <div className="max-w-2xl mx-auto p-6 text-center space-y-4">
-        <p className="text-red-500">{errorMsg}</p>
+        <p className="text-destructive">{errorMsg}</p>
         <div className="flex gap-3 justify-center">
           <Button onClick={reset} className="rounded-xl">
             Try again
@@ -170,7 +170,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
           </h1>
           <p className="text-muted-foreground text-sm">Quiz complete</p>
           <div className="space-y-1">
-            <p className="font-[family-name:var(--font-syne)] font-bold text-5xl text-[oklch(0.93_0.22_127)]">
+            <p className="font-[family-name:var(--font-syne)] font-bold text-5xl text-accent-lime">
               {result.score} / {result.total}
             </p>
             <p className="text-muted-foreground">{pct}%</p>
@@ -232,7 +232,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
         </div>
         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
           <div
-            className="h-full bg-[oklch(0.93_0.22_127)] transition-all duration-300"
+            className="h-full bg-accent-lime transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -243,7 +243,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
         className="rounded-2xl border border-border bg-card p-6 animate-fade-up"
       >
         <div className="flex items-start gap-3 mb-5">
-          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[oklch(0.93_0.22_127/20%)] text-[oklch(0.93_0.22_127)] text-sm font-bold flex items-center justify-center">
+          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-accent-lime/20 text-accent-lime text-sm font-bold flex items-center justify-center">
             {current.order}
           </span>
           <p className="font-[family-name:var(--font-syne)] font-semibold text-lg text-foreground leading-snug flex-1">
@@ -253,7 +253,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
             variant="secondary"
             className={cn(
               'gap-1 text-xs shrink-0 tabular-nums',
-              timeLeft <= 5 && 'bg-red-500/20 text-red-400'
+              timeLeft <= 5 && 'bg-destructive/20 text-destructive'
             )}
           >
             <Clock className="w-3 h-3" />
@@ -273,8 +273,8 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all',
                   isLocked
-                    ? 'border-[oklch(0.93_0.22_127)] bg-[oklch(0.93_0.22_127/15%)] text-foreground'
-                    : 'border-border bg-secondary/50 text-foreground hover:border-[oklch(0.93_0.22_127/50%)] hover:bg-secondary',
+                    ? 'border-accent-lime bg-accent-lime/15 text-foreground'
+                    : 'border-border bg-secondary/50 text-foreground hover:border-accent-lime/50 hover:bg-secondary',
                   dim && 'opacity-40'
                 )}
               >

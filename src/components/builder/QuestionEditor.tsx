@@ -69,7 +69,7 @@ export function QuestionEditor({
     <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <span className="w-7 h-7 rounded-full bg-[oklch(0.93_0.22_127/20%)] text-[oklch(0.93_0.22_127)] text-xs font-bold flex items-center justify-center shrink-0">
+        <span className="w-7 h-7 rounded-full bg-accent-lime/20 text-accent-lime text-xs font-bold flex items-center justify-center shrink-0">
           {index + 1}
         </span>
         <span className="text-xs text-muted-foreground">Question {index + 1}</span>
@@ -172,7 +172,7 @@ export function QuestionEditor({
               className={cn(
                 'flex items-center gap-2 px-3 py-2 rounded-xl border',
                 i === question.correctIndex
-                  ? 'border-green-500/40 bg-green-500/5'
+                  ? 'border-success/40 bg-success/5'
                   : 'border-border'
               )}
             >
@@ -181,7 +181,7 @@ export function QuestionEditor({
                 name={`correct-${index}`}
                 checked={i === question.correctIndex}
                 onChange={() => setField('correctIndex', i)}
-                className="w-4 h-4 accent-[oklch(0.93_0.22_127)] shrink-0"
+                className="w-4 h-4 accent-accent-lime shrink-0"
                 aria-label={`Mark option ${String.fromCharCode(65 + i)} as correct`}
               />
               <span className="text-xs font-bold text-muted-foreground w-4 shrink-0">
