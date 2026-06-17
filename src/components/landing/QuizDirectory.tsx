@@ -38,9 +38,10 @@ type Quiz = {
 interface QuizDirectoryProps {
   initialQuizzes: Quiz[]
   total: number
+  showHeading?: boolean
 }
 
-export function QuizDirectory({ initialQuizzes, total }: QuizDirectoryProps) {
+export function QuizDirectory({ initialQuizzes, total, showHeading = true }: QuizDirectoryProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -132,12 +133,14 @@ export function QuizDirectory({ initialQuizzes, total }: QuizDirectoryProps) {
   return (
     <section id="community-quizzes" ref={sectionRef} className="py-24 px-6">
       <div className="max-w-7xl mx-auto">
-        <h2 className="font-[family-name:var(--font-syne)] font-bold text-4xl text-foreground mb-2">
-          Explore Community Quizzes
-        </h2>
-        <p className="text-muted-foreground mb-10">
-          {count.toLocaleString()} quizzes from educators around the world
-        </p>
+        {showHeading && (<>
+          <h2 className="font-[family-name:var(--font-syne)] font-bold text-4xl text-foreground mb-2">
+            Explore Community Quizzes
+          </h2>
+          <p className="text-muted-foreground mb-10">
+            {count.toLocaleString()} quizzes from educators around the world
+          </p>
+        </>)}
 
         {/* Search + filters */}
         <div className="mb-8 space-y-4">
