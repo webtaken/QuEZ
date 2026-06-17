@@ -49,7 +49,8 @@ export function Hero() {
           className="font-[family-name:var(--font-syne)] font-bold text-5xl sm:text-6xl lg:text-7xl text-foreground leading-[1.2] tracking-tight animate-fade-up"
           style={{ animationDelay: "0ms" }}
         >
-          Build knowledge <span className="text-accent-lime">QuEZ</span>
+          Build something{' '}
+          <span className="text-accent-lime">QuEZ</span>
         </h1>
 
         <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-up animate-fade-up-delay-1">
