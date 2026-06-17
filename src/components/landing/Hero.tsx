@@ -1,24 +1,13 @@
-'use client'
+"use client";
 
-import { useRouter } from 'next/navigation'
-import { signIn, useSession } from '@/lib/auth-client'
-import { Button } from '@/components/ui/button'
-import { Sparkles, ChevronDown } from 'lucide-react'
+import { ChevronDown, Sparkles } from "lucide-react";
+import { HeroPrompt } from "./HeroPrompt";
 
 export function Hero() {
-  const { data: session } = useSession()
-  const router = useRouter()
-
-  function handleGetStarted() {
-    if (session) {
-      router.push('/dashboard')
-    } else {
-      signIn.social({ provider: 'google', callbackURL: '/dashboard' })
-    }
-  }
-
   function scrollToDirectory() {
-    document.getElementById('community-quizzes')?.scrollIntoView({ behavior: 'smooth' })
+    document
+      .getElementById("community-quizzes")
+      ?.scrollIntoView({ behavior: "smooth" });
   }
 
   return (
@@ -32,10 +21,20 @@ export function Hero() {
 
       {/* Floating decorative cards */}
       <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 hidden lg:block -rotate-6 opacity-40">
-        <MockQuizCard emoji="🧬" title="Cell Division" topic="Biology" count={12} />
+        <MockQuizCard
+          emoji="🧬"
+          title="Cell Division"
+          topic="Biology"
+          count={12}
+        />
       </div>
       <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 hidden lg:block rotate-6 opacity-40">
-        <MockQuizCard emoji="🔢" title="Linear Algebra" topic="Math" count={8} />
+        <MockQuizCard
+          emoji="🔢"
+          title="Linear Algebra"
+          topic="Math"
+          count={8}
+        />
       </div>
 
       {/* Content */}
@@ -48,51 +47,42 @@ export function Hero() {
 
         <h1
           className="font-[family-name:var(--font-syne)] font-bold text-5xl sm:text-6xl lg:text-7xl text-foreground leading-[1.2] tracking-tight animate-fade-up"
-          style={{ animationDelay: '0ms' }}
+          style={{ animationDelay: "0ms" }}
         >
-          Build Quizzes.{' '}
-          <span className="text-accent-lime">Share Knowledge.</span>{' '}
-          Play Together.
+          Build knowledge <span className="text-accent-lime">QuEZ</span>
         </h1>
 
-        <p
-          className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-up animate-fade-up-delay-1"
-        >
-          QuEZ is the AI-powered quiz builder for educators, trainers, and curious minds.
-          Describe your quiz in plain language — our AI builds it in seconds.
+        <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-up animate-fade-up-delay-1">
+          QuEZ is the AI-powered quiz builder for educators, trainers, and
+          curious minds. Describe your quiz in plain language — our AI builds it
+          in seconds.
         </p>
 
-        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center animate-fade-up animate-fade-up-delay-2">
-          <Button
-            size="lg"
-            className="bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 font-semibold rounded-full px-8 text-base h-12 shadow-lg shadow-accent-lime/20"
-            onClick={handleGetStarted}
-          >
-            Get Started
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="rounded-full px-8 text-base h-12 border-border hover:bg-secondary"
+        <div className="mt-10 max-w-2xl mx-auto animate-fade-up animate-fade-up-delay-2">
+          <HeroPrompt />
+          <button
             onClick={scrollToDirectory}
+            className="mt-4 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            See Community Quizzes
-            <ChevronDown className="ml-2 w-4 h-4" />
-          </Button>
+            or browse Community Quizzes
+            <ChevronDown className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Stats */}
         <div className="mt-16 flex gap-8 justify-center animate-fade-up animate-fade-up-delay-3">
           {[
-            { label: 'Quizzes created', value: '2,400+' },
-            { label: 'Questions generated', value: '48k+' },
-            { label: 'Active educators', value: '1,200+' },
+            { label: "Quizzes created", value: "2,400+" },
+            { label: "Questions generated", value: "48k+" },
+            { label: "Active educators", value: "1,200+" },
           ].map((s) => (
             <div key={s.label} className="text-center">
               <div className="font-[family-name:var(--font-syne)] font-bold text-2xl text-foreground">
                 {s.value}
               </div>
-              <div className="text-sm text-muted-foreground mt-0.5">{s.label}</div>
+              <div className="text-sm text-muted-foreground mt-0.5">
+                {s.label}
+              </div>
             </div>
           ))}
         </div>
@@ -107,7 +97,7 @@ export function Hero() {
         <ChevronDown className="w-6 h-6" />
       </button>
     </section>
-  )
+  );
 }
 
 function MockQuizCard({
@@ -116,10 +106,10 @@ function MockQuizCard({
   topic,
   count,
 }: {
-  emoji: string
-  title: string
-  topic: string
-  count: number
+  emoji: string;
+  title: string;
+  topic: string;
+  count: number;
 }) {
   return (
     <div className="w-56 rounded-2xl border border-border bg-card p-4 shadow-2xl">
@@ -130,7 +120,9 @@ function MockQuizCard({
       <div className="font-[family-name:var(--font-syne)] font-semibold text-sm text-foreground leading-tight">
         {title}
       </div>
-      <div className="mt-2 text-xs text-muted-foreground">{count} questions</div>
+      <div className="mt-2 text-xs text-muted-foreground">
+        {count} questions
+      </div>
     </div>
-  )
+  );
 }
