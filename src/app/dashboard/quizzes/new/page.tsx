@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChatPanel } from '@/components/builder/ChatPanel'
 import { QuizPreview } from '@/components/builder/QuizPreview'
@@ -11,6 +11,15 @@ export default function NewQuizPage() {
   const router = useRouter()
   const [quiz, setQuiz] = useState<QuizPayload | null>(null)
   const [saving, setSaving] = useState(false)
+  const [initialPrompt, setInitialPrompt] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get('prompt')?.trim()
+    if (!p) return
+    setInitialPrompt(p)
+    // Strip ?prompt so a refresh does not re-trigger generation.
+    router.replace('/dashboard/quizzes/new')
+  }, [router])
 
   async function handleSave(isPublic: boolean) {
     if (!quiz) return
@@ -42,7 +51,7 @@ export default function NewQuizPage() {
     <div className="flex h-screen">
       {/* Chat — 28% */}
       <div className="w-[28%] min-w-[280px] max-w-[380px]">
-        <ChatPanel onQuizUpdate={setQuiz} />
+        <ChatPanel onQuizUpdate={setQuiz} initialPrompt={initialPrompt} />
       </div>
       {/* Preview — rest */}
       <div className="flex-1 overflow-hidden">
