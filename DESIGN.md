@@ -92,7 +92,9 @@ question titles), `font-medium` (labels, badges, buttons), normal (body).
 | `text-2xl`–`text-4xl` | Page & dashboard headings |
 | `text-5xl sm:text-6xl lg:text-7xl` | Hero headline (`Hero.tsx`) |
 
-**Tracking / leading:** `tracking-tight` + `leading-[1.05]` on the hero headline;
+**Tracking / leading:** `tracking-tight` + `leading-[1.2]` on the hero headline
+(Syne's natural line-height; descender ink reaches −25.4% of em vs the font's −27.5%
+declared descent, so `≥1.2` guarantees `g`/`y`/`p` never clip — `1.05` clipped them);
 `leading-snug` for question text; `leading-relaxed` for chat; `line-clamp-2` on directory
 card titles.
 
