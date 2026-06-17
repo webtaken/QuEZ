@@ -120,6 +120,7 @@ export default function PricingPage() {
                     : 'mt-8 w-full rounded-full'
                 }
                 variant={tier.featured ? 'default' : 'outline'}
+                nativeButton={false}
                 render={<Link href="/login" />}
               >
                 {tier.cta}

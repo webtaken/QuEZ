@@ -45,6 +45,7 @@ export async function Header() {
   ) : (
     <Button
       className="rounded-full bg-accent-lime px-5 text-accent-lime-foreground hover:bg-accent-lime/90"
+      nativeButton={false}
       render={<Link href="/login" />}
     >
       Log in
