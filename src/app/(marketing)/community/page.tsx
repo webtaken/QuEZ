@@ -23,7 +23,7 @@ export default async function CommunityPage() {
         </p>
       </div>
       <Suspense fallback={null}>
-        <QuizDirectory initialQuizzes={quizzes} total={total} />
+        <QuizDirectory initialQuizzes={quizzes} total={total} showHeading={false} />
       </Suspense>
     </main>
   )
