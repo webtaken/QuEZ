@@ -14,6 +14,7 @@ import type { QuizPayload } from '@/lib/quiz-schema'
 interface ChatPanelProps {
   onQuizUpdate: (quiz: QuizPayload) => void
   initialQuiz?: QuizPayload
+  initialPrompt?: string
 }
 
 const GREETING = `Hi! I'm your QuEZ AI builder. Tell me about the quiz you want to create.
@@ -29,7 +30,7 @@ function getTextFromMessage(message: UIMessage): string {
     .join('')
 }
 
-export function ChatPanel({ onQuizUpdate, initialQuiz }: ChatPanelProps) {
+export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt }: ChatPanelProps) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const quizRef = useRef<QuizPayload | undefined>(initialQuiz)
@@ -67,6 +68,15 @@ export function ChatPanel({ onQuizUpdate, initialQuiz }: ChatPanelProps) {
       console.log('[ChatPanel] onFinish — parts:', (message as unknown as { parts?: unknown[] }).parts?.length)
     },
   })
+
+  // Auto-send a prompt handed in from the landing Hero, exactly once.
+  const autoSentRef = useRef(false)
+  useEffect(() => {
+    const p = initialPrompt?.trim()
+    if (!p || autoSentRef.current) return
+    autoSentRef.current = true
+    sendMessage({ role: 'user', parts: [{ type: 'text', text: p }] })
+  }, [initialPrompt, sendMessage])
 
   useEffect(() => {
     console.log('[ChatPanel] status:', status, 'messages:', messages.length, 'error:', error?.message)
