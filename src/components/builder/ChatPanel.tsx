@@ -11,7 +11,7 @@ import { Send, Bot } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { QuizPayload } from '@/lib/quiz-schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
-import { collectToolCallIds, dbRowToUIMessage } from '@/lib/chat-messages'
+import { collectToolCallIds, dbRowToUIMessage, extractQuizFromParts } from '@/lib/chat-messages'
 import { siblingInfo, switchSibling, buildActivePath, descendToLeaf } from '@/lib/chat-tree'
 import type { TreeNode } from '@/lib/chat-tree'
 
@@ -22,7 +22,7 @@ interface ChatPanelProps {
   quizId?: string
   initialMessages?: UIMsgLike[]
   initialTree?: { id: string; parentId: string | null; createdAt: string }[]
-  initialRows?: { id: string; role: string; parts: unknown[] }[]
+  initialRows?: { id: string; role: string; parts: unknown[]; quizSnapshot?: unknown }[]
 }
 
 const GREETING = `Hi! I'm your QuEZ AI builder. Tell me about the quiz you want to create.
@@ -49,7 +49,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   const treeRef = useRef<TreeNode[]>(
     (initialTree ?? []).map((n) => ({ id: n.id, parentId: n.parentId, createdAt: new Date(n.createdAt) }))
   )
-  const rowsRef = useRef<{ id: string; role: string; parts: unknown[] }[]>(initialRows ?? [])
+  const rowsRef = useRef<{ id: string; role: string; parts: unknown[]; quizSnapshot?: unknown }[]>(initialRows ?? [])
 
   useEffect(() => {
     quizRef.current = initialQuiz
@@ -101,7 +101,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
       setMessages((prev) => {
         let prevId: string | null = null
         const newNodes: TreeNode[] = []
-        const newRows: { id: string; role: string; parts: unknown[] }[] = []
+        const newRows: { id: string; role: string; parts: unknown[]; quizSnapshot?: unknown }[] = []
         const existingIds = new Set(treeRef.current.map((n) => n.id))
         const existingRowIds = new Set(rowsRef.current.map((r) => r.id))
         for (const msg of prev) {
@@ -109,11 +109,13 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
             newNodes.push({ id: msg.id, parentId: prevId, createdAt: new Date() })
           }
           if (!existingRowIds.has(msg.id)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const parts: unknown[] = (msg as any).parts ?? []
             newRows.push({
               id: msg.id,
               role: msg.role,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              parts: (msg as any).parts ?? [],
+              parts,
+              quizSnapshot: msg.role === 'assistant' ? extractQuizFromParts(parts) : null,
             })
           }
           prevId = msg.id
@@ -147,6 +149,22 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   }, [status, messages.length, error])
 
   const isLoading = status === 'submitted' || status === 'streaming'
+
+  /* eslint-disable react-hooks/refs */
+  // rowsRef is read at message-render time; keyed on messages so it recomputes when the list changes
+  const versionByMsgId = useMemo(() => {
+    const map = new Map<string, number>()
+    let v = 0
+    for (const msg of messages) {
+      const row = rowsRef.current.find((r) => r.id === msg.id)
+      if (msg.role === 'assistant' && row?.quizSnapshot) {
+        v += 1
+        map.set(msg.id, v)
+      }
+    }
+    return map
+  }, [messages])
+  /* eslint-enable react-hooks/refs */
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
@@ -420,6 +438,22 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                     Delete
                   </button>
                 </div>
+                {versionByMsgId.has(msg.id) && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">
+                      v{versionByMsgId.get(msg.id)}
+                    </span>
+                    <button
+                      className="text-xs text-accent-lime"
+                      onClick={() => {
+                        const row = rowsRef.current.find((r) => r.id === msg.id)
+                        if (row?.quizSnapshot) onQuizUpdate(row.quizSnapshot as QuizPayload)
+                      }}
+                    >
+                      Restore this version
+                    </button>
+                  </div>
+                )}
                 </>
               )}
             </div>

@@ -48,6 +48,7 @@ export default async function EditQuizPage(props: { params: Promise<{ id: string
     id: m.id,
     role: m.role,
     parts: m.parts,
+    quizSnapshot: m.quizSnapshot,
   }))
 
   return (

@@ -19,7 +19,7 @@ interface QuizEditorProps {
   initialQuestions: Question[]
   initialMessages?: UIMsgLike[]
   initialTree?: { id: string; parentId: string | null; createdAt: string }[]
-  initialRows?: { id: string; role: string; parts: unknown[] }[]
+  initialRows?: { id: string; role: string; parts: unknown[]; quizSnapshot?: unknown }[]
 }
 
 function blankQuestion(order: number): QuizQuestion {
