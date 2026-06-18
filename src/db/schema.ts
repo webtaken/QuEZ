@@ -6,6 +6,8 @@ import {
   integer,
   jsonb,
   uuid,
+  index,
+  type AnyPgColumn,
 } from 'drizzle-orm/pg-core'
 
 // --- better-auth managed tables ---
@@ -75,6 +77,7 @@ export const quizzes = pgTable('quizzes', {
   isPublic: boolean('is_public').notNull().default(false),
   coverEmoji: text('cover_emoji').default('🧠'),
   playCount: integer('play_count').notNull().default(0),
+  activeLeafId: uuid('active_leaf_id'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
@@ -93,8 +96,36 @@ export const questions = pgTable('questions', {
   timeLimit: integer('time_limit').notNull().default(30),
 })
 
+export const chatMessages = pgTable(
+  'chat_messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    quizId: uuid('quiz_id')
+      .notNull()
+      .references(() => quizzes.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: text('role').notNull(), // 'user' | 'assistant'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    parts: jsonb('parts').notNull().$type<any[]>(),
+    parentId: uuid('parent_id').references((): AnyPgColumn => chatMessages.id, {
+      onDelete: 'cascade',
+    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    quizSnapshot: jsonb('quiz_snapshot').$type<any>(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => [
+    index('chat_messages_quiz_id_idx').on(t.quizId),
+    index('chat_messages_parent_id_idx').on(t.parentId),
+  ]
+)
+
 export type User = typeof users.$inferSelect
 export type Quiz = typeof quizzes.$inferSelect
 export type Question = typeof questions.$inferSelect
+export type ChatMessage = typeof chatMessages.$inferSelect
 export type NewQuiz = typeof quizzes.$inferInsert
 export type NewQuestion = typeof questions.$inferInsert
+export type NewChatMessage = typeof chatMessages.$inferInsert
