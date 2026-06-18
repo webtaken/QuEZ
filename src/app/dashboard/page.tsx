@@ -5,9 +5,8 @@ import { db } from '@/db'
 import { quizzes, questions } from '@/db/schema'
 import { eq, sql, count } from 'drizzle-orm'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Sparkles, BookOpen, Gamepad2, Globe, Plus, Edit, Trash2 } from 'lucide-react'
-import { formatDistanceToNow } from '@/lib/date'
+import { Sparkles, BookOpen, Gamepad2, Globe, Plus } from 'lucide-react'
+import { QuizCard } from '@/components/dashboard/QuizCard'
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -75,50 +74,19 @@ export default async function DashboardPage() {
       {/* Quiz list */}
       <div className="space-y-3">
         {userQuizzes.map((quiz) => (
-          <div
+          <QuizCard
             key={quiz.id}
-            className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:border-accent-lime/30 transition-colors"
-          >
-            <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">
-              {quiz.coverEmoji}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-[family-name:var(--font-syne)] font-semibold text-foreground truncate">
-                {quiz.title}
-              </p>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <Badge variant="secondary" className="text-xs">
-                  {quiz.topic}
-                </Badge>
-                <Badge variant="secondary" className="text-xs">
-                  {quiz.audience}
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {quiz.questionCount} questions
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(quiz.createdAt)}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Badge
-                variant={quiz.isPublic ? 'default' : 'secondary'}
-                className={
-                  quiz.isPublic
-                    ? 'bg-accent-lime/20 text-accent-lime border-accent-lime/30'
-                    : ''
-                }
-              >
-                {quiz.isPublic ? 'Public' : 'Draft'}
-              </Badge>
-              <Link href={`/dashboard/quizzes/${quiz.id}`}>
-                <Button variant="ghost" size="icon" className="w-8 h-8">
-                  <Edit className="w-3.5 h-3.5" />
-                </Button>
-              </Link>
-            </div>
-          </div>
+            quiz={{
+              id: quiz.id,
+              title: quiz.title,
+              topic: quiz.topic,
+              audience: quiz.audience,
+              coverEmoji: quiz.coverEmoji,
+              isPublic: quiz.isPublic,
+              questionCount: Number(quiz.questionCount),
+              createdAt: quiz.createdAt,
+            }}
+          />
         ))}
       </div>
 
