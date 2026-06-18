@@ -2,15 +2,6 @@ import { db } from '@/db'
 import { chatMessages, quizzes, type ChatMessage, type NewChatMessage } from '@/db/schema'
 import { and, eq } from 'drizzle-orm'
 
-async function assertOwner(quizId: string, userId: string): Promise<boolean> {
-  const [q] = await db
-    .select({ id: quizzes.id })
-    .from(quizzes)
-    .where(and(eq(quizzes.id, quizId), eq(quizzes.userId, userId)))
-    .limit(1)
-  return !!q
-}
-
 export async function loadActivePath(
   quizId: string,
   userId: string
