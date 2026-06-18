@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import type { QuizPayload } from '@/lib/quiz-schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
 import { collectToolCallIds, dbRowToUIMessage } from '@/lib/chat-messages'
-import { siblingInfo, switchSibling, buildActivePath } from '@/lib/chat-tree'
+import { siblingInfo, switchSibling, buildActivePath, descendToLeaf } from '@/lib/chat-tree'
 import type { TreeNode } from '@/lib/chat-tree'
 
 interface ChatPanelProps {
@@ -246,6 +246,46 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
     )
   }
 
+  async function onDelete(msgId: string) {
+    if (isLoading) return
+    if (!quizId) return
+    const res = await fetch(`/api/quizzes/${quizId}/messages/${msgId}`, { method: 'DELETE' })
+    if (!res.ok) return
+    const { newLeafId }: { newLeafId: string | null } = await res.json()
+    // Collect the removed subtree id set using the freshest tree ref
+    const removed = new Set<string>()
+    const collect = (rootId: string) => {
+      removed.add(rootId)
+      for (const child of treeRef.current.filter((n) => n.parentId === rootId)) collect(child.id)
+    }
+    collect(msgId)
+    // Update both state and ref together
+    const nextTree = treeRef.current.filter((n) => !removed.has(n.id))
+    setTree(nextTree)
+    treeRef.current = nextTree
+    rowsRef.current = rowsRef.current.filter((r) => !removed.has(r.id))
+    // Descend from the server-reseated parent to a leaf
+    const leaf = newLeafId ? descendToLeaf(nextTree, newLeafId) : null
+    leafIdRef.current = leaf
+    setActiveLeafId(leaf)
+    // Rebuild the visible path
+    const byId = new Map(rowsRef.current.map((r) => [r.id, r]))
+    setMessages(
+      buildActivePath(nextTree, leaf)
+        .map((id) => byId.get(id))
+        .filter(Boolean)
+        .map((r) => dbRowToUIMessage(r as { id: string; role: string; parts: unknown[] })) as unknown as UIMessage[]
+    )
+    // Persist the descended leaf so refresh matches the view
+    if (leaf && leaf !== newLeafId) {
+      await fetch(`/api/quizzes/${quizId}/active-leaf`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leafId: leaf }),
+      })
+    }
+  }
+
   return (
     <div className="flex flex-col h-full bg-card border-r border-border">
       {/* Header */}
@@ -356,6 +396,13 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                       Regenerate
                     </button>
                   )}
+                  <button
+                    className="opacity-0 group-hover:opacity-100 text-xs text-destructive transition-opacity"
+                    onClick={() => onDelete(msg.id)}
+                    disabled={isLoading}
+                  >
+                    Delete
+                  </button>
                 </div>
               )}
             </div>
