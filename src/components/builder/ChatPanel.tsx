@@ -11,6 +11,7 @@ import { Send, Bot } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { QuizPayload } from '@/lib/quiz-schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
+import { collectToolCallIds } from '@/lib/chat-messages'
 
 interface ChatPanelProps {
   onQuizUpdate: (quiz: QuizPayload) => void
@@ -100,7 +101,9 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   const isLoading = status === 'submitted' || status === 'streaming'
 
   // Forward each completed tool-updateQuiz exactly once
-  const seenToolCallsRef = useRef<Set<string>>(new Set())
+  const seenToolCallsRef = useRef<Set<string>>(
+    new Set(collectToolCallIds((initialMessages ?? []) as { parts: unknown[] }[]))
+  )
   useEffect(() => {
     for (const msg of messages) {
       if (msg.role !== 'assistant') continue
