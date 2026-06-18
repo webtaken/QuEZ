@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Save, Plus, Loader2 } from 'lucide-react'
+import { Save, Plus, Loader2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ChatPanel } from './ChatPanel'
 import { QuestionEditor } from './QuestionEditor'
 import { PublishToggle } from '@/components/quiz/PublishToggle'
+import { DeleteQuizDialog } from '@/components/quiz/DeleteQuizDialog'
 import { quizPayloadSchema, type QuizPayload, type QuizQuestion } from '@/lib/quiz-schema'
 import type { Quiz, Question } from '@/db/schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
@@ -58,6 +59,7 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
   const router = useRouter()
   const [quiz, setQuiz] = useState<QuizPayload>(() => toPayload(initialQuiz, initialQuestions))
   const [dirty, setDirty] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -188,7 +190,23 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
               className="font-[family-name:var(--font-syne)] font-bold text-xl h-12"
             />
             <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDeleteOpen(true)}
+                aria-label="Delete quiz"
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
               <PublishToggle quizId={initialQuiz.id} initialIsPublic={initialQuiz.isPublic} />
+              <DeleteQuizDialog
+                quizId={initialQuiz.id}
+                quizTitle={initialQuiz.title}
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
+                onDeleted={() => router.push('/dashboard')}
+              />
               <Button
                 onClick={handleSave}
                 disabled={saving || !dirty}
