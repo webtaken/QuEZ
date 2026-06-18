@@ -75,42 +75,51 @@ export async function deleteSubtree(
   userId: string,
   messageId: string
 ): Promise<{ ok: boolean; newLeafId: string | null }> {
-  if (!(await assertOwner(quizId, userId))) return { ok: false, newLeafId: null }
-  const [target] = await db
-    .select({ id: chatMessages.id, parentId: chatMessages.parentId })
-    .from(chatMessages)
-    .where(and(eq(chatMessages.id, messageId), eq(chatMessages.quizId, quizId)))
-    .limit(1)
-  if (!target) return { ok: false, newLeafId: null }
+  return await db.transaction(async (tx) => {
+    // Ownership check inside the transaction for atomicity
+    const [owned] = await tx
+      .select({ id: quizzes.id })
+      .from(quizzes)
+      .where(and(eq(quizzes.id, quizId), eq(quizzes.userId, userId)))
+      .limit(1)
+    if (!owned) return { ok: false, newLeafId: null }
 
-  const [q] = await db
-    .select({ activeLeafId: quizzes.activeLeafId })
-    .from(quizzes)
-    .where(eq(quizzes.id, quizId))
-    .limit(1)
+    const [target] = await tx
+      .select({ id: chatMessages.id, parentId: chatMessages.parentId })
+      .from(chatMessages)
+      .where(and(eq(chatMessages.id, messageId), eq(chatMessages.quizId, quizId)))
+      .limit(1)
+    if (!target) return { ok: false, newLeafId: null }
 
-  if (!q) return { ok: true, newLeafId: null }
-
-  // ON DELETE CASCADE on parent_id removes the whole subtree.
-  await db.delete(chatMessages).where(eq(chatMessages.id, messageId))
-
-  // If the active leaf was inside the deleted subtree it no longer exists;
-  // reseat to the deleted node's parent (caller re-descends to a leaf client-side
-  // on next load via buildActivePath/descendToLeaf).
-  if (q.activeLeafId === null) return { ok: true, newLeafId: null }
-
-  const remaining = await db
-    .select({ id: chatMessages.id })
-    .from(chatMessages)
-    .where(eq(chatMessages.id, q.activeLeafId))
-    .limit(1)
-  let newLeafId: string | null = q.activeLeafId
-  if (remaining.length === 0) {
-    newLeafId = target.parentId
-    await db
-      .update(quizzes)
-      .set({ activeLeafId: newLeafId, updatedAt: new Date() })
+    const [q] = await tx
+      .select({ activeLeafId: quizzes.activeLeafId })
+      .from(quizzes)
       .where(eq(quizzes.id, quizId))
-  }
-  return { ok: true, newLeafId }
+      .limit(1)
+
+    if (!q) return { ok: true, newLeafId: null }
+
+    // ON DELETE CASCADE on parent_id removes the whole subtree.
+    await tx.delete(chatMessages).where(eq(chatMessages.id, messageId))
+
+    // If the active leaf was inside the deleted subtree it no longer exists;
+    // reseat to the deleted node's parent (caller re-descends to a leaf client-side
+    // on next load via buildActivePath/descendToLeaf).
+    if (q.activeLeafId === null) return { ok: true, newLeafId: null }
+
+    const remaining = await tx
+      .select({ id: chatMessages.id })
+      .from(chatMessages)
+      .where(eq(chatMessages.id, q.activeLeafId))
+      .limit(1)
+    let newLeafId: string | null = q.activeLeafId
+    if (remaining.length === 0) {
+      newLeafId = target.parentId
+      await tx
+        .update(quizzes)
+        .set({ activeLeafId: newLeafId, updatedAt: new Date() })
+        .where(eq(quizzes.id, quizId))
+    }
+    return { ok: true, newLeafId }
+  })
 }
