@@ -192,7 +192,8 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   }
 
   async function onSwitch(forkChildId: string, dir: -1 | 1) {
-    const newLeaf = switchSibling(tree, forkChildId, dir, leafIdRef.current ?? forkChildId)
+    if (!quizId) return
+    const newLeaf = switchSibling(treeRef.current, forkChildId, dir, leafIdRef.current ?? forkChildId)
     if (!newLeaf) return
     const res = await fetch(`/api/quizzes/${quizId}/active-leaf`, {
       method: 'PATCH',
@@ -202,7 +203,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
     if (!res.ok) return
     leafIdRef.current = newLeaf
     setActiveLeafId(newLeaf)
-    const pathIds = buildActivePath(tree, newLeaf)
+    const pathIds = buildActivePath(treeRef.current, newLeaf)
     const byId = new Map(rowsRef.current.map((r) => [r.id, r]))
     setMessages(
       pathIds
