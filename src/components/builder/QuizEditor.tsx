@@ -12,10 +12,12 @@ import { QuestionEditor } from './QuestionEditor'
 import { PublishToggle } from '@/components/quiz/PublishToggle'
 import { quizPayloadSchema, type QuizPayload, type QuizQuestion } from '@/lib/quiz-schema'
 import type { Quiz, Question } from '@/db/schema'
+import type { UIMsgLike } from '@/lib/chat-messages'
 
 interface QuizEditorProps {
   initialQuiz: Quiz
   initialQuestions: Question[]
+  initialMessages?: UIMsgLike[]
 }
 
 function blankQuestion(order: number): QuizQuestion {
@@ -50,7 +52,7 @@ function toPayload(q: Quiz, qs: Question[]): QuizPayload {
   }
 }
 
-export function QuizEditor({ initialQuiz, initialQuestions }: QuizEditorProps) {
+export function QuizEditor({ initialQuiz, initialQuestions, initialMessages }: QuizEditorProps) {
   const router = useRouter()
   const [quiz, setQuiz] = useState<QuizPayload>(() => toPayload(initialQuiz, initialQuestions))
   const [dirty, setDirty] = useState(false)
@@ -155,7 +157,12 @@ export function QuizEditor({ initialQuiz, initialQuestions }: QuizEditorProps) {
     <div className="flex h-screen">
       {/* Chat — 28% */}
       <div className="w-[28%] min-w-[280px] max-w-[380px]">
-        <ChatPanel onQuizUpdate={handleAgentUpdate} initialQuiz={quiz} />
+        <ChatPanel
+          onQuizUpdate={handleAgentUpdate}
+          initialQuiz={quiz}
+          quizId={initialQuiz.id}
+          initialMessages={initialMessages}
+        />
       </div>
 
       {/* Editor — rest */}

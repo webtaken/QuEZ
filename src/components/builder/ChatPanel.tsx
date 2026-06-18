@@ -10,11 +10,14 @@ import { TypingIndicator } from './TypingIndicator'
 import { Send, Bot } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { QuizPayload } from '@/lib/quiz-schema'
+import type { UIMsgLike } from '@/lib/chat-messages'
 
 interface ChatPanelProps {
   onQuizUpdate: (quiz: QuizPayload) => void
   initialQuiz?: QuizPayload
   initialPrompt?: string
+  quizId?: string
+  initialMessages?: UIMsgLike[]
 }
 
 const GREETING = `Hi! I'm your QuEZ AI builder. Tell me about the quiz you want to create.
@@ -30,7 +33,7 @@ function getTextFromMessage(message: UIMessage): string {
     .join('')
 }
 
-export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt }: ChatPanelProps) {
+export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId = 'new', initialMessages }: ChatPanelProps) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const quizRef = useRef<QuizPayload | undefined>(initialQuiz)
@@ -39,19 +42,31 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt }: ChatPane
     quizRef.current = initialQuiz
   }, [initialQuiz])
 
+  const leafIdRef = useRef<string | null>(
+    initialMessages && initialMessages.length
+      ? initialMessages[initialMessages.length - 1].id
+      : null
+  )
+
   /* eslint-disable react-hooks/refs */
   // body callback is invoked at send-time, not render-time
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: '/api/chat',
-        body: () => (quizRef.current ? { existingQuiz: quizRef.current } : {}),
+        body: () => ({
+          ...(quizRef.current ? { existingQuiz: quizRef.current } : {}),
+          quizId,
+          parentId: leafIdRef.current,
+        }),
       }),
-    []
+    [quizId]
   )
   /* eslint-enable react-hooks/refs */
 
   const { messages, sendMessage, status, error } = useChat({
+    id: quizId,
+    messages: (initialMessages ?? []) as unknown as UIMessage[],
     transport,
     onError: (err) => {
       console.error('[ChatPanel] useChat error raw:', err)
@@ -65,6 +80,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt }: ChatPane
       }
     },
     onFinish: ({ message }) => {
+      leafIdRef.current = message.id
       console.log('[ChatPanel] onFinish — parts:', (message as unknown as { parts?: unknown[] }).parts?.length)
     },
   })
