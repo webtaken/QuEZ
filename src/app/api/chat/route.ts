@@ -4,8 +4,8 @@ import { openrouter } from '@openrouter/ai-sdk-provider'
 import { quizPayloadSchema, type QuizPayload } from '@/lib/quiz-schema'
 import { auth } from '@/lib/auth'
 import { persistTurn } from '@/db/chat-queries'
-import { extractQuizFromParts } from '@/lib/chat-messages'
-import type { NewChatMessage } from '@/db/schema'
+import { buildTurnMessages } from '@/lib/chat-messages'
+import { newId } from '@/lib/ids'
 
 const BASE_SYSTEM = `You are QuEZ AI, an expert quiz builder assistant. When the user describes a quiz they want, call the updateQuiz tool to output the full structured quiz data.
 
@@ -71,28 +71,20 @@ When calling updateQuiz, return the FULL updated quiz including fields the user 
 
   return result.toUIMessageStreamResponse({
     originalMessages: messages,
+    // Assign a stable uuid to the assistant message. The SDK sends it on the
+    // stream start chunk so useChat adopts the same id client-side, keeping
+    // chat_messages.id === the rendered message id for reload hydration.
+    generateMessageId: newId,
     onFinish: async ({ responseMessage }) => {
       // Persist only when we have a quiz to attach the thread to.
       if (!quizId || !incomingUser || incomingUser.role !== 'user') return
-      const assistantParts = (responseMessage as unknown as { parts: unknown[] }).parts ?? []
-      const snapshot = extractQuizFromParts(assistantParts)
-      const userMessage: NewChatMessage = {
-        id: incomingUser.id,
+      const { userMessage, assistantMessage } = buildTurnMessages({
         quizId,
         userId: session.user.id,
-        role: 'user',
-        parts: (incomingUser as unknown as { parts: unknown[] }).parts ?? [],
         parentId: parentId ?? null,
-      }
-      const assistantMessage: NewChatMessage = {
-        id: responseMessage.id,
-        quizId,
-        userId: session.user.id,
-        role: 'assistant',
-        parts: assistantParts,
-        parentId: incomingUser.id,
-        quizSnapshot: snapshot ?? null,
-      }
+        incomingUser,
+        responseMessage,
+      })
       await persistTurn({ quizId, userId: session.user.id, userMessage, assistantMessage })
     },
     onError: (error) => {

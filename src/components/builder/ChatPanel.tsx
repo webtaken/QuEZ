@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import type { QuizPayload } from '@/lib/quiz-schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
 import { collectToolCallIds, dbRowToUIMessage, extractQuizFromParts } from '@/lib/chat-messages'
+import { newId } from '@/lib/ids'
 import { siblingInfo, switchSibling, buildActivePath, descendToLeaf } from '@/lib/chat-tree'
 import type { TreeNode } from '@/lib/chat-tree'
 
@@ -81,6 +82,9 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   const { messages, sendMessage, setMessages, regenerate, status, error } = useChat({
     id: quizId ?? 'new',
     messages: (initialMessages ?? []) as unknown as UIMessage[],
+    // User message ids land in the chat_messages.id uuid column, so generate
+    // uuids client-side (the SDK default emits short non-uuid nanoids).
+    generateId: newId,
     transport,
     onError: (err) => {
       console.error('[ChatPanel] useChat error raw:', err)
