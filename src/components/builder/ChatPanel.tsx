@@ -357,6 +357,16 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                 </div>
               )}
               {!isEditing && (
+                <>
+                {(() => {
+                  const n = tree.find((x) => x.id === msg.id)
+                  if (!n) return null
+                  return (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {n.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  )
+                })()}
                 <div className={cn(
                   'flex items-center gap-2 mt-1',
                   msg.role === 'user' ? 'justify-end' : 'justify-start'
@@ -397,6 +407,12 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                     </button>
                   )}
                   <button
+                    className="opacity-0 group-hover:opacity-100 text-xs text-muted-foreground transition-opacity"
+                    onClick={() => navigator.clipboard.writeText(getTextFromMessage(msg))}
+                  >
+                    Copy
+                  </button>
+                  <button
                     className="opacity-0 group-hover:opacity-100 text-xs text-destructive transition-opacity"
                     onClick={() => onDelete(msg.id)}
                     disabled={isLoading}
@@ -404,6 +420,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                     Delete
                   </button>
                 </div>
+                </>
               )}
             </div>
           )
@@ -412,6 +429,14 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
         {isLoading && (
           <div className="flex justify-start animate-fade-up">
             <TypingIndicator />
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="flex justify-start">
+            <Button size="sm" variant="outline" onClick={() => regenerate()}>
+              Retry
+            </Button>
           </div>
         )}
 
