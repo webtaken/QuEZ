@@ -33,7 +33,7 @@ function getTextFromMessage(message: UIMessage): string {
     .join('')
 }
 
-export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId = 'new', initialMessages }: ChatPanelProps) {
+export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, initialMessages }: ChatPanelProps) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const quizRef = useRef<QuizPayload | undefined>(initialQuiz)
@@ -56,8 +56,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId = '
         api: '/api/chat',
         body: () => ({
           ...(quizRef.current ? { existingQuiz: quizRef.current } : {}),
-          quizId,
-          parentId: leafIdRef.current,
+          ...(quizId ? { quizId, parentId: leafIdRef.current } : {}),
         }),
       }),
     [quizId]
@@ -65,7 +64,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId = '
   /* eslint-enable react-hooks/refs */
 
   const { messages, sendMessage, status, error } = useChat({
-    id: quizId,
+    id: quizId ?? 'new',
     messages: (initialMessages ?? []) as unknown as UIMessage[],
     transport,
     onError: (err) => {
