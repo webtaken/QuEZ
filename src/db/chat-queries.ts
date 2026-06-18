@@ -34,13 +34,19 @@ export async function persistTurn(args: {
   userMessage: NewChatMessage
   assistantMessage: NewChatMessage
 }): Promise<void> {
-  if (!(await assertOwner(args.quizId, args.userId))) return
+  if (!args.assistantMessage.id) throw new Error('assistantMessage.id required')
   await db.transaction(async (tx) => {
+    const [owned] = await tx
+      .select({ id: quizzes.id })
+      .from(quizzes)
+      .where(and(eq(quizzes.id, args.quizId), eq(quizzes.userId, args.userId)))
+      .limit(1)
+    if (!owned) throw new Error('quiz not found for user')
     await tx.insert(chatMessages).values(args.userMessage)
     await tx.insert(chatMessages).values(args.assistantMessage)
     await tx
       .update(quizzes)
-      .set({ activeLeafId: args.assistantMessage.id!, updatedAt: new Date() })
+      .set({ activeLeafId: args.assistantMessage.id, updatedAt: new Date() })
       .where(eq(quizzes.id, args.quizId))
   })
 }
@@ -83,18 +89,22 @@ export async function deleteSubtree(
     .where(eq(quizzes.id, quizId))
     .limit(1)
 
+  if (!q) return { ok: true, newLeafId: null }
+
   // ON DELETE CASCADE on parent_id removes the whole subtree.
   await db.delete(chatMessages).where(eq(chatMessages.id, messageId))
 
   // If the active leaf was inside the deleted subtree it no longer exists;
   // reseat to the deleted node's parent (caller re-descends to a leaf client-side
   // on next load via buildActivePath/descendToLeaf).
+  if (q.activeLeafId === null) return { ok: true, newLeafId: null }
+
   const remaining = await db
     .select({ id: chatMessages.id })
     .from(chatMessages)
-    .where(eq(chatMessages.id, q?.activeLeafId ?? ''))
+    .where(eq(chatMessages.id, q.activeLeafId))
     .limit(1)
-  let newLeafId = q?.activeLeafId ?? null
+  let newLeafId: string | null = q.activeLeafId
   if (remaining.length === 0) {
     newLeafId = target.parentId
     await db
