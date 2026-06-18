@@ -38,11 +38,25 @@ export default async function EditQuizPage(props: { params: Promise<{ id: string
     .filter((m): m is (typeof chatRows)[number] => !!m)
     .map((m) => dbRowToUIMessage({ id: m.id, role: m.role, parts: m.parts }))
 
+  const initialTree = chatRows.map((m) => ({
+    id: m.id,
+    parentId: m.parentId,
+    createdAt: m.createdAt.toISOString(),
+  }))
+
+  const initialRows = chatRows.map((m) => ({
+    id: m.id,
+    role: m.role,
+    parts: m.parts,
+  }))
+
   return (
     <QuizEditor
       initialQuiz={quiz}
       initialQuestions={quizQuestions}
       initialMessages={initialMessages}
+      initialTree={initialTree}
+      initialRows={initialRows}
     />
   )
 }

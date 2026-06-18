@@ -18,6 +18,8 @@ interface QuizEditorProps {
   initialQuiz: Quiz
   initialQuestions: Question[]
   initialMessages?: UIMsgLike[]
+  initialTree?: { id: string; parentId: string | null; createdAt: string }[]
+  initialRows?: { id: string; role: string; parts: unknown[] }[]
 }
 
 function blankQuestion(order: number): QuizQuestion {
@@ -52,7 +54,7 @@ function toPayload(q: Quiz, qs: Question[]): QuizPayload {
   }
 }
 
-export function QuizEditor({ initialQuiz, initialQuestions, initialMessages }: QuizEditorProps) {
+export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, initialTree, initialRows }: QuizEditorProps) {
   const router = useRouter()
   const [quiz, setQuiz] = useState<QuizPayload>(() => toPayload(initialQuiz, initialQuestions))
   const [dirty, setDirty] = useState(false)
@@ -162,6 +164,8 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages }: Q
           initialQuiz={quiz}
           quizId={initialQuiz.id}
           initialMessages={initialMessages}
+          initialTree={initialTree}
+          initialRows={initialRows}
         />
       </div>
 

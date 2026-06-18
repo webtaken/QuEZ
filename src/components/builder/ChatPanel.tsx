@@ -11,7 +11,9 @@ import { Send, Bot } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { QuizPayload } from '@/lib/quiz-schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
-import { collectToolCallIds } from '@/lib/chat-messages'
+import { collectToolCallIds, dbRowToUIMessage } from '@/lib/chat-messages'
+import { siblingInfo, switchSibling, buildActivePath } from '@/lib/chat-tree'
+import type { TreeNode } from '@/lib/chat-tree'
 
 interface ChatPanelProps {
   onQuizUpdate: (quiz: QuizPayload) => void
@@ -19,6 +21,8 @@ interface ChatPanelProps {
   initialPrompt?: string
   quizId?: string
   initialMessages?: UIMsgLike[]
+  initialTree?: { id: string; parentId: string | null; createdAt: string }[]
+  initialRows?: { id: string; role: string; parts: unknown[] }[]
 }
 
 const GREETING = `Hi! I'm your QuEZ AI builder. Tell me about the quiz you want to create.
@@ -34,20 +38,30 @@ function getTextFromMessage(message: UIMessage): string {
     .join('')
 }
 
-export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, initialMessages }: ChatPanelProps) {
+export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, initialMessages, initialTree, initialRows }: ChatPanelProps) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const quizRef = useRef<QuizPayload | undefined>(initialQuiz)
+
+  const [tree, setTree] = useState<TreeNode[]>(() =>
+    (initialTree ?? []).map((n) => ({ id: n.id, parentId: n.parentId, createdAt: new Date(n.createdAt) }))
+  )
+  const treeRef = useRef<TreeNode[]>(
+    (initialTree ?? []).map((n) => ({ id: n.id, parentId: n.parentId, createdAt: new Date(n.createdAt) }))
+  )
+  const rowsRef = useRef<{ id: string; role: string; parts: unknown[] }[]>(initialRows ?? [])
 
   useEffect(() => {
     quizRef.current = initialQuiz
   }, [initialQuiz])
 
-  const leafIdRef = useRef<string | null>(
+  const initialLeafId =
     initialMessages && initialMessages.length
       ? initialMessages[initialMessages.length - 1].id
       : null
-  )
+
+  const leafIdRef = useRef<string | null>(initialLeafId)
+  const [activeLeafId, setActiveLeafId] = useState<string | null>(initialLeafId)
 
   /* eslint-disable react-hooks/refs */
   // body callback is invoked at send-time, not render-time
@@ -64,7 +78,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   )
   /* eslint-enable react-hooks/refs */
 
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, setMessages, status, error } = useChat({
     id: quizId ?? 'new',
     messages: (initialMessages ?? []) as unknown as UIMessage[],
     transport,
@@ -81,7 +95,41 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
     },
     onFinish: ({ message }) => {
       leafIdRef.current = message.id
+      setActiveLeafId(message.id)
       console.log('[ChatPanel] onFinish — parts:', (message as unknown as { parts?: unknown[] }).parts?.length)
+      // Reconcile tree and rowsRef for any new messages not yet tracked
+      setMessages((prev) => {
+        let prevId: string | null = null
+        const newNodes: TreeNode[] = []
+        const newRows: { id: string; role: string; parts: unknown[] }[] = []
+        const existingIds = new Set(treeRef.current.map((n) => n.id))
+        const existingRowIds = new Set(rowsRef.current.map((r) => r.id))
+        for (const msg of prev) {
+          if (!existingIds.has(msg.id)) {
+            newNodes.push({ id: msg.id, parentId: prevId, createdAt: new Date() })
+          }
+          if (!existingRowIds.has(msg.id)) {
+            newRows.push({
+              id: msg.id,
+              role: msg.role,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              parts: (msg as any).parts ?? [],
+            })
+          }
+          prevId = msg.id
+        }
+        if (newNodes.length > 0) {
+          setTree((t) => {
+            const updated = [...t, ...newNodes]
+            treeRef.current = updated
+            return updated
+          })
+        }
+        if (newRows.length > 0) {
+          rowsRef.current = [...rowsRef.current, ...newRows]
+        }
+        return prev
+      })
     },
   })
 
@@ -143,6 +191,27 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
     }
   }
 
+  async function onSwitch(forkChildId: string, dir: -1 | 1) {
+    const newLeaf = switchSibling(tree, forkChildId, dir, leafIdRef.current ?? forkChildId)
+    if (!newLeaf) return
+    const res = await fetch(`/api/quizzes/${quizId}/active-leaf`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leafId: newLeaf }),
+    })
+    if (!res.ok) return
+    leafIdRef.current = newLeaf
+    setActiveLeafId(newLeaf)
+    const pathIds = buildActivePath(tree, newLeaf)
+    const byId = new Map(rowsRef.current.map((r) => [r.id, r]))
+    setMessages(
+      pathIds
+        .map((id) => byId.get(id))
+        .filter(Boolean)
+        .map((r) => dbRowToUIMessage(r as { id: string; role: string; parts: unknown[] })) as unknown as UIMessage[]
+    )
+  }
+
   return (
     <div className="flex flex-col h-full bg-card border-r border-border">
       {/* Header */}
@@ -168,12 +237,13 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
         {messages.map((msg) => {
           const text = getTextFromMessage(msg)
           if (!text && msg.role === 'assistant') return null
+          const info = siblingInfo(tree, msg.id, activeLeafId ?? msg.id)
           return (
             <div
               key={msg.id}
               className={cn(
-                'flex animate-fade-up',
-                msg.role === 'user' ? 'justify-end' : 'justify-start'
+                'flex flex-col animate-fade-up',
+                msg.role === 'user' ? 'items-end' : 'items-start'
               )}
             >
               <div
@@ -190,6 +260,23 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                   text
                 )}
               </div>
+              {info.count >= 2 && (
+                <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                  <button
+                    aria-label="Previous version"
+                    className="px-1 disabled:opacity-30"
+                    disabled={info.index <= 0}
+                    onClick={() => onSwitch(msg.id, -1)}
+                  >&#8249;</button>
+                  <span>{info.index + 1}/{info.count}</span>
+                  <button
+                    aria-label="Next version"
+                    className="px-1 disabled:opacity-30"
+                    disabled={info.index >= info.count - 1}
+                    onClick={() => onSwitch(msg.id, 1)}
+                  >&#8250;</button>
+                </div>
+              )}
             </div>
           )
         })}
