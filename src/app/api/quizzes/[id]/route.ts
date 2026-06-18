@@ -5,6 +5,7 @@ import { quizzes, questions } from '@/db/schema'
 import { and, eq } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { quizPayloadWithFlagsSchema } from '@/lib/quiz-schema'
+import { deleteQuiz } from '@/db/quiz-mutations'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -107,6 +108,24 @@ export async function PUT(
       )
     }
   })
+
+  return NextResponse.json({ id })
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { id } = await params
+  if (!UUID_RE.test(id)) {
+    return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+  }
+
+  const res = await deleteQuiz(id, session.user.id)
+  if (!res.ok) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   return NextResponse.json({ id })
 }
