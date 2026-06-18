@@ -42,7 +42,7 @@ export async function persistTurn(args: {
       .where(and(eq(quizzes.id, args.quizId), eq(quizzes.userId, args.userId)))
       .limit(1)
     if (!owned) throw new Error('quiz not found for user')
-    await tx.insert(chatMessages).values(args.userMessage)
+    await tx.insert(chatMessages).values(args.userMessage).onConflictDoNothing()
     await tx.insert(chatMessages).values(args.assistantMessage)
     await tx
       .update(quizzes)

@@ -78,7 +78,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   )
   /* eslint-enable react-hooks/refs */
 
-  const { messages, sendMessage, setMessages, status, error } = useChat({
+  const { messages, sendMessage, setMessages, regenerate, status, error } = useChat({
     id: quizId ?? 'new',
     messages: (initialMessages ?? []) as unknown as UIMessage[],
     transport,
@@ -147,6 +147,39 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   }, [status, messages.length, error])
 
   const isLoading = status === 'submitted' || status === 'streaming'
+
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editText, setEditText] = useState('')
+
+  function startEdit(msgId: string, current: string) {
+    setEditingId(msgId)
+    setEditText(current)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setEditText('')
+  }
+
+  function submitEdit(msgId: string) {
+    const text = editText.trim()
+    if (!text || isLoading) return
+    const node = treeRef.current.find((n) => n.id === msgId)
+    const parentId = node?.parentId ?? null
+    // Truncate the active path to the parent — the old branch stays in tree/rowsRef
+    const byId = new Map(rowsRef.current.map((r) => [r.id, r]))
+    const truncated = buildActivePath(treeRef.current, parentId)
+      .map((id) => byId.get(id))
+      .filter(Boolean)
+      .map((r) => dbRowToUIMessage(r as { id: string; role: string; parts: unknown[] })) as unknown as UIMessage[]
+    setMessages(truncated)
+    // Point leafIdRef to the parent so the transport sends parentId = parent (sibling branch)
+    leafIdRef.current = parentId
+    setActiveLeafId(parentId)
+    setEditingId(null)
+    setEditText('')
+    sendMessage({ role: 'user', parts: [{ type: 'text', text }] })
+  }
 
   // Forward each completed tool-updateQuiz exactly once
   const seenToolCallsRef = useRef<Set<string>>(
@@ -239,43 +272,90 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
           const text = getTextFromMessage(msg)
           if (!text && msg.role === 'assistant') return null
           const info = siblingInfo(tree, msg.id, activeLeafId ?? msg.id)
+          const isEditing = editingId === msg.id
           return (
             <div
               key={msg.id}
               className={cn(
-                'flex flex-col animate-fade-up',
+                'group flex flex-col animate-fade-up',
                 msg.role === 'user' ? 'items-end' : 'items-start'
               )}
             >
-              <div
-                className={cn(
-                  'max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed',
-                  msg.role === 'user'
-                    ? 'bg-accent-lime text-accent-lime-foreground rounded-tr-sm font-medium'
-                    : 'bg-secondary text-foreground rounded-tl-sm'
-                )}
-              >
-                {msg.role === 'assistant' ? (
-                  <ReactMarkdown>{text || '...'}</ReactMarkdown>
-                ) : (
-                  text
-                )}
-              </div>
-              {info.count >= 2 && (
-                <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                  <button
-                    aria-label="Previous version"
-                    className="px-1 disabled:opacity-30"
-                    disabled={info.index <= 0}
-                    onClick={() => onSwitch(msg.id, -1)}
-                  >&#8249;</button>
-                  <span>{info.index + 1}/{info.count}</span>
-                  <button
-                    aria-label="Next version"
-                    className="px-1 disabled:opacity-30"
-                    disabled={info.index >= info.count - 1}
-                    onClick={() => onSwitch(msg.id, 1)}
-                  >&#8250;</button>
+              {msg.role === 'user' && isEditing ? (
+                <div className="w-[85%] space-y-2">
+                  <Textarea
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    className="text-sm"
+                    rows={3}
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <Button size="sm" variant="ghost" onClick={cancelEdit}>Cancel</Button>
+                    <Button
+                      size="sm"
+                      onClick={() => submitEdit(msg.id)}
+                      disabled={!editText.trim() || isLoading}
+                    >
+                      Save &amp; rerun
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={cn(
+                    'max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed',
+                    msg.role === 'user'
+                      ? 'bg-accent-lime text-accent-lime-foreground rounded-tr-sm font-medium'
+                      : 'bg-secondary text-foreground rounded-tl-sm'
+                  )}
+                >
+                  {msg.role === 'assistant' ? (
+                    <ReactMarkdown>{text || '...'}</ReactMarkdown>
+                  ) : (
+                    text
+                  )}
+                </div>
+              )}
+              {!isEditing && (
+                <div className={cn(
+                  'flex items-center gap-2 mt-1',
+                  msg.role === 'user' ? 'justify-end' : 'justify-start'
+                )}>
+                  {info.count >= 2 && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <button
+                        aria-label="Previous version"
+                        className="px-1 disabled:opacity-30"
+                        disabled={info.index <= 0}
+                        onClick={() => onSwitch(msg.id, -1)}
+                      >&#8249;</button>
+                      <span>{info.index + 1}/{info.count}</span>
+                      <button
+                        aria-label="Next version"
+                        className="px-1 disabled:opacity-30"
+                        disabled={info.index >= info.count - 1}
+                        onClick={() => onSwitch(msg.id, 1)}
+                      >&#8250;</button>
+                    </div>
+                  )}
+                  {msg.role === 'user' && (
+                    <button
+                      className="opacity-0 group-hover:opacity-100 text-xs text-muted-foreground transition-opacity"
+                      onClick={() => startEdit(msg.id, text)}
+                      disabled={isLoading}
+                    >
+                      Edit
+                    </button>
+                  )}
+                  {msg.role === 'assistant' && (
+                    <button
+                      className="opacity-0 group-hover:opacity-100 text-xs text-muted-foreground transition-opacity"
+                      onClick={() => regenerate({ messageId: msg.id })}
+                      disabled={isLoading}
+                    >
+                      Regenerate
+                    </button>
+                  )}
                 </div>
               )}
             </div>
