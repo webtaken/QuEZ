@@ -22,7 +22,10 @@ quiz content in real / recent facts when the user wants it.
   below the text — clickable chips (title + domain/favicon + link). No inline `[1]`
   citations.
 - **Cost control:** search config is attached **only when the toggle is on**, so cost is
-  incurred only when the user opts in. `max_results: 5` pins per-search cost at ~$0.005.
+  incurred only when the user opts in. `maxResults: 5` is a **best-effort hint** — a live
+  probe showed the provider can still return ~15 results, so realistic per-search cost is
+  **~$0.005–0.015** (Exa: $0.005 up to 10 results, +$0.001 each beyond), not a hard $0.005.
+  The billing cap can only be enforced provider-side; the typed tool exposes no strict knob.
 
 **Non-goals (YAGNI):** inline numbered citations; per-source result caching; an engine
 picker UI; a usage/cost dashboard; forcing search on every message.
@@ -50,7 +53,8 @@ picker UI; a usage/cost dashboard; forcing search on every message.
 
 1. The current model (`deepseek/deepseek-v4-flash`) has **no native search**, so OpenRouter
    uses the **Exa fallback** at **~$0.005 per search** (up to 10 results; +$0.001 per
-   extra result). Capping `maxResults: 5` keeps it flat at ~$0.005.
+   extra result). `maxResults: 5` is a best-effort hint — a live probe returned ~15 results,
+   so budget **~$0.005–0.015 per searched message** (see §1, §6).
 2. The provider exposes a **typed server tool**: `openrouter.tools.webSearch(args)` where
    `args: { maxResults?: number; searchPrompt?: string; engine?: 'auto'|'native'|'exa' }`.
    Passed in `streamText({ tools })`, it is **provider-executed** and **model-invoked** —
@@ -130,9 +134,16 @@ source chips). No data fetching.
 
 ## 6. Error handling & cost guards
 
-- **`max_results: 5`** caps per-search cost (~$0.005).
-- **Per-turn search cap:** bound search invocations per message via the `streamText` step
-  limit (`stopWhen`) so one user message can't fan out into many billed searches.
+- **`maxResults: 5`** is the per-search cost lever, but it is a non-strict hint (see §1) —
+  realistic cost ~$0.005–0.015 per searched message.
+- **No client-side `stopWhen` cap needed.** The `web_search` tool is **provider-executed**:
+  OpenRouter runs the search inside a single completion (a live probe confirmed one
+  `streamText` step — `start-step:1, finish-step:1`). There is no client tool-result round
+  trip to fan out, so a `streamText` step limit would not constrain search count. (This
+  supersedes an earlier draft of this section that called for `stopWhen`.)
+- **Optional UI bound (follow-up):** since the provider may return more results than
+  `maxResults`, the rendered chip strip can be capped client-side (e.g. first N chips) for
+  visual tidiness — a cosmetic bound, not a cost control.
 - **Search/tool failure:** degrade gracefully — the model answers without sources; no hard
   error surfaced to the user. Log server-side.
 - **Toggle on but no search:** model judged it unnecessary → no Sources strip. Normal, not an
