@@ -1,7 +1,8 @@
-import { streamText, tool, convertToModelMessages, type UIMessage } from 'ai'
+import { streamText, convertToModelMessages, type UIMessage } from 'ai'
 import { headers } from 'next/headers'
 import { openrouter } from '@openrouter/ai-sdk-provider'
-import { quizPayloadSchema, type QuizPayload } from '@/lib/quiz-schema'
+import { type QuizPayload } from '@/lib/quiz-schema'
+import { buildChatTools } from '@/lib/chat-tools'
 import { auth } from '@/lib/auth'
 import { persistTurn } from '@/db/chat-queries'
 import { buildTurnMessages } from '@/lib/chat-messages'
@@ -29,11 +30,13 @@ export async function POST(req: Request) {
     existingQuiz,
     quizId,
     parentId,
+    webSearch,
   }: {
     messages: UIMessage[]
     existingQuiz?: QuizPayload
     quizId?: string
     parentId?: string | null
+    webSearch?: boolean
   } = await req.json()
 
   const modelId = 'deepseek/deepseek-v4-flash'
@@ -57,16 +60,7 @@ When calling updateQuiz, return the FULL updated quiz including fields the user 
     model: openrouter(modelId),
     system,
     messages: await convertToModelMessages(messages),
-    tools: {
-      updateQuiz: tool({
-        description:
-          'Update the quiz preview panel with structured quiz data. Call this whenever building or updating a quiz.',
-        inputSchema: quizPayloadSchema,
-        execute: async (quizData) => {
-          return { success: true, quiz: quizData }
-        },
-      }),
-    },
+    tools: buildChatTools({ webSearch: webSearch ?? false }),
   })
 
   return result.toUIMessageStreamResponse({
@@ -75,6 +69,7 @@ When calling updateQuiz, return the FULL updated quiz including fields the user 
     // stream start chunk so useChat adopts the same id client-side, keeping
     // chat_messages.id === the rendered message id for reload hydration.
     generateMessageId: newId,
+    sendSources: true,
     onFinish: async ({ responseMessage }) => {
       // Persist only when we have a quiz to attach the thread to.
       if (!quizId || !incomingUser || incomingUser.role !== 'user') return
