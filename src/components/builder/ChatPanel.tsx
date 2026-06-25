@@ -48,9 +48,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   const [webSearch, setWebSearch] = useState(
     () => typeof window !== 'undefined' && localStorage.getItem('quez-web-search') === '1'
   )
-  const webSearchRef = useRef(
-    typeof window !== 'undefined' && localStorage.getItem('quez-web-search') === '1'
-  )
+  const webSearchRef = useRef(webSearch)
   // Keep the ref in sync with state (writes ref only — does not call setState, no cascading render).
   useEffect(() => { webSearchRef.current = webSearch }, [webSearch])
   function toggleWebSearch() {
