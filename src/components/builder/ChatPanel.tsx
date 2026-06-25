@@ -7,14 +7,15 @@ import ReactMarkdown from 'react-markdown'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { TypingIndicator } from './TypingIndicator'
-import { Send, Bot } from 'lucide-react'
+import { Send, Bot, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { QuizPayload } from '@/lib/quiz-schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
-import { collectToolCallIds, dbRowToUIMessage, extractQuizFromParts } from '@/lib/chat-messages'
+import { collectToolCallIds, dbRowToUIMessage, extractQuizFromParts, extractSources } from '@/lib/chat-messages'
 import { newId } from '@/lib/ids'
 import { siblingInfo, switchSibling, buildActivePath, descendToLeaf } from '@/lib/chat-tree'
 import type { TreeNode } from '@/lib/chat-tree'
+import { SourceChips } from './SourceChips'
 
 interface ChatPanelProps {
   onQuizUpdate: (quiz: QuizPayload) => void
@@ -44,6 +45,20 @@ function getTextFromMessage(message: UIMessage): string {
 
 export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, initialMessages, initialTree, initialRows, onMessagesChange }: ChatPanelProps) {
   const [input, setInput] = useState('')
+  const [webSearch, setWebSearch] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem('quez-web-search') === '1'
+  )
+  const webSearchRef = useRef(webSearch)
+  // Keep the ref in sync with state (writes ref only — does not call setState, no cascading render).
+  useEffect(() => { webSearchRef.current = webSearch }, [webSearch])
+  function toggleWebSearch() {
+    setWebSearch((prev) => {
+      const next = !prev
+      webSearchRef.current = next
+      localStorage.setItem('quez-web-search', next ? '1' : '0')
+      return next
+    })
+  }
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const quizRef = useRef<QuizPayload | undefined>(initialQuiz)
 
@@ -76,6 +91,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
         body: () => ({
           ...(quizRef.current ? { existingQuiz: quizRef.current } : {}),
           ...(quizId ? { quizId, parentId: leafIdRef.current } : {}),
+          webSearch: webSearchRef.current,
         }),
       }),
     [quizId]
@@ -393,6 +409,13 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                   )}
                 </div>
               )}
+              {msg.role === 'assistant' &&
+                (() => {
+                  const sources = extractSources(
+                    (msg as unknown as { parts?: unknown[] }).parts ?? []
+                  )
+                  return sources.length ? <SourceChips sources={sources} /> : null
+                })()}
               {!isEditing && (
                 <>
                 {(() => {
@@ -499,6 +522,22 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
       {/* Input */}
       <div className="flex-shrink-0 border-t border-border p-4">
         <div className="flex gap-2 items-end">
+          <Button
+            type="button"
+            onClick={toggleWebSearch}
+            size="icon"
+            variant="ghost"
+            aria-pressed={webSearch}
+            title={webSearch ? 'Web search on' : 'Web search off'}
+            className={cn(
+              'shrink-0 w-11 h-11 border border-border',
+              webSearch
+                ? 'text-accent-lime bg-accent-lime/15 border-accent-lime/40'
+                : 'text-muted-foreground'
+            )}
+          >
+            <Globe className="w-4 h-4" />
+          </Button>
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}

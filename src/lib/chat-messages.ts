@@ -113,3 +113,20 @@ export function collectToolCallIds(messages: { parts: unknown[] }[]): string[] {
   }
   return ids
 }
+
+export type ChatSource = { url: string; title: string }
+
+// Normalize native AI SDK `source-url` parts (produced by the OpenRouter provider
+// from web-search url_citation annotations) into a deduped, render-ready list.
+export function extractSources(parts: unknown[]): ChatSource[] {
+  const seen = new Set<string>()
+  const out: ChatSource[] = []
+  for (const part of parts ?? []) {
+    const p = part as { type?: string; url?: string; title?: string }
+    if (p.type !== 'source-url' || !p.url) continue
+    if (seen.has(p.url)) continue
+    seen.add(p.url)
+    out.push({ url: p.url, title: p.title?.trim() || p.url })
+  }
+  return out
+}

@@ -5,6 +5,7 @@ import {
   collectToolCallIds,
   buildTurnMessages,
   buildChatRowsFromMessages,
+  extractSources,
 } from './chat-messages'
 import { newId } from './ids'
 
@@ -121,5 +122,36 @@ describe('buildChatRowsFromMessages', () => {
         messages: [{ id: 'aB3xZ9q', role: 'user', parts: [] }],
       })
     ).toThrow(/uuid/i)
+  })
+})
+
+describe('extractSources', () => {
+  const src = (url: string, title?: string) => ({ type: 'source-url', sourceId: url, url, title })
+
+  it('returns url + title from source-url parts', () => {
+    expect(
+      extractSources([{ type: 'text', text: 'hi' }, src('https://a.com/x', 'A Title')])
+    ).toEqual([{ url: 'https://a.com/x', title: 'A Title' }])
+  })
+
+  it('falls back to the url when title is missing or blank', () => {
+    expect(extractSources([src('https://a.com/x', '   ')])).toEqual([
+      { url: 'https://a.com/x', title: 'https://a.com/x' },
+    ])
+    expect(extractSources([src('https://b.com')])).toEqual([
+      { url: 'https://b.com', title: 'https://b.com' },
+    ])
+  })
+
+  it('dedupes by url, keeping first occurrence', () => {
+    expect(
+      extractSources([src('https://a.com', 'First'), src('https://a.com', 'Second')])
+    ).toEqual([{ url: 'https://a.com', title: 'First' }])
+  })
+
+  it('ignores non-source and malformed parts; empty input → []', () => {
+    expect(extractSources([{ type: 'tool-updateQuiz' }, { type: 'source-url' }])).toEqual([])
+    expect(extractSources([])).toEqual([])
+    expect(extractSources(undefined as unknown as unknown[])).toEqual([])
   })
 })
