@@ -45,76 +45,82 @@ picker UI; a usage/cost dashboard; forcing search on every message.
 - **Versions:** `ai@^6`, `@ai-sdk/react@^3`, `@openrouter/ai-sdk-provider@^2.9.0`,
   `next@16`, `react@19`.
 
-**Two confirmed facts that shape this design:**
+**Confirmed facts that shape this design** (verified against installed
+`@openrouter/ai-sdk-provider@2.9.0` and `ai@6.0.174` in `node_modules`):
 
 1. The current model (`deepseek/deepseek-v4-flash`) has **no native search**, so OpenRouter
    uses the **Exa fallback** at **~$0.005 per search** (up to 10 results; +$0.001 per
-   extra result). Capping `max_results: 5` keeps it flat at ~$0.005.
-2. OpenRouter returns citations via **`providerMetadata.openrouter.annotations`**
-   (array of `{ url, title, content }`) — **not** as native AI SDK `source` parts. We must
-   extract annotations ourselves and attach them to the assistant message.
+   extra result). Capping `maxResults: 5` keeps it flat at ~$0.005.
+2. The provider exposes a **typed server tool**: `openrouter.tools.webSearch(args)` where
+   `args: { maxResults?: number; searchPrompt?: string; engine?: 'auto'|'native'|'exa' }`.
+   Passed in `streamText({ tools })`, it is **provider-executed** and **model-invoked** —
+   the model calls it only when it judges the query needs facts. This *is* the "may-search"
+   behavior. (The deprecated `plugins:[{id:'web'}]` / `web_search_options` settings force a
+   search every request — wrong for may-search.)
+3. The provider **auto-converts** OpenRouter `url_citation` annotations into **native AI SDK
+   `source-url` parts**: `{ type: 'source-url', sourceId, url, title, providerMetadata }`.
+   We do **not** extract from `providerMetadata` ourselves. Sending these to the client just
+   requires `sendSources: true` on `toUIMessageStreamResponse`. They then live in
+   `message.parts` like any other part — so existing `parts` JSONB persistence carries them
+   end-to-end with **no schema change and no synthetic part**.
 
 ---
 
 ## 3. Mechanism — enabling search
 
-Prefer the **`openrouter:web_search` server tool** (model-invoked → matches "may-search").
-The deprecated `plugins: [{ id: 'web' }]` form auto-searches **every** request (= forced),
-which contradicts the chosen behavior.
+Use the typed **`openrouter.tools.webSearch({ maxResults: 5 })`** server tool
+(model-invoked → matches "may-search").
 
-- When `webSearch === true`, attach the OpenRouter web-search server tool to the
-  `streamText` request with `{ max_results: 5 }`, alongside the existing `updateQuiz` tool.
-- When `webSearch === false`, the request is unchanged from today (no search config, no
+- When `webSearch === true`, include the web-search server tool in the `streamText` `tools`
+  record alongside the existing `updateQuiz` tool.
+- When `webSearch === false`, the `tools` record is exactly as today (no search tool, no
   cost).
+- Set `sendSources: true` on `toUIMessageStreamResponse` so the auto-generated `source-url`
+  parts reach the client.
 
-> ⚠️ **Implementation-verification item (highest-risk unknown):** the exact wiring of the
-> `openrouter:web_search` server tool through `@openrouter/ai-sdk-provider` v2.9.0 (whether
-> it is passed via `tools`, `providerOptions.openrouter`, or `extraBody`). The
-> implementation plan **must** verify this against the installed provider's types/source in
-> `node_modules` before coding.
->
-> **Documented fallback:** if the server tool cannot be wired cleanly in v2.9.0, fall back to
-> `plugins: [{ id: 'web', max_results: 5 }]` via `extraBody` on the model factory. Trade-off:
-> the plugin searches more eagerly (closer to "force"), but cost is still gated because the
-> config is only attached when the toggle is on. Note this deviation in the plan if taken.
+Because the tool is provider-executed, OpenRouter runs the search and the model's response
+already incorporates the results in a single completion — no extra `streamText` step or
+`stopWhen` change is required (the search tool has no client-side `execute`).
+
+> ⚠️ **One integration risk to smoke-test:** the exact tool key the provider expects in the
+> `tools` record, and confirming `source-url` parts actually arrive in the **streaming**
+> path (the provider's annotation→source conversion was verified in the non-streaming path).
+> The plan's final task is a live smoke test (toggle on, ask a current-events question,
+> confirm chips appear) that catches both.
 
 ---
 
 ## 4. Data flow & persistence (no DB migration)
 
-The key constraint: sources arrive in `providerMetadata`, but the app renders and persists
-from `message.parts`. Bridge the two by injecting a **synthetic part** so the existing
-`parts` JSONB pipeline carries sources end-to-end with **no schema change**.
+Sources travel as native `source-url` parts — no synthetic part, no metadata extraction.
 
 Flow:
 
 1. Toggle on → `ChatPanel` includes `webSearch: true` in the transport request body.
-2. Route reads `webSearch`; if true, attaches the web-search server tool to `streamText`.
-3. After generation, read `providerMetadata.openrouter.annotations` and map to
-   `sources: Array<{ url: string; title: string; snippet?: string }>` (dedupe by URL).
-4. Inject a synthetic part into the assistant message:
-   `{ type: 'data-sources', data: sources }`. (Mechanism: a custom data part written into
-   the UI message stream — e.g. via `createUIMessageStream` + `writer.write(...)` merged
-   with `result.toUIMessageStream()`, or the AI SDK 6 equivalent confirmed during
-   implementation.)
-5. The part lands in `message.parts` → `persistTurn` writes it into `chat_messages.parts`
-   unchanged. **No migration.**
-6. On reload, chips re-render from the persisted `data-sources` part automatically.
+2. Route reads `webSearch`; if true, includes `openrouter.tools.webSearch({ maxResults: 5 })`
+   in the `streamText` `tools` record. Sets `sendSources: true` on the response.
+3. The provider converts `url_citation` annotations into `source-url` parts and the SDK
+   streams them into the assistant `message.parts`.
+4. `persistTurn` already writes `responseMessage.parts` into `chat_messages.parts` (JSONB) —
+   `source-url` parts ride along unchanged. **No migration.**
+5. On reload, `dbRowToUIMessage` returns the stored `parts` (including `source-url`), and
+   `ChatPanel` renders chips from them.
 
-**Why a part, not message metadata:** the codebase already persists and renders `parts`;
-adding a `metadata` column would touch the schema, `persistTurn`, the load path, and render.
-A synthetic part reuses all of it.
+A small pure helper `extractSources(parts)` normalizes `source-url` parts into
+`{ url, title }[]` (deduped by URL) for rendering — the only new logic, and it is unit-tested.
 
 ---
 
 ## 5. Frontend — `ChatPanel.tsx`
 
 - **Toggle:** a small button beside the chat input. State `webSearch: boolean`, persisted to
-  `localStorage` (default off). Active styling when on.
-- **Send:** add `webSearch` to the transport request body (same place
+  `localStorage` (default off). Active styling when on. A `webSearchRef` mirrors the state so
+  the existing `transport.body` callback (which reads refs at send-time) sees the current
+  value.
+- **Send:** add `webSearch: webSearchRef.current` to the transport request body (same place
   `existingQuiz` / `quizId` are attached).
-- **Render:** in the per-message render loop, detect `part.type === 'data-sources'` and
-  render a new `<SourceChips sources={part.data} />` component below the message text.
+- **Render:** for each assistant message, compute `extractSources(parts)` and, when
+  non-empty, render `<SourceChips sources={...} />` below the message text.
   Chip = favicon (from domain) + title + opens `url` in a new tab.
 
 **New component:** `SourceChips` — small, presentational, one purpose (render a list of
@@ -139,19 +145,20 @@ source chips). No data fetching.
 
 | File | Change |
 |------|--------|
-| `src/app/api/chat/route.ts` | Read `webSearch` flag; attach web-search server tool when on; extract annotations; inject `data-sources` part; per-turn search cap |
-| `src/components/builder/ChatPanel.tsx` | Toggle button + `localStorage` state; add `webSearch` to request body; render `data-sources` parts |
+| `src/lib/chat-tools.ts` (new) | `buildChatTools({ webSearch })` — assembles the `streamText` `tools` record; adds the web-search server tool when on |
+| `src/lib/chat-messages.ts` | Add `extractSources(parts)` helper |
+| `src/app/api/chat/route.ts` | Read `webSearch` flag; use `buildChatTools`; set `sendSources: true` |
 | `src/components/builder/SourceChips.tsx` (new) | Presentational source-chips component |
-| (no schema change) | `data-sources` rides existing `parts` JSONB |
+| `src/components/builder/ChatPanel.tsx` | Toggle button + `localStorage` state + ref; add `webSearch` to request body; render `<SourceChips>` from `extractSources(parts)` |
+| (no schema change) | `source-url` parts ride existing `parts` JSONB |
 
 ---
 
-## 8. Open verification items for the plan
+## 8. Verification
 
-1. **Server-tool wiring** in `@openrouter/ai-sdk-provider` v2.9.0 (Section 3) — verify
-   against installed types/source before coding; fall back to the `web` plugin if needed.
-2. **Custom data-part injection** API in `ai@6` (Section 4 step 4) — confirm the exact
-   `createUIMessageStream` / writer pattern that merges with `streamText`'s
-   `toUIMessageStream()` and still fires the existing `onFinish` persistence.
-3. **`providerMetadata` access point** — confirm whether annotations are read from the
-   streamed result's resolved `providerMetadata` promise or inside `onFinish`.
+Pure logic is unit-tested (vitest, node env): `extractSources`, `buildChatTools`. UI
+(`SourceChips`, `ChatPanel` toggle/render) and the live OpenRouter integration have no unit
+harness (vitest is node-only, no testing-library) → verified by `next build` + `eslint` +
+a **live smoke test**: toggle web search on, ask a current-events question, confirm the
+model searches, source chips render, and chips persist across reload. The smoke test also
+confirms the two integration unknowns from Section 3 (tool key + streaming source parts).
