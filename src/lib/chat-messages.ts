@@ -72,6 +72,37 @@ export function buildTurnMessages(args: {
   }
 }
 
+// Persist a linear chat (the active path from the new-quiz page, which has no
+// branches yet) as chat_messages rows: each message's parentId points at the
+// previous one, so the editor's buildActivePath reconstructs the same order.
+// active_leaf_id should be set to the last returned row's id.
+export function buildChatRowsFromMessages(args: {
+  quizId: string
+  userId: string
+  messages: { id?: string; role?: string; parts?: unknown[] }[]
+}): NewChatMessage[] {
+  const rows: NewChatMessage[] = []
+  let parentId: string | null = null
+  for (const m of args.messages) {
+    if (!isUuid(m.id)) {
+      throw new Error(`chat message id must be a uuid, got: ${String(m.id)}`)
+    }
+    const role = m.role === 'assistant' ? 'assistant' : 'user'
+    const parts = m.parts ?? []
+    rows.push({
+      id: m.id,
+      quizId: args.quizId,
+      userId: args.userId,
+      role,
+      parts,
+      parentId,
+      quizSnapshot: role === 'assistant' ? (extractQuizFromParts(parts) ?? null) : null,
+    })
+    parentId = m.id
+  }
+  return rows
+}
+
 export function collectToolCallIds(messages: { parts: unknown[] }[]): string[] {
   const ids: string[] = []
   for (const msg of messages) {

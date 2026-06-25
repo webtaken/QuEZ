@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { db } from '@/db'
-import { quizzes, questions, users } from '@/db/schema'
+import { quizzes, questions, users, chatMessages } from '@/db/schema'
 import { and, count, eq, ilike, or, sql } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { quizPayloadWithFlagsSchema } from '@/lib/quiz-schema'
+import { buildChatRowsFromMessages } from '@/lib/chat-messages'
+import { isUuid } from '@/lib/ids'
 
 const PAGE_SIZE = 12
 
@@ -87,6 +89,27 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Optional: carry the new-quiz chat history into the saved quiz so it
+  // hydrates in the editor. The /new page has no quizId to persist with during
+  // generation, so the conversation only exists client-side until this save.
+  const rawMessages: unknown = json.messages
+  if (rawMessages !== undefined && !Array.isArray(rawMessages)) {
+    return NextResponse.json({ error: 'messages must be an array' }, { status: 400 })
+  }
+  const incomingMessages: unknown[] = (rawMessages as unknown[]) ?? []
+  for (const m of incomingMessages) {
+    const msg = m as { id?: unknown; role?: unknown; parts?: unknown }
+    if (
+      !msg ||
+      typeof msg !== 'object' ||
+      !isUuid(msg.id) ||
+      (msg.role !== 'user' && msg.role !== 'assistant') ||
+      !Array.isArray(msg.parts)
+    ) {
+      return NextResponse.json({ error: 'invalid chat messages' }, { status: 400 })
+    }
+  }
+
   const id = await db.transaction(async (tx) => {
     const [quiz] = await tx
       .insert(quizzes)
@@ -116,6 +139,19 @@ export async function POST(req: NextRequest) {
           timeLimit: q.timeLimit,
         }))
       )
+    }
+
+    if (incomingMessages.length) {
+      const rows = buildChatRowsFromMessages({
+        quizId: quiz.id,
+        userId: session.user.id,
+        messages: incomingMessages as { id: string; role: string; parts: unknown[] }[],
+      })
+      await tx.insert(chatMessages).values(rows)
+      await tx
+        .update(quizzes)
+        .set({ activeLeafId: rows[rows.length - 1].id })
+        .where(eq(quizzes.id, quiz.id))
     }
 
     return quiz.id

@@ -4,6 +4,7 @@ import {
   extractQuizFromParts,
   collectToolCallIds,
   buildTurnMessages,
+  buildChatRowsFromMessages,
 } from './chat-messages'
 import { newId } from './ids'
 
@@ -85,5 +86,40 @@ describe('buildTurnMessages', () => {
     expect(assistantMessage.parentId).toBe(userMsgId)
     expect(assistantMessage.role).toBe('assistant')
     expect(assistantMessage.quizSnapshot).toEqual(quiz)
+  })
+})
+
+describe('buildChatRowsFromMessages', () => {
+  it('returns [] for no messages', () => {
+    expect(buildChatRowsFromMessages({ quizId: newId(), userId: 'u', messages: [] })).toEqual([])
+  })
+
+  it('links rows into a linear parent chain in order; assistant snapshot extracted', () => {
+    const a = newId()
+    const b = newId()
+    const c = newId()
+    const rows = buildChatRowsFromMessages({
+      quizId: newId(),
+      userId: 'u',
+      messages: [
+        { id: a, role: 'user', parts: [{ type: 'text', text: 'hi' }] },
+        { id: b, role: 'assistant', parts: [toolPart] },
+        { id: c, role: 'user', parts: [] },
+      ],
+    })
+    expect(rows.map((r) => r.id)).toEqual([a, b, c])
+    expect(rows.map((r) => r.parentId)).toEqual([null, a, b])
+    expect(rows[0].quizSnapshot).toBeNull()
+    expect(rows[1].quizSnapshot).toEqual(quiz)
+  })
+
+  it('throws when a message id is not a uuid', () => {
+    expect(() =>
+      buildChatRowsFromMessages({
+        quizId: newId(),
+        userId: 'u',
+        messages: [{ id: 'aB3xZ9q', role: 'user', parts: [] }],
+      })
+    ).toThrow(/uuid/i)
   })
 })

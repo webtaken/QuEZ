@@ -24,6 +24,9 @@ interface ChatPanelProps {
   initialMessages?: UIMsgLike[]
   initialTree?: { id: string; parentId: string | null; createdAt: string }[]
   initialRows?: { id: string; role: string; parts: unknown[]; quizSnapshot?: unknown }[]
+  // Reports the current visible conversation (active path). Used by the
+  // new-quiz page to persist chat history when the quiz is first saved.
+  onMessagesChange?: (messages: UIMsgLike[]) => void
 }
 
 const GREETING = `Hi! I'm your QuEZ AI builder. Tell me about the quiz you want to create.
@@ -39,7 +42,7 @@ function getTextFromMessage(message: UIMessage): string {
     .join('')
 }
 
-export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, initialMessages, initialTree, initialRows }: ChatPanelProps) {
+export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, initialMessages, initialTree, initialRows, onMessagesChange }: ChatPanelProps) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const quizRef = useRef<QuizPayload | undefined>(initialQuiz)
@@ -151,6 +154,18 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   useEffect(() => {
     console.log('[ChatPanel] status:', status, 'messages:', messages.length, 'error:', error?.message)
   }, [status, messages.length, error])
+
+  // Report the current conversation upward (new-quiz page persists it on save).
+  useEffect(() => {
+    if (!onMessagesChange) return
+    onMessagesChange(
+      messages.map((m) => ({
+        id: m.id,
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        parts: (m as unknown as { parts?: unknown[] }).parts ?? [],
+      }))
+    )
+  }, [messages, onMessagesChange])
 
   const isLoading = status === 'submitted' || status === 'streaming'
 

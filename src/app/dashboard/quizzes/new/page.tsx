@@ -1,17 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChatPanel } from '@/components/builder/ChatPanel'
 import { QuizPreview } from '@/components/builder/QuizPreview'
 import { toast } from 'sonner'
 import type { QuizPayload } from '@/lib/quiz-schema'
+import type { UIMsgLike } from '@/lib/chat-messages'
 
 export default function NewQuizPage() {
   const router = useRouter()
   const [quiz, setQuiz] = useState<QuizPayload | null>(null)
   const [saving, setSaving] = useState(false)
   const [initialPrompt, setInitialPrompt] = useState<string | undefined>(undefined)
+  const messagesRef = useRef<UIMsgLike[]>([])
+  const onMessagesChange = useCallback((m: UIMsgLike[]) => {
+    messagesRef.current = m
+  }, [])
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search).get('prompt')?.trim()
@@ -30,7 +35,7 @@ export default function NewQuizPage() {
       const res = await fetch('/api/quizzes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...quiz, isPublic }),
+        body: JSON.stringify({ ...quiz, isPublic, messages: messagesRef.current }),
       })
 
       if (!res.ok) throw new Error('Failed to save quiz')
@@ -51,7 +56,7 @@ export default function NewQuizPage() {
     <div className="flex h-screen">
       {/* Chat — 28% */}
       <div className="w-[28%] min-w-[280px] max-w-[380px]">
-        <ChatPanel onQuizUpdate={setQuiz} initialPrompt={initialPrompt} />
+        <ChatPanel onQuizUpdate={setQuiz} initialPrompt={initialPrompt} onMessagesChange={onMessagesChange} />
       </div>
       {/* Preview — rest */}
       <div className="flex-1 overflow-hidden">
