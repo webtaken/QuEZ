@@ -122,10 +122,38 @@ export const chatMessages = pgTable(
   ]
 )
 
+export const attachments = pgTable(
+  'attachments',
+  {
+    id: uuid('id').primaryKey(), // client-generated uuid (newId)
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    quizId: uuid('quiz_id').references(() => quizzes.id, { onDelete: 'cascade' }), // null until first save
+    filename: text('filename').notNull(),
+    mimeType: text('mime_type').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    r2Key: text('r2_key').notNull(),
+    kind: text('kind').notNull(), // 'pdf' | 'docx' | 'pptx' | 'xlsx' | 'text' | 'image'
+    status: text('status').notNull().default('pending'), // 'pending' | 'ready' | 'error'
+    extractedText: text('extracted_text'),
+    errorMessage: text('error_message'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    meta: jsonb('meta').$type<Record<string, any>>(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => [
+    index('attachments_quiz_id_idx').on(t.quizId),
+    index('attachments_user_id_idx').on(t.userId),
+  ]
+)
+
 export type User = typeof users.$inferSelect
 export type Quiz = typeof quizzes.$inferSelect
 export type Question = typeof questions.$inferSelect
 export type ChatMessage = typeof chatMessages.$inferSelect
+export type Attachment = typeof attachments.$inferSelect
 export type NewQuiz = typeof quizzes.$inferInsert
 export type NewQuestion = typeof questions.$inferInsert
 export type NewChatMessage = typeof chatMessages.$inferInsert
+export type NewAttachment = typeof attachments.$inferInsert
