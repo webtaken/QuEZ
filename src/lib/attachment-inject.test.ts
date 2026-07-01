@@ -33,4 +33,17 @@ describe('buildAttachmentSystemBlock', () => {
     expect(block).toContain('…[truncated]')
     expect(block.length).toBeLessThan(50_000)
   })
+  it('enforces the total char cap across multiple attachments', () => {
+    const TOTAL_CHAR_CAP = 120_000
+    const PREAMBLE =
+      'The user attached these materials. Use them as the primary source for building or updating the quiz.\n\n'
+    const block = buildAttachmentSystemBlock([
+      { id: 'a1', filename: 'one.pdf', kind: 'pdf', extractedText: 'x'.repeat(50_000) },
+      { id: 'a2', filename: 'two.pdf', kind: 'pdf', extractedText: 'y'.repeat(50_000) },
+      { id: 'a3', filename: 'three.pdf', kind: 'pdf', extractedText: 'z'.repeat(50_000) },
+    ])
+    const sectionsLength = block.length - PREAMBLE.length
+    expect(sectionsLength).toBeLessThanOrEqual(TOTAL_CHAR_CAP)
+    expect(block).toContain('…[truncated]')
+  })
 })

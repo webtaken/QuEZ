@@ -19,6 +19,7 @@ export function collectAttachmentIds(messages: { parts?: unknown[] }[]): string[
   const seen = new Set<string>()
   for (const m of messages ?? []) {
     for (const part of m.parts ?? []) {
+      if (!part || typeof part !== 'object') continue
       const p = part as { type?: string; id?: string }
       if (p.type === 'data-attachment' && typeof p.id === 'string' && !seen.has(p.id)) {
         seen.add(p.id)
@@ -34,14 +35,19 @@ export function buildAttachmentSystemBlock(attachments: ReadyAttachment[]): stri
   let total = 0
   const sections: string[] = []
   for (const a of attachments) {
-    if (total >= TOTAL_CHAR_CAP) break
+    const header = `--- ${a.filename} (${a.kind}) ---\n`
+    const separator = sections.length ? '\n\n' : ''
+    const remaining = TOTAL_CHAR_CAP - total - separator.length - header.length
+    if (remaining < 0) break
+
     let text = a.extractedText ?? ''
     if (text.length > PER_FILE_CHAR_CAP) text = text.slice(0, PER_FILE_CHAR_CAP) + TRUNCATION_MARK
-    if (total + text.length > TOTAL_CHAR_CAP) {
-      text = text.slice(0, Math.max(0, TOTAL_CHAR_CAP - total)) + TRUNCATION_MARK
+    if (text.length > remaining) {
+      text = text.slice(0, Math.max(0, remaining - TRUNCATION_MARK.length)) + TRUNCATION_MARK
     }
-    total += text.length
-    sections.push(`--- ${a.filename} (${a.kind}) ---\n${text}`)
+
+    total += separator.length + header.length + text.length
+    sections.push(`${header}${text}`)
   }
   return (
     'The user attached these materials. Use them as the primary source for building or updating the quiz.\n\n' +
