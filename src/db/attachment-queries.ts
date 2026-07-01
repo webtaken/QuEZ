@@ -1,9 +1,11 @@
 import { db } from '@/db'
 import { attachments, type Attachment, type NewAttachment } from '@/db/schema'
 import { and, eq, inArray, isNull } from 'drizzle-orm'
+import type { PgTransaction } from 'drizzle-orm/pg-core'
 
 // Accepts the base db or a transaction handle (same query-builder surface).
-type DbLike = typeof db
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DbOrTx = typeof db | PgTransaction<any, any, any>
 
 export async function insertAttachment(row: NewAttachment): Promise<void> {
   await db.insert(attachments).values(row)
@@ -43,7 +45,7 @@ export async function reassociateAttachments(
   ids: string[],
   quizId: string,
   userId: string,
-  tx: DbLike = db
+  tx: DbOrTx = db
 ): Promise<void> {
   if (!ids.length) return
   await tx
@@ -52,7 +54,7 @@ export async function reassociateAttachments(
     .where(and(inArray(attachments.id, ids), eq(attachments.userId, userId), isNull(attachments.quizId)))
 }
 
-export async function listAttachmentKeysForQuiz(quizId: string, tx: DbLike = db): Promise<string[]> {
+export async function listAttachmentKeysForQuiz(quizId: string, tx: DbOrTx = db): Promise<string[]> {
   const rows = await tx.select({ r2Key: attachments.r2Key }).from(attachments).where(eq(attachments.quizId, quizId))
   return rows.map((r) => r.r2Key)
 }
