@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { TypingIndicator } from './TypingIndicator'
-import { Send, Bot, Globe } from 'lucide-react'
+import { Send, Bot, Globe, Paperclip } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { QuizPayload } from '@/lib/quiz-schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
@@ -16,6 +16,9 @@ import { newId } from '@/lib/ids'
 import { siblingInfo, switchSibling, buildActivePath, descendToLeaf } from '@/lib/chat-tree'
 import type { TreeNode } from '@/lib/chat-tree'
 import { SourceChips } from './SourceChips'
+import { useAttachments } from './useAttachments'
+import { ComposerChips, MessageChips } from './AttachmentChips'
+import { ACCEPT_ATTR } from '@/lib/attachment-kind'
 
 interface ChatPanelProps {
   onQuizUpdate: (quiz: QuizPayload) => void
@@ -45,6 +48,8 @@ function getTextFromMessage(message: UIMessage): string {
 
 export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, initialMessages, initialTree, initialRows, onMessagesChange }: ChatPanelProps) {
   const [input, setInput] = useState('')
+  const attachments = useAttachments(quizId)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [webSearch, setWebSearch] = useState(
     () => typeof window !== 'undefined' && localStorage.getItem('quez-web-search') === '1'
   )
@@ -264,10 +269,15 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
 
   function submit() {
     const text = input.trim()
-    if (!text || isLoading) return
-    console.log('[ChatPanel] submit:', text)
+    if ((!text && attachments.items.length === 0) || isLoading || attachments.anyBusy) return
+    const attachmentParts = attachments.items
+      .filter((it) => it.status === 'ready')
+      .map((it) => ({ type: 'data-attachment', id: it.id, filename: it.filename, kind: it.kind }))
+    const parts = [...(text ? [{ type: 'text', text }] : []), ...attachmentParts]
     setInput('')
-    sendMessage({ role: 'user', parts: [{ type: 'text', text }] })
+    attachments.clear()
+    // Data parts are UI-only (data-*); the extracted text is injected server-side.
+    sendMessage({ role: 'user', parts } as unknown as Parameters<typeof sendMessage>[0])
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
@@ -402,6 +412,9 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                       : 'bg-secondary text-foreground rounded-tl-sm'
                   )}
                 >
+                  {msg.role === 'user' && (
+                    <MessageChips parts={(msg as unknown as { parts?: unknown[] }).parts ?? []} />
+                  )}
                   {msg.role === 'assistant' ? (
                     <ReactMarkdown>{text || '...'}</ReactMarkdown>
                   ) : (
@@ -520,7 +533,15 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
       </div>
 
       {/* Input */}
-      <div className="flex-shrink-0 border-t border-border p-4">
+      <div
+        className="flex-shrink-0 border-t border-border p-4"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault()
+          if (e.dataTransfer.files?.length) attachments.addFiles(e.dataTransfer.files)
+        }}
+      >
+        <ComposerChips items={attachments.items} onRemove={attachments.remove} />
         <div className="flex gap-2 items-end">
           <Button
             type="button"
@@ -538,6 +559,27 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
           >
             <Globe className="w-4 h-4" />
           </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPT_ATTR}
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files) attachments.addFiles(e.target.files)
+              e.target.value = ''
+            }}
+          />
+          <Button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            size="icon"
+            variant="ghost"
+            title="Attach files"
+            className="shrink-0 w-11 h-11 border border-border text-muted-foreground"
+          >
+            <Paperclip className="w-4 h-4" />
+          </Button>
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -549,7 +591,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
           <Button
             onClick={submit}
             size="icon"
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || attachments.anyBusy || (!input.trim() && attachments.items.filter((i) => i.status === 'ready').length === 0)}
             className="shrink-0 bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 w-11 h-11"
           >
             <Send className="w-4 h-4" />
