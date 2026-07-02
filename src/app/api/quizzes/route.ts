@@ -7,6 +7,8 @@ import { auth } from '@/lib/auth'
 import { quizPayloadWithFlagsSchema } from '@/lib/quiz-schema'
 import { buildChatRowsFromMessages } from '@/lib/chat-messages'
 import { isUuid } from '@/lib/ids'
+import { collectAttachmentIds } from '@/lib/attachment-inject'
+import { reassociateAttachments } from '@/db/attachment-queries'
 
 const PAGE_SIZE = 12
 
@@ -152,6 +154,12 @@ export async function POST(req: NextRequest) {
         .update(quizzes)
         .set({ activeLeafId: rows[rows.length - 1].id })
         .where(eq(quizzes.id, quiz.id))
+    }
+
+    // Link any files uploaded during the new-quiz session (quizId was null) to the saved quiz.
+    const attachmentIds = collectAttachmentIds(incomingMessages as { parts?: unknown[] }[])
+    if (attachmentIds.length) {
+      await reassociateAttachments(attachmentIds, quiz.id, session.user.id, tx)
     }
 
     return quiz.id
