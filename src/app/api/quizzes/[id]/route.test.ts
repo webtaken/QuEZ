@@ -15,6 +15,9 @@ vi.mock('@/db/quiz-mutations', () => ({
   deleteQuiz: (...args: unknown[]) => deleteQuiz(...args),
 }))
 
+const deleteObjects = vi.fn()
+vi.mock('@/lib/r2', () => ({ deleteObjects: (...a: unknown[]) => deleteObjects(...a) }))
+
 // `@/db` (imported transitively by the route) builds a pg Pool from this.
 // pg does not connect until a query runs, and deleteQuiz is mocked, so a
 // dummy URL is enough to let the module import without a live database.
@@ -29,6 +32,7 @@ const ctx = (id: string) => ({ params: Promise.resolve({ id }) })
 beforeEach(() => {
   getSession.mockReset()
   deleteQuiz.mockReset()
+  deleteObjects.mockReset()
 })
 
 describe('DELETE /api/quizzes/[id]', () => {
@@ -48,14 +52,14 @@ describe('DELETE /api/quizzes/[id]', () => {
 
   it('returns 404 when the quiz is missing or not owned', async () => {
     getSession.mockResolvedValue({ user: { id: 'u1' } })
-    deleteQuiz.mockResolvedValue({ ok: false })
+    deleteQuiz.mockResolvedValue({ ok: false, r2Keys: [] })
     const res = await DELETE(req, ctx(VALID_ID))
     expect(res.status).toBe(404)
   })
 
   it('returns 200 and the id on success', async () => {
     getSession.mockResolvedValue({ user: { id: 'u1' } })
-    deleteQuiz.mockResolvedValue({ ok: true })
+    deleteQuiz.mockResolvedValue({ ok: true, r2Keys: [] })
     const res = await DELETE(req, ctx(VALID_ID))
     expect(res.status).toBe(200)
     await expect(res.json()).resolves.toEqual({ id: VALID_ID })
@@ -63,7 +67,7 @@ describe('DELETE /api/quizzes/[id]', () => {
 
   it('scopes the delete to the session user', async () => {
     getSession.mockResolvedValue({ user: { id: 'owner-123' } })
-    deleteQuiz.mockResolvedValue({ ok: true })
+    deleteQuiz.mockResolvedValue({ ok: true, r2Keys: [] })
     await DELETE(req, ctx(VALID_ID))
     expect(deleteQuiz).toHaveBeenCalledWith(VALID_ID, 'owner-123')
   })

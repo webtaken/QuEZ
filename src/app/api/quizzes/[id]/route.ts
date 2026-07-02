@@ -6,6 +6,7 @@ import { and, eq } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { quizPayloadWithFlagsSchema } from '@/lib/quiz-schema'
 import { deleteQuiz } from '@/db/quiz-mutations'
+import { deleteObjects } from '@/lib/r2'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -126,6 +127,14 @@ export async function DELETE(
 
   const res = await deleteQuiz(id, session.user.id)
   if (!res.ok) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  // Storage cleanup is best-effort: a failed R2 delete must not fail the request
+  // (the DB rows are already gone). Orphaned objects can be swept later.
+  try {
+    await deleteObjects(res.r2Keys)
+  } catch (e) {
+    console.error('[quizzes/delete] R2 cleanup failed', e)
+  }
 
   return NextResponse.json({ id })
 }
