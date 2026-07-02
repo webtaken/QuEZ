@@ -26,6 +26,7 @@ const row = { id: ID, userId: 'u1', r2Key: 'k', kind: 'pdf', mimeType: 'applicat
 beforeEach(() => {
   getSession.mockReset(); getOwnedAttachment.mockReset(); markAttachmentReady.mockReset()
   markAttachmentError.mockReset(); getObjectBytes.mockReset(); extractAttachmentText.mockReset()
+  vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
 describe('POST /api/attachments/[id]/process', () => {

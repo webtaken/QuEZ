@@ -71,4 +71,23 @@ describe('DELETE /api/quizzes/[id]', () => {
     await DELETE(req, ctx(VALID_ID))
     expect(deleteQuiz).toHaveBeenCalledWith(VALID_ID, 'owner-123')
   })
+
+  it('calls deleteObjects with R2 keys on successful delete', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    deleteQuiz.mockResolvedValue({ ok: true, r2Keys: ['attachments/u1/a/x.pdf'] })
+    const res = await DELETE(req, ctx(VALID_ID))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ id: VALID_ID })
+    expect(deleteObjects).toHaveBeenCalledWith(['attachments/u1/a/x.pdf'])
+  })
+
+  it('returns 200 even if R2 cleanup throws', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    deleteQuiz.mockResolvedValue({ ok: true, r2Keys: ['k'] })
+    deleteObjects.mockRejectedValue(new Error('r2 down'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const res = await DELETE(req, ctx(VALID_ID))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ id: VALID_ID })
+  })
 })
