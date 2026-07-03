@@ -30,6 +30,14 @@ describe('extractAttachmentText', () => {
     expect(Buffer.isBuffer(parseOffice.mock.calls[0][0])).toBe(true)
   })
 
+  it('passes the kind as an explicit fileType hint so bundlers cannot break auto-detection', async () => {
+    parseOffice.mockResolvedValue({ toText: () => 'x' })
+    for (const kind of ['pdf', 'docx', 'pptx', 'xlsx'] as const) {
+      await extractAttachmentText({ kind, bytes: new Uint8Array([1]), mimeType: 'application/octet-stream' })
+      expect(parseOffice).toHaveBeenLastCalledWith(expect.anything(), expect.objectContaining({ fileType: kind }))
+    }
+  })
+
   it('sends images to the vision model with an image content part', async () => {
     generateText.mockResolvedValue({ text: 'transcribed image' })
     const bytes = new Uint8Array([9, 9])

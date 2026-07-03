@@ -35,7 +35,10 @@ export async function extractAttachmentText(args: {
     return Buffer.from(args.bytes).toString('utf-8').trim()
   }
 
-  // pdf | docx | pptx | xlsx
-  const ast = await parseOffice(Buffer.from(args.bytes))
+  // pdf | docx | pptx | xlsx. The explicit fileType hint matters: officeparser's
+  // magic-byte auto-detection loads `file-type` via a dynamic import that
+  // bundlers (Next/Turbopack) cannot resolve at runtime, and the kind is
+  // already authoritative from upload validation anyway.
+  const ast = await parseOffice(Buffer.from(args.bytes), { fileType: args.kind })
   return ast.toText().trim()
 }

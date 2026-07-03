@@ -50,10 +50,13 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   const [input, setInput] = useState('')
   const attachments = useAttachments(quizId)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [webSearch, setWebSearch] = useState(
-    () => typeof window !== 'undefined' && localStorage.getItem('quez-web-search') === '1'
-  )
+  // Start false on server and client alike; reading localStorage in the useState
+  // initializer makes the first client render differ from SSR (hydration mismatch).
+  const [webSearch, setWebSearch] = useState(false)
   const webSearchRef = useRef(webSearch)
+  useEffect(() => {
+    if (localStorage.getItem('quez-web-search') === '1') setWebSearch(true)
+  }, [])
   // Keep the ref in sync with state (writes ref only — does not call setState, no cascading render).
   useEffect(() => { webSearchRef.current = webSearch }, [webSearch])
   function toggleWebSearch() {
