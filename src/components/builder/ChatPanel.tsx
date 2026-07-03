@@ -7,7 +7,15 @@ import ReactMarkdown from 'react-markdown'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { TypingIndicator } from './TypingIndicator'
-import { Send, Bot, Globe, Paperclip } from 'lucide-react'
+import { Send, Bot, Globe, Paperclip, Plus } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import type { QuizPayload } from '@/lib/quiz-schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
@@ -546,22 +554,6 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
       >
         <ComposerChips items={attachments.items} onRemove={attachments.remove} />
         <div className="flex gap-2 items-end">
-          <Button
-            type="button"
-            onClick={toggleWebSearch}
-            size="icon"
-            variant="ghost"
-            aria-pressed={webSearch}
-            title={webSearch ? 'Web search on' : 'Web search off'}
-            className={cn(
-              'shrink-0 w-11 h-11 border border-border',
-              webSearch
-                ? 'text-accent-lime bg-accent-lime/15 border-accent-lime/40'
-                : 'text-muted-foreground'
-            )}
-          >
-            <Globe className="w-4 h-4" />
-          </Button>
           <input
             ref={fileInputRef}
             type="file"
@@ -573,16 +565,35 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
               e.target.value = ''
             }}
           />
-          <Button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            size="icon"
-            variant="ghost"
-            title="Attach files"
-            className="shrink-0 w-11 h-11 border border-border text-muted-foreground"
-          >
-            <Paperclip className="w-4 h-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  title="Add files and tools"
+                  className={cn(
+                    'shrink-0 w-11 h-11 border border-border',
+                    webSearch
+                      ? 'text-accent-lime bg-accent-lime/15 border-accent-lime/40'
+                      : 'text-muted-foreground'
+                  )}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent side="top" align="start" className="min-w-44">
+              <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                <Paperclip /> Add files
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuCheckboxItem checked={webSearch} onCheckedChange={toggleWebSearch}>
+                <Globe /> Web search
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
