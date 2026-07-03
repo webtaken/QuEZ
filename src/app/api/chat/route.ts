@@ -7,6 +7,9 @@ import { auth } from '@/lib/auth'
 import { persistTurn } from '@/db/chat-queries'
 import { buildTurnMessages } from '@/lib/chat-messages'
 import { newId } from '@/lib/ids'
+import { collectAttachmentIds, buildAttachmentSystemBlock } from '@/lib/attachment-inject'
+import { loadReadyAttachments } from '@/db/attachment-queries'
+import type { AttachmentKind } from '@/lib/attachment-kind'
 
 const BASE_SYSTEM = `You are QuEZ AI, an expert quiz builder assistant. When the user describes a quiz they want, call the updateQuiz tool to output the full structured quiz data.
 
@@ -41,7 +44,7 @@ export async function POST(req: Request) {
 
   const modelId = 'deepseek/deepseek-v4-flash'
 
-  const system = existingQuiz
+  let system = existingQuiz
     ? `${BASE_SYSTEM}
 
 The user is refining an existing quiz. Current state:
@@ -52,6 +55,23 @@ ${JSON.stringify(existingQuiz, null, 2)}
 
 When calling updateQuiz, return the FULL updated quiz including fields the user did not ask to change. Preserve unchanged questions verbatim.`
     : BASE_SYSTEM
+
+  // Inject extracted text from any files the user attached (this turn or earlier
+  // on the active path). Mirrors the existingQuiz injection above — content lives
+  // in the attachments table, never duplicated into message parts.
+  const attachmentIds = collectAttachmentIds(messages as { parts?: unknown[] }[])
+  if (attachmentIds.length) {
+    const ready = await loadReadyAttachments(attachmentIds, session.user.id)
+    const block = buildAttachmentSystemBlock(
+      ready.map((a) => ({
+        id: a.id,
+        filename: a.filename,
+        kind: a.kind as AttachmentKind,
+        extractedText: a.extractedText ?? '',
+      }))
+    )
+    if (block) system = `${system}\n\n${block}`
+  }
 
   // The last incoming message is the new user turn to persist.
   const incomingUser = messages[messages.length - 1]
