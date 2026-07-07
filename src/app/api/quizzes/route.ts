@@ -123,6 +123,7 @@ export async function POST(req: NextRequest) {
         audience: data.audience,
         difficulty: data.difficulty,
         coverEmoji: data.coverEmoji,
+        musicTrack: data.musicTrack ?? null,
         isPublic: !!data.isPublic,
         language: 'en',
       })

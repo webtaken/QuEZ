@@ -13,7 +13,9 @@ export function buildChatTools({ webSearch }: { webSearch: boolean }): ToolSet {
   const updateQuiz = tool({
     description:
       'Update the quiz preview panel with structured quiz data. Call this whenever building or updating a quiz.',
-    inputSchema: quizPayloadSchema,
+    // Music is creator-only (picked in the editor dropdown); the agent must not
+    // set or clear it, so it is stripped from the tool schema.
+    inputSchema: quizPayloadSchema.omit({ musicTrack: true }),
     execute: async (quizData) => {
       return { success: true, quiz: quizData }
     },

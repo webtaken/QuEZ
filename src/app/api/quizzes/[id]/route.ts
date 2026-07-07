@@ -87,6 +87,7 @@ export async function PUT(
         audience: data.audience,
         difficulty: data.difficulty,
         coverEmoji: data.coverEmoji,
+        musicTrack: data.musicTrack ?? null,
         isPublic: typeof data.isPublic === 'boolean' ? data.isPublic : existing.isPublic,
         updatedAt: new Date(),
       })
