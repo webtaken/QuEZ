@@ -28,7 +28,7 @@ export function MusicPicker({ value, onChange }: MusicPickerProps) {
   }
 
   function togglePreview() {
-    if (previewing) {
+    if (audioRef.current) {
       stopPreview()
       return
     }
@@ -40,8 +40,12 @@ export function MusicPicker({ value, onChange }: MusicPickerProps) {
     audioRef.current = audio
     audio
       .play()
-      .then(() => setPreviewing(true))
-      .catch(() => stopPreview())
+      .then(() => {
+        if (audioRef.current === audio) setPreviewing(true)
+      })
+      .catch(() => {
+        if (audioRef.current === audio) stopPreview()
+      })
   }
 
   function handleChange(next: string) {
