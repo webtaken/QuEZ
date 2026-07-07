@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Clock } from 'lucide-react'
+import { Clock, Volume2, VolumeX } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { QuestionReview } from './QuestionReview'
+import { getTrackById } from '@/lib/music'
+import { useQuizMusic } from '@/hooks/useQuizMusic'
 
 type PlayQuestion = {
   id: string
@@ -24,6 +26,7 @@ type Quiz = {
   audience: string
   difficulty: string
   coverEmoji: string
+  musicTrack: string | null
   questions: PlayQuestion[]
 }
 
@@ -52,6 +55,9 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
   const [result, setResult] = useState<ScoreResult | null>(null)
   const [errorMsg, setErrorMsg] = useState<string>('')
   const advancingRef = useRef(false)
+
+  const track = getTrackById(quiz.musicTrack)
+  const music = useQuizMusic(track?.file ?? null)
 
   const current = quiz.questions[index]
   const total = quiz.questions.length
@@ -99,6 +105,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
   }
 
   async function submit(finalAnswers: Answer[]) {
+    music.stop()
     setPhase('submitting')
     try {
       const res = await fetch(`/api/quizzes/${quiz.id}/score`, {
@@ -120,6 +127,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
   }
 
   function reset() {
+    music.start()
     setAnswers([])
     setIndex(0)
     setResult(null)
@@ -131,6 +139,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
   }
 
   function startQuiz() {
+    music.start()
     setPhase('playing')
   }
 
@@ -247,7 +256,16 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
             <span className="text-2xl">{quiz.coverEmoji}</span>
             <span className="truncate">{quiz.title}</span>
           </span>
-          <span className="text-muted-foreground shrink-0 ml-3">
+          <span className="text-muted-foreground shrink-0 ml-3 flex items-center gap-2">
+            {track && (
+              <button
+                onClick={music.toggleMute}
+                aria-label={music.muted ? 'Unmute music' : 'Mute music'}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {music.muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+            )}
             Q {index + 1} / {total}
           </span>
         </div>
