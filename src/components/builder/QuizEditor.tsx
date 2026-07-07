@@ -15,7 +15,7 @@ import { DeleteQuizDialog } from '@/components/quiz/DeleteQuizDialog'
 import { quizPayloadSchema, type QuizPayload, type QuizQuestion } from '@/lib/quiz-schema'
 import type { Quiz, Question } from '@/db/schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
-import type { MusicTrackId } from '@/lib/music'
+import { getTrackById, type MusicTrackId } from '@/lib/music'
 
 interface QuizEditorProps {
   initialQuiz: Quiz
@@ -45,7 +45,7 @@ function toPayload(q: Quiz, qs: Question[]): QuizPayload {
     audience: q.audience,
     difficulty: (q.difficulty as QuizPayload['difficulty']) ?? 'medium',
     coverEmoji: q.coverEmoji ?? '🧠',
-    musicTrack: (q.musicTrack as MusicTrackId | null) ?? null,
+    musicTrack: (getTrackById(q.musicTrack)?.id ?? null) as MusicTrackId | null,
     questions: qs.map((row, i) => ({
       order: i + 1,
       text: row.text,

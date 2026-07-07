@@ -87,6 +87,9 @@ export async function PUT(
         audience: data.audience,
         difficulty: data.difficulty,
         coverEmoji: data.coverEmoji,
+        // Deliberate full-replace: unlike isPublic below, an omitted musicTrack
+        // clears to null rather than preserving the existing value. The editor
+        // always sends this field, so there is no "partial update" caller today.
         musicTrack: data.musicTrack ?? null,
         isPublic: typeof data.isPublic === 'boolean' ? data.isPublic : existing.isPublic,
         updatedAt: new Date(),
