@@ -15,7 +15,7 @@ export function CreditsPill({ balance }: { balance: number | null }) {
         : 'text-muted-foreground border-border bg-secondary'
   return (
     <Link
-      href="/dashboard/credits"
+      href="/dashboard/billing"
       title="AI credits"
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',

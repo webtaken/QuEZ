@@ -22,6 +22,7 @@ import {
   LayoutDashboard,
   BookOpen,
   Sparkles,
+  CreditCard,
   BarChart3,
   Settings,
   LogOut,
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
     label: "Create with AI",
     accent: true,
   },
+  { href: "/dashboard/billing", icon: CreditCard, label: "Billing" },
   {
     href: "/dashboard/analytics",
     icon: BarChart3,
