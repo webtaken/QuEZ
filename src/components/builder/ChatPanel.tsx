@@ -246,7 +246,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
 
   function submitEdit(msgId: string) {
     const text = editText.trim()
-    if (!text || isLoading) return
+    if (!text || isLoading || outOfCredits) return
     const node = treeRef.current.find((n) => n.id === msgId)
     const parentId = node?.parentId ?? null
     // Truncate the active path to the parent — the old branch stays in tree/rowsRef
@@ -502,7 +502,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                     <button
                       className="opacity-0 group-hover:opacity-100 text-xs text-muted-foreground transition-opacity"
                       onClick={() => regenerate({ messageId: msg.id })}
-                      disabled={isLoading}
+                      disabled={isLoading || outOfCredits}
                     >
                       Regenerate
                     </button>
@@ -551,7 +551,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
 
         {status === 'error' && (
           <div className="flex justify-start">
-            <Button size="sm" variant="outline" onClick={() => regenerate()}>
+            <Button size="sm" variant="outline" onClick={() => regenerate()} disabled={outOfCredits}>
               Retry
             </Button>
           </div>

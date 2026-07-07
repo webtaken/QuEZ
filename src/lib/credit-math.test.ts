@@ -46,6 +46,13 @@ describe('computeDebit', () => {
     const noInfo = computeDebit({ steps: [], totalTokens: undefined })
     expect(noInfo.credits).toBe(MIN_DEBIT_CREDITS)
   })
+
+  it('clamps a reported positive cost that converts below the minimum', () => {
+    // 0.00001 * MARGIN(5) / CREDIT_USD_VALUE(0.01) = 0.005 credits, below MIN_DEBIT_CREDITS.
+    const out = computeDebit({ steps: [step(0.00001)], totalTokens: 100 })
+    expect(out.credits).toBe(MIN_DEBIT_CREDITS)
+    expect(out.usedFallback).toBe(false)
+  })
 })
 
 describe('formatCredits', () => {

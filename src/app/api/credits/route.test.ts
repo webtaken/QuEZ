@@ -36,11 +36,40 @@ describe('GET /api/credits', () => {
   it('returns the balance and recent transactions for the session user', async () => {
     getSession.mockResolvedValue({ user: { id: 'u1' } })
     getBalance.mockResolvedValue(82.5)
-    const tx = [{ id: 't1', amount: -0.5, balanceAfter: 82.5, type: 'chat' }]
+    const tx = [
+      {
+        id: 't1',
+        amount: -0.5,
+        balanceAfter: 82.5,
+        type: 'chat',
+        metadata: {
+          // whitelisted
+          webSearch: true,
+          inputTokens: 120,
+          outputTokens: 45,
+          quizId: 'q1',
+          // must NOT be exposed to the client
+          rawCostUsd: 0.0012,
+          usedFallback: false,
+          model: 'deepseek/deepseek-v4-flash',
+        },
+      },
+    ]
     listTransactions.mockResolvedValue(tx)
     const res = await GET()
     expect(res.status).toBe(200)
-    await expect(res.json()).resolves.toEqual({ balance: 82.5, transactions: tx })
+    await expect(res.json()).resolves.toEqual({
+      balance: 82.5,
+      transactions: [
+        {
+          id: 't1',
+          amount: -0.5,
+          balanceAfter: 82.5,
+          type: 'chat',
+          metadata: { webSearch: true, inputTokens: 120, outputTokens: 45, quizId: 'q1' },
+        },
+      ],
+    })
     expect(getBalance).toHaveBeenCalledWith('u1')
     expect(listTransactions).toHaveBeenCalledWith('u1', 100)
   })

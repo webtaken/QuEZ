@@ -79,8 +79,8 @@ export default async function CreditsPage() {
                 return (
                   <tr key={tx.id} className="border-b border-border last:border-0">
                     <td className="px-5 py-3 text-muted-foreground whitespace-nowrap">
-                      {tx.createdAt.toLocaleDateString()}{' '}
-                      {tx.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {tx.createdAt.toLocaleDateString('en-US')}{' '}
+                      {tx.createdAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                     </td>
                     <td className="px-5 py-3">
                       <span className="text-foreground">{txLabel(tx.type, meta)}</span>

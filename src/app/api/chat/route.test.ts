@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 vi.mock('next/headers', () => ({
   headers: async () => new Headers(),
@@ -61,6 +61,10 @@ beforeEach(() => {
   streamText.mockReturnValue({
     toUIMessageStreamResponse: () => new Response('stream'),
   })
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 describe('POST /api/chat credits', () => {

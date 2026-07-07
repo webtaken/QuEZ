@@ -44,6 +44,7 @@ export async function grantCredits(args: {
   type: 'signup_grant' | 'manual_grant'
   metadata?: Record<string, unknown>
 }): Promise<number> {
+  if (!(args.amount > 0)) throw new Error('grantCredits: amount must be positive')
   return applyCreditDelta({ userId: args.userId, delta: args.amount, type: args.type, metadata: args.metadata })
 }
 
@@ -61,6 +62,6 @@ export async function listTransactions(userId: string, limit = 100): Promise<Cre
     .select()
     .from(creditTransactions)
     .where(eq(creditTransactions.userId, userId))
-    .orderBy(desc(creditTransactions.createdAt))
+    .orderBy(desc(creditTransactions.createdAt), desc(creditTransactions.id))
     .limit(limit)
 }
