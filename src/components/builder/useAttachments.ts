@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { toast } from 'sonner'
 import { newId } from '@/lib/ids'
 import { validateUpload, MAX_FILES_PER_MESSAGE, type AttachmentKind } from '@/lib/attachment-kind'
 
@@ -49,6 +50,11 @@ export function useAttachments(quizId?: string) {
         if (!putRes.ok) throw new Error('Upload failed')
 
         const procRes = await fetch(`/api/attachments/${id}/process`, { method: 'POST' })
+        if (procRes.status === 402) {
+          toast.error('Out of AI credits — image text extraction is paused')
+          patch(id, { status: 'error', error: 'Out of credits' })
+          return
+        }
         const proc = await procRes.json().catch(() => ({ status: 'error' }))
         if (proc.status !== 'ready') {
           patch(id, { status: 'error', error: proc.errorMessage ?? 'Could not process file' })
