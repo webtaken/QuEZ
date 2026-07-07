@@ -37,7 +37,7 @@ export default async function DashboardPage() {
   const publicCount = userQuizzes.filter((q) => q.isPublic).length
 
   if (userQuizzes.length === 0) {
-    return <EmptyDashboard />
+    return <EmptyDashboard balance={balance} />
   }
 
   return (
@@ -107,9 +107,12 @@ export default async function DashboardPage() {
   )
 }
 
-function EmptyDashboard() {
+function EmptyDashboard({ balance }: { balance: number }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
+    <div className="relative flex flex-col items-center justify-center min-h-screen p-8 text-center">
+      <div className="absolute top-8 right-8">
+        <CreditsPill balance={balance} />
+      </div>
       <div className="text-7xl mb-6 animate-bounce">🧠</div>
       <h2 className="font-[family-name:var(--font-syne)] font-bold text-3xl text-foreground mb-3">
         You haven&apos;t created any quizzes yet
