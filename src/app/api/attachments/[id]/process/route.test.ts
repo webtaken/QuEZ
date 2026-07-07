@@ -80,6 +80,17 @@ describe('POST /api/attachments/[id]/process', () => {
     expect((await res.json()).status).toBe('error')
     expect(markAttachmentError).toHaveBeenCalledOnce()
   })
+  it('short-circuits with ready when the attachment was already processed (no re-run, no re-debit)', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    getOwnedAttachment.mockResolvedValue({ ...row, kind: 'image', mimeType: 'image/png', filename: 'a.png', status: 'ready' })
+    const res = await POST(req, ctx(ID))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ status: 'ready', filename: 'a.png', kind: 'image' })
+    expect(getObjectBytes).not.toHaveBeenCalled()
+    expect(extractAttachmentText).not.toHaveBeenCalled()
+    expect(debitCredits).not.toHaveBeenCalled()
+    expect(getBalance).not.toHaveBeenCalled()
+  })
 
   describe('image kind (AI-powered extraction)', () => {
     const imageRow = { ...row, kind: 'image', mimeType: 'image/png', filename: 'a.png' }
@@ -125,6 +136,33 @@ describe('POST /api/attachments/[id]/process', () => {
         },
       })
       expect(markAttachmentReady).toHaveBeenCalledOnce()
+    })
+
+    it('still debits when the model ran but returned only whitespace text', async () => {
+      getSession.mockResolvedValue({ user: { id: 'u1' } })
+      getOwnedAttachment.mockResolvedValue(imageRow)
+      getBalance.mockResolvedValue(10)
+      getObjectBytes.mockResolvedValue(new Uint8Array([1]))
+      extractAttachmentText.mockResolvedValue({
+        text: '   ',
+        debit: { credits: 0.05, rawCostUsd: 0.0001, usedFallback: true },
+      })
+      const res = await POST(req, ctx(ID))
+      expect(debitCredits).toHaveBeenCalledOnce()
+      expect(debitCredits).toHaveBeenCalledWith({
+        userId: 'u1',
+        credits: 0.05,
+        type: 'ocr',
+        metadata: {
+          attachmentId: ID,
+          model: 'google/gemini-2.5-flash-lite',
+          rawCostUsd: 0.0001,
+          usedFallback: true,
+        },
+      })
+      expect((await res.json()).errorMessage).toBe('No text could be extracted from this file')
+      expect(markAttachmentReady).not.toHaveBeenCalled()
+      expect(markAttachmentError).toHaveBeenCalledWith(ID, 'No text could be extracted')
     })
   })
 })

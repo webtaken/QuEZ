@@ -15,6 +15,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const row = await getOwnedAttachment(id, session.user.id)
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+  // Already processed — never re-run (an image re-run would double-debit credits).
+  if (row.status === 'ready') {
+    return NextResponse.json({ status: 'ready', filename: row.filename, kind: row.kind })
+  }
+
   // Only image extraction hits an AI model; other kinds are free local parsing.
   if (row.kind === 'image') {
     const balance = await getBalance(session.user.id)
