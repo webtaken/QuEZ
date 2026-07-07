@@ -41,10 +41,10 @@ type ScoreResult = {
   }[]
 }
 
-type Phase = 'playing' | 'submitting' | 'finished' | 'error'
+type Phase = 'ready' | 'playing' | 'submitting' | 'finished' | 'error'
 
 export function QuizPlayer({ quiz }: { quiz: Quiz }) {
-  const [phase, setPhase] = useState<Phase>('playing')
+  const [phase, setPhase] = useState<Phase>('ready')
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Answer[]>([])
   const [timeLeft, setTimeLeft] = useState(quiz.questions[0]?.timeLimit ?? 30)
@@ -128,6 +128,27 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
     setTimeLeft(quiz.questions[0]?.timeLimit ?? 30)
     advancingRef.current = false
     setPhase('playing')
+  }
+
+  function startQuiz() {
+    setPhase('playing')
+  }
+
+  if (phase === 'ready') {
+    return (
+      <div className="max-w-2xl mx-auto p-6 text-center space-y-6 pt-16">
+        <div className="text-7xl">{quiz.coverEmoji}</div>
+        <h1 className="font-[family-name:var(--font-syne)] font-bold text-3xl text-foreground">
+          {quiz.title}
+        </h1>
+        <p className="text-muted-foreground">
+          {total} question{total === 1 ? '' : 's'} · answer before the timer runs out
+        </p>
+        <Button onClick={startQuiz} size="lg" className="rounded-xl">
+          Start quiz
+        </Button>
+      </div>
+    )
   }
 
   if (phase === 'error') {
