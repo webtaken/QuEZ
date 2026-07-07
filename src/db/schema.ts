@@ -7,6 +7,7 @@ import {
   jsonb,
   uuid,
   index,
+  numeric,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core'
 
@@ -18,6 +19,9 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').notNull().default(false),
   image: text('image'),
+  creditBalance: numeric('credit_balance', { precision: 12, scale: 4, mode: 'number' })
+    .notNull()
+    .default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
@@ -148,12 +152,33 @@ export const attachments = pgTable(
   ]
 )
 
+export const creditTransactions = pgTable(
+  'credit_transactions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    // Positive = grant, negative = debit. balanceAfter snapshots users.credit_balance
+    // right after this row's delta was applied.
+    amount: numeric('amount', { precision: 12, scale: 4, mode: 'number' }).notNull(),
+    balanceAfter: numeric('balance_after', { precision: 12, scale: 4, mode: 'number' }).notNull(),
+    type: text('type').notNull(), // 'signup_grant' | 'manual_grant' | 'chat' | 'ocr'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    metadata: jsonb('metadata').$type<Record<string, any>>(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => [index('credit_transactions_user_created_idx').on(t.userId, t.createdAt)]
+)
+
 export type User = typeof users.$inferSelect
 export type Quiz = typeof quizzes.$inferSelect
 export type Question = typeof questions.$inferSelect
 export type ChatMessage = typeof chatMessages.$inferSelect
 export type Attachment = typeof attachments.$inferSelect
+export type CreditTransaction = typeof creditTransactions.$inferSelect
 export type NewQuiz = typeof quizzes.$inferInsert
 export type NewQuestion = typeof questions.$inferInsert
 export type NewChatMessage = typeof chatMessages.$inferInsert
 export type NewAttachment = typeof attachments.$inferInsert
+export type NewCreditTransaction = typeof creditTransactions.$inferInsert
