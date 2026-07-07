@@ -7,10 +7,13 @@ import { eq, sql, count } from 'drizzle-orm'
 import { Button } from '@/components/ui/button'
 import { Sparkles, BookOpen, Gamepad2, Globe, Plus } from 'lucide-react'
 import { QuizCard } from '@/components/dashboard/QuizCard'
+import { getBalance } from '@/db/credit-queries'
+import { CreditsPill } from '@/components/credits/CreditsPill'
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() })
   const userId = session!.user.id
+  const balance = await getBalance(userId)
 
   const userQuizzes = await db
     .select({
@@ -34,7 +37,7 @@ export default async function DashboardPage() {
   const publicCount = userQuizzes.filter((q) => q.isPublic).length
 
   if (userQuizzes.length === 0) {
-    return <EmptyDashboard />
+    return <EmptyDashboard balance={balance} />
   }
 
   return (
@@ -46,12 +49,15 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-muted-foreground mt-1">Manage your quizzes and track performance</p>
         </div>
-        <Link href="/dashboard/quizzes/new">
-          <Button className="bg-accent-lime text-accent-lime-foreground rounded-full gap-2 font-semibold">
-            <Sparkles className="w-4 h-4" />
-            New Quiz
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <CreditsPill balance={balance} />
+          <Link href="/dashboard/quizzes/new">
+            <Button className="bg-accent-lime text-accent-lime-foreground rounded-full gap-2 font-semibold">
+              <Sparkles className="w-4 h-4" />
+              New Quiz
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
@@ -101,9 +107,12 @@ export default async function DashboardPage() {
   )
 }
 
-function EmptyDashboard() {
+function EmptyDashboard({ balance }: { balance: number }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
+    <div className="relative flex flex-col items-center justify-center min-h-screen p-8 text-center">
+      <div className="absolute top-8 right-8">
+        <CreditsPill balance={balance} />
+      </div>
       <div className="text-7xl mb-6 animate-bounce">🧠</div>
       <h2 className="font-[family-name:var(--font-syne)] font-bold text-3xl text-foreground mb-3">
         You haven&apos;t created any quizzes yet

@@ -1,23 +1,30 @@
 import { parseOffice } from 'officeparser'
 import { generateText } from 'ai'
 import { openrouter } from '@openrouter/ai-sdk-provider'
+import { computeDebit } from '@/lib/credit-math'
 import type { AttachmentKind } from './attachment-kind'
 
-const IMAGE_MODEL = 'google/gemini-2.5-flash-lite'
+export const IMAGE_MODEL = 'google/gemini-2.5-flash-lite'
 const IMAGE_PROMPT =
   'Transcribe all text in this image verbatim. Then describe any diagrams, figures, charts, tables, or handwriting in detail. Output plain text only.'
 
+export type ExtractResult = {
+  text: string
+  // Set only for AI-powered paths (images); null means the extraction was free.
+  debit: { credits: number; rawCostUsd: number; usedFallback: boolean } | null
+}
+
 // Returns extracted plain text. Documents go through officeparser (pure JS/WASM,
 // serverless-safe); plain text/markdown/csv are decoded directly; images are
-// transcribed + described by a cheap vision model.
+// transcribed + described by a cheap vision model (which costs credits).
 export async function extractAttachmentText(args: {
   kind: AttachmentKind
   bytes: Uint8Array
   mimeType: string
-}): Promise<string> {
+}): Promise<ExtractResult> {
   if (args.kind === 'image') {
-    const { text } = await generateText({
-      model: openrouter(IMAGE_MODEL),
+    const result = await generateText({
+      model: openrouter(IMAGE_MODEL, { usage: { include: true } }),
       messages: [
         {
           role: 'user',
@@ -28,11 +35,15 @@ export async function extractAttachmentText(args: {
         },
       ],
     })
-    return text.trim()
+    const debit = computeDebit({
+      steps: result.steps ?? [],
+      totalTokens: result.usage?.totalTokens,
+    })
+    return { text: result.text.trim(), debit }
   }
 
   if (args.kind === 'text') {
-    return Buffer.from(args.bytes).toString('utf-8').trim()
+    return { text: Buffer.from(args.bytes).toString('utf-8').trim(), debit: null }
   }
 
   // pdf | docx | pptx | xlsx. The explicit fileType hint matters: officeparser's
@@ -40,5 +51,5 @@ export async function extractAttachmentText(args: {
   // bundlers (Next/Turbopack) cannot resolve at runtime, and the kind is
   // already authoritative from upload validation anyway.
   const ast = await parseOffice(Buffer.from(args.bytes), { fileType: args.kind })
-  return ast.toText().trim()
+  return { text: ast.toText().trim(), debit: null }
 }

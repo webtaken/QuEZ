@@ -10,6 +10,8 @@ import { newId } from '@/lib/ids'
 import { collectAttachmentIds, buildAttachmentSystemBlock } from '@/lib/attachment-inject'
 import { loadReadyAttachments } from '@/db/attachment-queries'
 import type { AttachmentKind } from '@/lib/attachment-kind'
+import { getBalance, debitCredits } from '@/db/credit-queries'
+import { computeDebit } from '@/lib/credit-math'
 
 const BASE_SYSTEM = `You are QuEZ AI, an expert quiz builder assistant. When the user describes a quiz they want, call the updateQuiz tool to output the full structured quiz data.
 
@@ -27,6 +29,11 @@ If the user asks to change something, call updateQuiz again with the updated qui
 export async function POST(req: Request) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) return new Response('Unauthorized', { status: 401 })
+
+  const balance = await getBalance(session.user.id)
+  if (balance <= 0) {
+    return Response.json({ error: 'insufficient_credits' }, { status: 402 })
+  }
 
   const {
     messages,
@@ -77,10 +84,36 @@ When calling updateQuiz, return the FULL updated quiz including fields the user 
   const incomingUser = messages[messages.length - 1]
 
   const result = streamText({
-    model: openrouter(modelId),
+    model: openrouter(modelId, { usage: { include: true } }),
     system,
     messages: await convertToModelMessages(messages),
     tools: buildChatTools({ webSearch: webSearch ?? false }),
+    onFinish: async ({ steps, totalUsage }) => {
+      // Debit from the OpenRouter-reported cost. Bookkeeping must never break
+      // the user's stream — swallow and log.
+      try {
+        const { credits, rawCostUsd, usedFallback } = computeDebit({
+          steps,
+          totalTokens: totalUsage?.totalTokens,
+        })
+        await debitCredits({
+          userId: session.user.id,
+          credits,
+          type: 'chat',
+          metadata: {
+            ...(quizId ? { quizId } : {}),
+            model: modelId,
+            inputTokens: totalUsage?.inputTokens,
+            outputTokens: totalUsage?.outputTokens,
+            rawCostUsd,
+            usedFallback,
+            webSearch: webSearch ?? false,
+          },
+        })
+      } catch (e) {
+        console.error('[chat] credit debit failed', e)
+      }
+    },
   })
 
   return result.toUIMessageStreamResponse({
