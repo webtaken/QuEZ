@@ -9,11 +9,13 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ChatPanel } from './ChatPanel'
 import { QuestionEditor } from './QuestionEditor'
+import { MusicPicker } from './MusicPicker'
 import { PublishToggle } from '@/components/quiz/PublishToggle'
 import { DeleteQuizDialog } from '@/components/quiz/DeleteQuizDialog'
 import { quizPayloadSchema, type QuizPayload, type QuizQuestion } from '@/lib/quiz-schema'
 import type { Quiz, Question } from '@/db/schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
+import type { MusicTrackId } from '@/lib/music'
 
 interface QuizEditorProps {
   initialQuiz: Quiz
@@ -43,6 +45,7 @@ function toPayload(q: Quiz, qs: Question[]): QuizPayload {
     audience: q.audience,
     difficulty: (q.difficulty as QuizPayload['difficulty']) ?? 'medium',
     coverEmoji: q.coverEmoji ?? '🧠',
+    musicTrack: (q.musicTrack as MusicTrackId | null) ?? null,
     questions: qs.map((row, i) => ({
       order: i + 1,
       text: row.text,
@@ -77,10 +80,11 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
   }
 
   const handleAgentUpdate = useCallback((next: QuizPayload) => {
-    setQuiz({
+    setQuiz((prev) => ({
       ...next,
+      musicTrack: prev.musicTrack ?? null,
       questions: next.questions.map((q, i) => ({ ...q, order: i + 1 })),
-    })
+    }))
     setDirty(true)
   }, [])
 
@@ -265,6 +269,13 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
                   <option value="medium">Medium</option>
                   <option value="hard">Hard</option>
                 </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Music</label>
+                <MusicPicker
+                  value={quiz.musicTrack ?? null}
+                  onChange={(v) => setField('musicTrack', v)}
+                />
               </div>
             </div>
           </section>
