@@ -61,6 +61,12 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   const credits = useCredits()
   // Set when the server rejects a send with 402 — sticks until credits refresh above 0.
   const [creditsRejected, setCreditsRejected] = useState(false)
+  // A refreshed positive balance clears the sticky 402 rejection (e.g. after a top-up).
+  useEffect(() => {
+    // Synchronizes local rejection state with the externally fetched balance.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (credits.balance !== null && credits.balance > 0) setCreditsRejected(false)
+  }, [credits.balance])
   const outOfCredits = creditsRejected || (credits.balance !== null && credits.balance <= 0)
   const attachments = useAttachments(quizId)
   const fileInputRef = useRef<HTMLInputElement>(null)

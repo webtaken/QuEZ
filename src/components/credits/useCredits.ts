@@ -21,6 +21,15 @@ export function useCredits() {
     // within this effect body, so this is a false positive on the rule.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void refetch()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refetch()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
+    }
   }, [refetch])
 
   return { balance, refetch }
