@@ -27,6 +27,8 @@ import { SourceChips } from './SourceChips'
 import { useAttachments } from './useAttachments'
 import { ComposerChips, MessageChips } from './AttachmentChips'
 import { ACCEPT_ATTR } from '@/lib/attachment-kind'
+import { useCredits } from '@/components/credits/useCredits'
+import { CreditsPill } from '@/components/credits/CreditsPill'
 
 interface ChatPanelProps {
   onQuizUpdate: (quiz: QuizPayload) => void
@@ -56,6 +58,10 @@ function getTextFromMessage(message: UIMessage): string {
 
 export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, initialMessages, initialTree, initialRows, onMessagesChange }: ChatPanelProps) {
   const [input, setInput] = useState('')
+  const credits = useCredits()
+  // Set when the server rejects a send with 402 — sticks until credits refresh above 0.
+  const [creditsRejected, setCreditsRejected] = useState(false)
+  const outOfCredits = creditsRejected || (credits.balance !== null && credits.balance <= 0)
   const attachments = useAttachments(quizId)
   const fileInputRef = useRef<HTMLInputElement>(null)
   // Start false on server and client alike; reading localStorage in the useState
@@ -122,6 +128,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
     generateId: newId,
     transport,
     onError: (err) => {
+      if (err?.message?.includes('insufficient_credits')) setCreditsRejected(true)
       console.error('[ChatPanel] useChat error raw:', err)
       console.error('[ChatPanel] err.message:', err?.message)
       console.error('[ChatPanel] err.cause:', (err as unknown as { cause?: unknown })?.cause)
@@ -133,6 +140,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
       }
     },
     onFinish: ({ message }) => {
+      void credits.refetch()
       leafIdRef.current = message.id
       setActiveLeafId(message.id)
       console.log('[ChatPanel] onFinish — parts:', (message as unknown as { parts?: unknown[] }).parts?.length)
@@ -280,7 +288,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
 
   function submit() {
     const text = input.trim()
-    if ((!text && attachments.items.length === 0) || isLoading || attachments.anyBusy) return
+    if ((!text && attachments.items.length === 0) || isLoading || attachments.anyBusy || outOfCredits) return
     const attachmentParts = attachments.items
       .filter((it) => it.status === 'ready')
       .map((it) => ({ type: 'data-attachment', id: it.id, filename: it.filename, kind: it.kind }))
@@ -370,6 +378,9 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
         <div>
           <p className="font-semibold text-sm text-foreground">QuEZ AI</p>
           <p className="text-xs text-muted-foreground">Describe your quiz</p>
+        </div>
+        <div className="ml-auto">
+          <CreditsPill balance={credits.balance} />
         </div>
       </div>
 
@@ -543,6 +554,12 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
         <div ref={messagesEndRef} />
       </div>
 
+      {outOfCredits && (
+        <div className="flex-shrink-0 border-t border-border px-4 py-3 bg-destructive/10 text-sm text-destructive">
+          Out of AI credits — the AI builder is paused. You can still edit your quiz manually.
+        </div>
+      )}
+
       {/* Input */}
       <div
         className="flex-shrink-0 border-t border-border p-4"
@@ -605,7 +622,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
           <Button
             onClick={submit}
             size="icon"
-            disabled={isLoading || attachments.anyBusy || (!input.trim() && attachments.items.filter((i) => i.status === 'ready').length === 0)}
+            disabled={isLoading || attachments.anyBusy || outOfCredits || (!input.trim() && attachments.items.filter((i) => i.status === 'ready').length === 0)}
             className="shrink-0 bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 w-11 h-11"
           >
             <Send className="w-4 h-4" />
