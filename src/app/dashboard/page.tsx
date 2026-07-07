@@ -7,10 +7,13 @@ import { eq, sql, count } from 'drizzle-orm'
 import { Button } from '@/components/ui/button'
 import { Sparkles, BookOpen, Gamepad2, Globe, Plus } from 'lucide-react'
 import { QuizCard } from '@/components/dashboard/QuizCard'
+import { getBalance } from '@/db/credit-queries'
+import { CreditsPill } from '@/components/credits/CreditsPill'
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() })
   const userId = session!.user.id
+  const balance = await getBalance(userId)
 
   const userQuizzes = await db
     .select({
@@ -46,12 +49,15 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-muted-foreground mt-1">Manage your quizzes and track performance</p>
         </div>
-        <Link href="/dashboard/quizzes/new">
-          <Button className="bg-accent-lime text-accent-lime-foreground rounded-full gap-2 font-semibold">
-            <Sparkles className="w-4 h-4" />
-            New Quiz
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <CreditsPill balance={balance} />
+          <Link href="/dashboard/quizzes/new">
+            <Button className="bg-accent-lime text-accent-lime-foreground rounded-full gap-2 font-semibold">
+              <Sparkles className="w-4 h-4" />
+              New Quiz
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
