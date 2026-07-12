@@ -55,6 +55,7 @@ export default async function PlayPage({
           audience: quiz.audience,
           difficulty: quiz.difficulty,
           coverEmoji: quiz.coverEmoji ?? '🧠',
+          musicTrack: quiz.musicTrack,
           questions: stripped,
         }}
       />

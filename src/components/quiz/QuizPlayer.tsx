@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Clock } from 'lucide-react'
+import { Clock, Volume2, VolumeX } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { QuestionReview } from './QuestionReview'
+import { getTrackById } from '@/lib/music'
+import { useQuizMusic } from '@/hooks/useQuizMusic'
 
 type PlayQuestion = {
   id: string
@@ -24,6 +26,7 @@ type Quiz = {
   audience: string
   difficulty: string
   coverEmoji: string
+  musicTrack: string | null
   questions: PlayQuestion[]
 }
 
@@ -41,10 +44,10 @@ type ScoreResult = {
   }[]
 }
 
-type Phase = 'playing' | 'submitting' | 'finished' | 'error'
+type Phase = 'ready' | 'playing' | 'submitting' | 'finished' | 'error'
 
 export function QuizPlayer({ quiz }: { quiz: Quiz }) {
-  const [phase, setPhase] = useState<Phase>('playing')
+  const [phase, setPhase] = useState<Phase>('ready')
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Answer[]>([])
   const [timeLeft, setTimeLeft] = useState(quiz.questions[0]?.timeLimit ?? 30)
@@ -52,6 +55,9 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
   const [result, setResult] = useState<ScoreResult | null>(null)
   const [errorMsg, setErrorMsg] = useState<string>('')
   const advancingRef = useRef(false)
+
+  const track = getTrackById(quiz.musicTrack)
+  const music = useQuizMusic(track?.file ?? null)
 
   const current = quiz.questions[index]
   const total = quiz.questions.length
@@ -99,6 +105,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
   }
 
   async function submit(finalAnswers: Answer[]) {
+    music.stop()
     setPhase('submitting')
     try {
       const res = await fetch(`/api/quizzes/${quiz.id}/score`, {
@@ -120,6 +127,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
   }
 
   function reset() {
+    music.start()
     setAnswers([])
     setIndex(0)
     setResult(null)
@@ -128,6 +136,28 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
     setTimeLeft(quiz.questions[0]?.timeLimit ?? 30)
     advancingRef.current = false
     setPhase('playing')
+  }
+
+  function startQuiz() {
+    music.start()
+    setPhase('playing')
+  }
+
+  if (phase === 'ready') {
+    return (
+      <div className="max-w-2xl mx-auto p-6 text-center space-y-6 pt-16">
+        <div className="text-7xl">{quiz.coverEmoji}</div>
+        <h1 className="font-[family-name:var(--font-syne)] font-bold text-3xl text-foreground">
+          {quiz.title}
+        </h1>
+        <p className="text-muted-foreground">
+          {total} question{total === 1 ? '' : 's'} · answer before the timer runs out
+        </p>
+        <Button onClick={startQuiz} size="lg" className="rounded-xl">
+          Start quiz
+        </Button>
+      </div>
+    )
   }
 
   if (phase === 'error') {
@@ -226,7 +256,16 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
             <span className="text-2xl">{quiz.coverEmoji}</span>
             <span className="truncate">{quiz.title}</span>
           </span>
-          <span className="text-muted-foreground shrink-0 ml-3">
+          <span className="text-muted-foreground shrink-0 ml-3 flex items-center gap-2">
+            {track && (
+              <button
+                onClick={music.toggleMute}
+                aria-label={music.muted ? 'Unmute music' : 'Mute music'}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {music.muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+            )}
             Q {index + 1} / {total}
           </span>
         </div>

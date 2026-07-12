@@ -3,9 +3,21 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ChevronUp, ChevronDown, Trash2, Plus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { QuizQuestion } from '@/lib/quiz-schema'
+
+const TYPE_ITEMS = [
+  { value: 'multiple_choice', label: 'Multiple choice' },
+  { value: 'true_false', label: 'True / False' },
+]
 
 interface QuestionEditorProps {
   question: QuizQuestion
@@ -122,14 +134,19 @@ export function QuestionEditor({
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Type</label>
-          <select
+          <Select
             value={question.type}
-            onChange={(e) => setType(e.target.value as QuizQuestion['type'])}
-            className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+            onValueChange={(v) => setType(v as QuizQuestion['type'])}
+            items={TYPE_ITEMS}
           >
-            <option value="multiple_choice">Multiple choice</option>
-            <option value="true_false">True / False</option>
-          </select>
+            <SelectTrigger className="w-full" aria-label="Question type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="multiple_choice">Multiple choice</SelectItem>
+              <SelectItem value="true_false">True / False</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Time limit (s)</label>

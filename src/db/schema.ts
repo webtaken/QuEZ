@@ -80,6 +80,7 @@ export const quizzes = pgTable('quizzes', {
   language: text('language').notNull().default('en'),
   isPublic: boolean('is_public').notNull().default(false),
   coverEmoji: text('cover_emoji').default('🧠'),
+  musicTrack: text('music_track'),
   playCount: integer('play_count').notNull().default(0),
   activeLeafId: uuid('active_leaf_id'),
   createdAt: timestamp('created_at').defaultNow().notNull(),

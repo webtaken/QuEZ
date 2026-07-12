@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { MUSIC_TRACK_IDS } from '@/lib/music'
 
 export const quizQuestionSchema = z.object({
   order: z.number().int().min(1),
@@ -20,6 +21,7 @@ export const quizPayloadSchema = z.object({
     .describe('Target audience e.g. Elementary School, High School, Undergraduate, Professional'),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   coverEmoji: z.string().min(1).describe('Single emoji representing the quiz topic'),
+  musicTrack: z.enum(MUSIC_TRACK_IDS).nullable().optional(),
   questions: z.array(quizQuestionSchema),
 })
 
