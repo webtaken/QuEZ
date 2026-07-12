@@ -8,6 +8,11 @@ export type MusicTrack = {
 // (incompetech.com), CC BY 4.0 — attribution lives in public/music/CREDITS.md.
 export const MUSIC_TRACKS = [
   {
+    id: 'tense-music-from-game-show',
+    name: 'Tense Music from Game Show',
+    file: '/music/tense-music-from-game-show.mp3',
+  },
+  {
     id: 'monkeys-spinning-monkeys',
     name: 'Monkeys Spinning Monkeys',
     file: '/music/monkeys-spinning-monkeys.mp3',

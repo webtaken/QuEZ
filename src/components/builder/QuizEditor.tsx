@@ -7,6 +7,13 @@ import { Save, Plus, Loader2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ChatPanel } from './ChatPanel'
 import { QuestionEditor } from './QuestionEditor'
 import { MusicPicker } from './MusicPicker'
@@ -24,6 +31,12 @@ interface QuizEditorProps {
   initialTree?: { id: string; parentId: string | null; createdAt: string }[]
   initialRows?: { id: string; role: string; parts: unknown[]; quizSnapshot?: unknown }[]
 }
+
+const DIFFICULTY_ITEMS = [
+  { value: 'easy', label: 'Easy' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'hard', label: 'Hard' },
+]
 
 function blankQuestion(order: number): QuizQuestion {
   return {
@@ -258,17 +271,22 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Difficulty</label>
-                <select
+                <Select
                   value={quiz.difficulty}
-                  onChange={(e) =>
-                    setField('difficulty', e.target.value as QuizPayload['difficulty'])
+                  onValueChange={(v) =>
+                    setField('difficulty', v as QuizPayload['difficulty'])
                   }
-                  className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                  items={DIFFICULTY_ITEMS}
                 >
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
+                  <SelectTrigger className="w-full" aria-label="Difficulty">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="easy">Easy</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="hard">Hard</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Music</label>
