@@ -3,12 +3,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { Play, Square } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { MUSIC_TRACKS, getTrackById, type MusicTrackId } from '@/lib/music'
 
 interface MusicPickerProps {
   value: MusicTrackId | null
   onChange: (value: MusicTrackId | null) => void
 }
+
+const SELECT_ITEMS = [
+  { value: null, label: 'No music' },
+  ...MUSIC_TRACKS.map((t) => ({ value: t.id, label: t.name })),
+]
 
 export function MusicPicker({ value, onChange }: MusicPickerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -48,33 +60,33 @@ export function MusicPicker({ value, onChange }: MusicPickerProps) {
       })
   }
 
-  function handleChange(next: string) {
+  function handleChange(next: MusicTrackId | null) {
     stopPreview()
-    onChange(next === '' ? null : (next as MusicTrackId))
+    onChange(next)
   }
 
   return (
     <div className="flex items-center gap-2">
-      <select
-        value={value ?? ''}
-        onChange={(e) => handleChange(e.target.value)}
-        aria-label="Background music"
-        className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
-      >
-        <option value="">No music</option>
-        {MUSIC_TRACKS.map((t) => (
-          <option key={t.id} value={t.id}>
-            {t.name}
-          </option>
-        ))}
-      </select>
+      <Select value={value} onValueChange={handleChange} items={SELECT_ITEMS}>
+        <SelectTrigger className="w-full" aria-label="Background music">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={null}>No music</SelectItem>
+          {MUSIC_TRACKS.map((t) => (
+            <SelectItem key={t.id} value={t.id}>
+              {t.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       <Button
         variant="outline"
         size="icon"
         onClick={togglePreview}
         disabled={!value}
         aria-label={previewing ? 'Stop preview' : 'Preview song'}
-        className="shrink-0 h-9 w-9"
+        className="shrink-0"
       >
         {previewing ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
       </Button>
