@@ -43,6 +43,7 @@ export function StudentQuestionLive({
   const submittedRef = useRef(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelected(null)
     setAnswered(false)
     submittedRef.current = false

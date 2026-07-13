@@ -23,6 +23,7 @@ export function StudentGameView({ code }: { code: string }) {
     const raw = localStorage.getItem(storageKey(code))
     if (!raw) {
       router.replace(`/join/${code}`)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setParticipantId(null)
       return
     }
