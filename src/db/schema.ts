@@ -7,6 +7,7 @@ import {
   jsonb,
   uuid,
   index,
+  uniqueIndex,
   numeric,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core'
@@ -172,14 +173,86 @@ export const creditTransactions = pgTable(
   (t) => [index('credit_transactions_user_created_idx').on(t.userId, t.createdAt)]
 )
 
+export const gameSessions = pgTable(
+  'game_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    quizId: uuid('quiz_id')
+      .notNull()
+      .references(() => quizzes.id, { onDelete: 'cascade' }),
+    hostUserId: text('host_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    code: text('code').notNull(), // 6-digit numeric string, e.g. "854123" — not DB-unique, see game-code.ts
+    status: text('status').notNull().default('waiting'), // waiting|question|reveal|podium
+    currentQuestionIndex: integer('current_question_index').notNull().default(0),
+    phaseStartedAt: timestamp('phase_started_at').defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    endedAt: timestamp('ended_at'),
+  },
+  (t) => [index('game_sessions_code_idx').on(t.code)]
+)
+
+export const gameParticipants = pgTable(
+  'game_participants',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => gameSessions.id, { onDelete: 'cascade' }),
+    sessionToken: text('session_token').notNull(), // client-generated, persisted in localStorage for rejoin
+    nickname: text('nickname').notNull(),
+    score: integer('score').notNull().default(0),
+    streak: integer('streak').notNull().default(0),
+    totalAnswerMs: integer('total_answer_ms').notNull().default(0), // tie-break: lower is faster overall
+    kickedAt: timestamp('kicked_at'),
+    joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  },
+  (t) => [
+    index('game_participants_game_id_idx').on(t.gameId),
+    index('game_participants_session_token_idx').on(t.sessionToken),
+  ]
+)
+
+export const gameAnswers = pgTable(
+  'game_answers',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => gameSessions.id, { onDelete: 'cascade' }),
+    participantId: uuid('participant_id')
+      .notNull()
+      .references(() => gameParticipants.id, { onDelete: 'cascade' }),
+    questionId: uuid('question_id')
+      .notNull()
+      .references(() => questions.id, { onDelete: 'cascade' }),
+    selectedIndex: integer('selected_index'), // null = no answer / timed out
+    answerMs: integer('answer_ms').notNull(),
+    isCorrect: boolean('is_correct').notNull(),
+    pointsAwarded: integer('points_awarded').notNull().default(0),
+    answeredAt: timestamp('answered_at').defaultNow().notNull(),
+  },
+  (t) => [
+    index('game_answers_game_question_idx').on(t.gameId, t.questionId),
+    uniqueIndex('game_answers_participant_question_idx').on(t.participantId, t.questionId),
+  ]
+)
+
 export type User = typeof users.$inferSelect
 export type Quiz = typeof quizzes.$inferSelect
 export type Question = typeof questions.$inferSelect
 export type ChatMessage = typeof chatMessages.$inferSelect
 export type Attachment = typeof attachments.$inferSelect
 export type CreditTransaction = typeof creditTransactions.$inferSelect
+export type GameSession = typeof gameSessions.$inferSelect
+export type GameParticipant = typeof gameParticipants.$inferSelect
+export type GameAnswer = typeof gameAnswers.$inferSelect
 export type NewQuiz = typeof quizzes.$inferInsert
 export type NewQuestion = typeof questions.$inferInsert
 export type NewChatMessage = typeof chatMessages.$inferInsert
 export type NewAttachment = typeof attachments.$inferInsert
 export type NewCreditTransaction = typeof creditTransactions.$inferInsert
+export type NewGameSession = typeof gameSessions.$inferInsert
+export type NewGameParticipant = typeof gameParticipants.$inferInsert
+export type NewGameAnswer = typeof gameAnswers.$inferInsert
