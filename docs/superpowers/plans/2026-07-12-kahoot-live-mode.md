@@ -33,7 +33,7 @@
 - Consumes: nothing.
 - Produces (used by every later task): `gameSessions`, `gameParticipants`, `gameAnswers` tables and `GameSession`, `GameParticipant`, `GameAnswer`, `NewGameSession`, `NewGameParticipant`, `NewGameAnswer` types. `gameSessions.status` is one of `'waiting' | 'question' | 'reveal' | 'podium'` (application-level union, stored as `text`).
 
-- [ ] **Step 1: Add `uniqueIndex` to the drizzle import**
+- [x] **Step 1: Add `uniqueIndex` to the drizzle import**
 
 In `src/db/schema.ts`, line 1-12, add `uniqueIndex` to the import list:
 
@@ -53,7 +53,7 @@ import {
 } from 'drizzle-orm/pg-core'
 ```
 
-- [ ] **Step 2: Add the three tables**
+- [x] **Step 2: Add the three tables**
 
 In `src/db/schema.ts`, after the `creditTransactions` table's closing `)` (currently ends at line 173, right before `export type User = ...`), insert:
 
@@ -125,7 +125,7 @@ export const gameAnswers = pgTable(
 )
 ```
 
-- [ ] **Step 3: Add type exports**
+- [x] **Step 3: Add type exports**
 
 In `src/db/schema.ts`, in the type-export block at the bottom (currently lines 175-185), add after the existing `CreditTransaction`/`NewCreditTransaction` lines:
 
@@ -138,17 +138,17 @@ export type NewGameParticipant = typeof gameParticipants.$inferInsert
 export type NewGameAnswer = typeof gameAnswers.$inferInsert
 ```
 
-- [ ] **Step 4: Push the schema**
+- [x] **Step 4: Push the schema**
 
 Run: `pnpm db:push`
 Expected: drizzle reports 3 new tables created. If it cannot connect to Postgres, stop and ask the user to start the local database.
 
-- [ ] **Step 5: Verify types compile**
+- [x] **Step 5: Verify types compile**
 
 Run: `npx tsc --noEmit`
 Expected: clean (no errors referencing `schema.ts`).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/db/schema.ts
@@ -169,7 +169,7 @@ git commit -m "feat(live): add game_sessions, game_participants, game_answers ta
   - `computePoints(timeLimitMs: number, answerMs: number, isCorrect: boolean, priorStreak: number): number`
   - `rankParticipants<T extends { score: number; totalAnswerMs: number }>(participants: T[]): (T & { rank: number })[]`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/lib/game-scoring.test.ts`:
 
@@ -240,12 +240,12 @@ describe('rankParticipants', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test src/lib/game-scoring.test.ts`
 Expected: FAIL — cannot resolve `./game-scoring`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `src/lib/game-scoring.ts`:
 
@@ -282,12 +282,12 @@ export function rankParticipants<T extends { score: number; totalAnswerMs: numbe
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pnpm test src/lib/game-scoring.test.ts`
 Expected: PASS (10 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/game-scoring.ts src/lib/game-scoring.test.ts
@@ -306,7 +306,7 @@ git commit -m "feat(live): speed+streak scoring formula and leaderboard ranking"
 - Consumes: nothing (the DB-existence check is injected as a callback, keeping this module pure and DB-free).
 - Produces (used by Task 4): `generateUniqueGameCode(codeExists: (code: string) => Promise<boolean>, maxAttempts?: number): Promise<string>`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/lib/game-code.test.ts`:
 
@@ -338,12 +338,12 @@ describe('generateUniqueGameCode', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test src/lib/game-code.test.ts`
 Expected: FAIL — cannot resolve `./game-code`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `src/lib/game-code.ts`:
 
@@ -368,12 +368,12 @@ export async function generateUniqueGameCode(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pnpm test src/lib/game-code.test.ts`
 Expected: PASS (3 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/game-code.ts src/lib/game-code.test.ts
@@ -396,7 +396,7 @@ git commit -m "feat(live): unique 6-digit room code generator"
 
 No dedicated test file for this task — see "DB-layer testing convention" in Global Constraints above. Correctness of this layer is exercised indirectly by the mocked route tests in Tasks 5-11.
 
-- [ ] **Step 1: Create the queries module**
+- [x] **Step 1: Create the queries module**
 
 Create `src/db/game-queries.ts`:
 
@@ -459,7 +459,7 @@ export async function getParticipantsWithAnswerStatus(gameId: string, questionId
 }
 ```
 
-- [ ] **Step 2: Create the mutations module**
+- [x] **Step 2: Create the mutations module**
 
 Create `src/db/game-mutations.ts`:
 
@@ -703,17 +703,17 @@ export async function advanceGame(
 }
 ```
 
-- [ ] **Step 3: Verify types**
+- [x] **Step 3: Verify types**
 
 Run: `npx tsc --noEmit`
 Expected: clean. (`onConflictDoNothing({ target: [...] })` type-checks because the unique index in Task 1 covers exactly `[gameAnswers.participantId, gameAnswers.questionId]`.)
 
-- [ ] **Step 4: Lint**
+- [x] **Step 4: Lint**
 
 Run: `pnpm lint`
 Expected: clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/db/game-queries.ts src/db/game-mutations.ts
@@ -732,7 +732,7 @@ git commit -m "feat(live): game state-machine DB layer (queries + mutations)"
 - Consumes: `createGameSession` from `src/db/game-mutations.ts` (Task 4); `isUuid` from `src/lib/ids.ts`.
 - Produces (used by Task 13's `HostLiveButton`): `POST /api/games` — body `{ quizId: string }`, auth required, returns `{ gameId, code }` (200) or `{ error }` (401/400/404).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/app/api/games/route.test.ts`:
 
@@ -811,12 +811,12 @@ describe('POST /api/games', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test src/app/api/games/route.test.ts`
 Expected: FAIL — cannot resolve `./route`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `src/app/api/games/route.ts`:
 
@@ -843,12 +843,12 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pnpm test src/app/api/games/route.test.ts`
 Expected: PASS (5 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/api/games/route.ts src/app/api/games/route.test.ts
@@ -867,7 +867,7 @@ git commit -m "feat(live): POST /api/games to create a live game session"
 - Consumes: `getGameByCode` from `src/db/game-queries.ts`; `joinGame` from `src/db/game-mutations.ts` (Task 4).
 - Produces (used by Task 18's `JoinForm`): `POST /api/games/[code]/join` — body `{ nickname: string, sessionToken: string }`, public (no auth). Returns `{ participantId, nickname }` (200) or `{ error }` (400/403/404/409).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/app/api/games/[code]/join/route.test.ts`:
 
@@ -940,12 +940,12 @@ describe('POST /api/games/[code]/join', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test src/app/api/games/[code]/join/route.test.ts`
 Expected: FAIL — cannot resolve `./route`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `src/app/api/games/[code]/join/route.ts`:
 
@@ -977,12 +977,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pnpm test src/app/api/games/[code]/join/route.test.ts`
 Expected: PASS (6 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add "src/app/api/games/[code]/join/route.ts" "src/app/api/games/[code]/join/route.test.ts"
@@ -1015,7 +1015,7 @@ git commit -m "feat(live): POST /api/games/[code]/join for anonymous nickname jo
   ```
   `question` is present for every status except `waiting`. `correctIndex`/`leaderboard` are present only for `reveal`/`podium`. Kicked participants are excluded from `participants`/`leaderboard` but `you` still resolves for them (so their own client can detect `kickedAt` and show a "removed" screen).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/app/api/games/[code]/state/route.test.ts`:
 
@@ -1147,12 +1147,12 @@ describe('GET /api/games/[code]/state', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test src/app/api/games/[code]/state/route.test.ts`
 Expected: FAIL — cannot resolve `./route`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `src/app/api/games/[code]/state/route.ts`:
 
@@ -1218,12 +1218,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pnpm test src/app/api/games/[code]/state/route.test.ts`
 Expected: PASS (7 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add "src/app/api/games/[code]/state/route.ts" "src/app/api/games/[code]/state/route.test.ts"
@@ -1242,7 +1242,7 @@ git commit -m "feat(live): GET /api/games/[code]/state polling endpoint with laz
 - Consumes: `getGameByCode` from `src/db/game-queries.ts`; `startGame` from `src/db/game-mutations.ts` (Task 4).
 - Produces (used by Task 14's `HostWaitingRoom` "Start" button): `POST /api/games/[code]/start` — host-only. Returns `{ ok: true }` (200) or `{ error }` (401/403/404/400/409).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/app/api/games/[code]/start/route.test.ts`:
 
@@ -1323,12 +1323,12 @@ describe('POST /api/games/[code]/start', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test src/app/api/games/[code]/start/route.test.ts`
 Expected: FAIL — cannot resolve `./route`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `src/app/api/games/[code]/start/route.ts`:
 
@@ -1357,12 +1357,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pnpm test src/app/api/games/[code]/start/route.test.ts`
 Expected: PASS (5 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add "src/app/api/games/[code]/start/route.ts" "src/app/api/games/[code]/start/route.test.ts"
@@ -1381,7 +1381,7 @@ git commit -m "feat(live): POST /api/games/[code]/start (host-only)"
 - Consumes: `getGameByCode`, `getQuestionsForQuiz` from `src/db/game-queries.ts`; `submitAnswer` from `src/db/game-mutations.ts` (Task 4).
 - Produces (used by Task 20's `StudentQuestionLive`): `POST /api/games/[code]/answer` — body `{ participantId, questionId, selectedIndex: number | null }`, public. Returns `{ ok: true }` (200) — deliberately never echoes correctness, so a student can't learn the answer before the reveal phase. Errors: 400/404/409.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/app/api/games/[code]/answer/route.test.ts`:
 
@@ -1470,12 +1470,12 @@ describe('POST /api/games/[code]/answer', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test src/app/api/games/[code]/answer/route.test.ts`
 Expected: FAIL — cannot resolve `./route`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `src/app/api/games/[code]/answer/route.ts`:
 
@@ -1514,12 +1514,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pnpm test src/app/api/games/[code]/answer/route.test.ts`
 Expected: PASS (7 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add "src/app/api/games/[code]/answer/route.ts" "src/app/api/games/[code]/answer/route.test.ts"
@@ -1538,7 +1538,7 @@ git commit -m "feat(live): POST /api/games/[code]/answer (correctness never echo
 - Consumes: `getGameByCode`, `getQuestionsForQuiz` from `src/db/game-queries.ts`; `advanceGame` from `src/db/game-mutations.ts` (Task 4).
 - Produces (used by Task 16's `HostReveal` "Next"/"Podium" button): `POST /api/games/[code]/advance` — host-only. Returns `{ status }` (200) or `{ error }` (401/403/404/409).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/app/api/games/[code]/advance/route.test.ts`:
 
@@ -1623,12 +1623,12 @@ describe('POST /api/games/[code]/advance', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test src/app/api/games/[code]/advance/route.test.ts`
 Expected: FAIL — cannot resolve `./route`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `src/app/api/games/[code]/advance/route.ts`:
 
@@ -1658,12 +1658,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pnpm test src/app/api/games/[code]/advance/route.test.ts`
 Expected: PASS (5 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add "src/app/api/games/[code]/advance/route.ts" "src/app/api/games/[code]/advance/route.test.ts"
@@ -1682,7 +1682,7 @@ git commit -m "feat(live): POST /api/games/[code]/advance (host-only)"
 - Consumes: `getGameByCode` from `src/db/game-queries.ts`; `kickParticipant` from `src/db/game-mutations.ts` (Task 4).
 - Produces (used by Task 14's `HostWaitingRoom` / Task 15's live view kick button): `POST /api/games/[code]/kick` — body `{ participantId }`, host-only. Returns `{ ok: true }` (200) or `{ error }` (401/400/403/404).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/app/api/games/[code]/kick/route.test.ts`:
 
@@ -1772,12 +1772,12 @@ describe('POST /api/games/[code]/kick', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test src/app/api/games/[code]/kick/route.test.ts`
 Expected: FAIL — cannot resolve `./route`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `src/app/api/games/[code]/kick/route.ts`:
 
@@ -1812,12 +1812,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pnpm test src/app/api/games/[code]/kick/route.test.ts`
 Expected: PASS (6 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add "src/app/api/games/[code]/kick/route.ts" "src/app/api/games/[code]/kick/route.test.ts"
@@ -1842,7 +1842,7 @@ git commit -m "feat(live): POST /api/games/[code]/kick (host-only)"
 
 No dedicated test file — these are DOM/browser-API hooks with no automated coverage anywhere in this codebase (see `src/hooks/useQuizMusic.ts`, which also ships without a test). Verified manually in Task 23's end-to-end pass.
 
-- [ ] **Step 1: Create the polling hook**
+- [x] **Step 1: Create the polling hook**
 
 Create `src/hooks/useGamePolling.ts`:
 
@@ -1911,7 +1911,7 @@ export function useGamePolling(code: string, participantId?: string | null) {
 }
 ```
 
-- [ ] **Step 2: Create the countdown hook**
+- [x] **Step 2: Create the countdown hook**
 
 Create `src/hooks/useCountdown.ts`:
 
@@ -1942,7 +1942,7 @@ export function useCountdown(phaseStartedAt: string, timeLimitSeconds: number) {
 }
 ```
 
-- [ ] **Step 3: Create the sound hook**
+- [x] **Step 3: Create the sound hook**
 
 Create `src/hooks/useGameSound.ts`:
 
@@ -1987,12 +1987,12 @@ export function useGameSound() {
 }
 ```
 
-- [ ] **Step 4: Verify types and lint**
+- [x] **Step 4: Verify types and lint**
 
 Run: `npx tsc --noEmit && pnpm lint`
 Expected: clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/hooks/useGamePolling.ts src/hooks/useCountdown.ts src/hooks/useGameSound.ts
@@ -2011,7 +2011,7 @@ git commit -m "feat(live): polling, countdown, and synthesized-sound client hook
 - Consumes: `POST /api/games` from Task 5.
 - Produces: nothing consumed by later tasks — this is the leaf entry point into the flow built in Tasks 14+.
 
-- [ ] **Step 1: Create HostLiveButton**
+- [x] **Step 1: Create HostLiveButton**
 
 Create `src/components/quiz/HostLiveButton.tsx` (mirrors the structure of `src/components/quiz/PublishToggle.tsx`):
 
@@ -2065,7 +2065,7 @@ export function HostLiveButton({ quizId, disabled }: { quizId: string; disabled?
 
 (No `finally`-reset of `starting` on success: the component navigates away via `router.push`, so it's fine to stay disabled/spinning until unmount.)
 
-- [ ] **Step 2: Wire into QuizEditor**
+- [x] **Step 2: Wire into QuizEditor**
 
 In `src/components/builder/QuizEditor.tsx`:
 
@@ -2093,18 +2093,18 @@ b. In the header actions `div` (~line 209-219), add the button immediately befor
               <PublishToggle quizId={initialQuiz.id} initialIsPublic={initialQuiz.isPublic} />
 ```
 
-- [ ] **Step 3: Verify types, lint**
+- [x] **Step 3: Verify types, lint**
 
 Run: `npx tsc --noEmit && pnpm lint`
 Expected: clean.
 
-- [ ] **Step 4: Manual check**
+- [x] **Step 4: Manual check**
 
 Run: `pnpm dev`, open a quiz with at least one question in the dashboard editor:
 - "Host live" button is enabled; clicking it creates a game and navigates to `/host/<code>` (404 for now — the host page doesn't exist until Task 14, that's expected at this point in the plan).
 - Open a quiz with zero questions — "Host live" is disabled.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/quiz/HostLiveButton.tsx src/components/builder/QuizEditor.tsx
@@ -2124,7 +2124,7 @@ git commit -m "feat(live): Host live button in the dashboard quiz editor"
 - Consumes: `getGameByCode` from `src/db/game-queries.ts`; `useGamePolling`/`GameStateView`/`GameParticipantView` from `src/hooks/useGamePolling.ts` (Task 12); `POST /api/games/[code]/{start,kick}` from Tasks 6-11.
 - Produces: `HostGameView({ code, quizTitle, coverEmoji }: { code: string; quizTitle: string; coverEmoji: string })` — the orchestrator Tasks 15-17 plug their components into. `HostWaitingRoom({ code, quizTitle, coverEmoji, participants, onKick, onStart })`.
 
-- [ ] **Step 1: Host page (server component, auth + ownership gate)**
+- [x] **Step 1: Host page (server component, auth + ownership gate)**
 
 Create `src/app/host/[code]/page.tsx`:
 
@@ -2157,7 +2157,7 @@ export default async function HostPage({ params }: { params: Promise<{ code: str
 }
 ```
 
-- [ ] **Step 2: HostGameView orchestrator**
+- [x] **Step 2: HostGameView orchestrator**
 
 Create `src/components/game/HostGameView.tsx`:
 
@@ -2241,7 +2241,7 @@ export function HostGameView({
 
 (`HostQuestionLive`, `HostReveal`, `HostPodium` don't exist until Tasks 15-17 — this task will not type-check or build in isolation. That's expected; Step 4 below runs the check only after Task 17.)
 
-- [ ] **Step 3: HostWaitingRoom**
+- [x] **Step 3: HostWaitingRoom**
 
 Create `src/components/game/HostWaitingRoom.tsx`:
 
@@ -2320,7 +2320,7 @@ export function HostWaitingRoom({
 }
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 This task intentionally does not type-check in isolation (`HostGameView` imports `HostQuestionLive`/`HostReveal`/`HostPodium`, created in Tasks 15-17). Commit now; verification happens at the end of Task 17.
 
@@ -2340,7 +2340,7 @@ git commit -m "feat(live): host page shell, orchestrator, and waiting room"
 - Consumes: `useCountdown` from `src/hooks/useCountdown.ts` (Task 12); `GameQuestionView`, `GameParticipantView` types from `src/hooks/useGamePolling.ts`.
 - Produces: `HostQuestionLive({ question, currentQuestionIndex, totalQuestions, phaseStartedAt, participants })` — used by `HostGameView` (Task 14).
 
-- [ ] **Step 1: Create the component**
+- [x] **Step 1: Create the component**
 
 Create `src/components/game/HostQuestionLive.tsx`:
 
@@ -2410,7 +2410,7 @@ export function HostQuestionLive({
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 Still not type-checkable in isolation (`HostReveal`/`HostPodium` remain, Tasks 16-17).
 
@@ -2430,7 +2430,7 @@ git commit -m "feat(live): HostQuestionLive — live question + answered-count d
 - Consumes: `GameQuestionView`, `GameLeaderboardEntry` types from `src/hooks/useGamePolling.ts` (Task 12).
 - Produces: `HostReveal({ question, correctIndex, currentQuestionIndex, totalQuestions, leaderboard, onAdvance })` — used by `HostGameView` (Task 14), which already keys it by `currentQuestionIndex` so the 2s advance-gate resets on every new question.
 
-- [ ] **Step 1: Create the component**
+- [x] **Step 1: Create the component**
 
 Create `src/components/game/HostReveal.tsx`:
 
@@ -2525,7 +2525,7 @@ export function HostReveal({
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 Still not type-checkable in isolation (`HostPodium` remains, Task 17).
 
@@ -2545,7 +2545,7 @@ git commit -m "feat(live): HostReveal — answer highlight, leaderboard, gated a
 - Consumes: `GameLeaderboardEntry` type from `src/hooks/useGamePolling.ts` (Task 12); `.animate-fade-up`/`-delay-1/2/3` CSS classes already defined in `src/app/globals.css`.
 - Produces: `HostPodium({ leaderboard, quizTitle, coverEmoji })` — used by `HostGameView` (Task 14). This completes the full host component tree.
 
-- [ ] **Step 1: Create the component**
+- [x] **Step 1: Create the component**
 
 Create `src/components/game/HostPodium.tsx`:
 
@@ -2624,12 +2624,12 @@ export function HostPodium({
 }
 ```
 
-- [ ] **Step 2: Verify the full host tree type-checks and lints**
+- [x] **Step 2: Verify the full host tree type-checks and lints**
 
 Run: `npx tsc --noEmit && pnpm lint`
 Expected: clean. This is the first point where `HostGameView` (Task 14) has all its imports satisfied.
 
-- [ ] **Step 3: Manual check**
+- [x] **Step 3: Manual check**
 
 Run: `pnpm dev`. From a quiz with ≥1 question in the dashboard, click "Host live":
 - Waiting room shows the room code, share URL, and updates as you `curl -X POST http://localhost:3000/api/games/<code>/join -H 'Content-Type: application/json' -d '{"nickname":"Test","sessionToken":"t1"}'` a couple of times (no student UI exists yet — Tasks 18-22 — so simulate joins via curl for this check).
@@ -2637,7 +2637,7 @@ Run: `pnpm dev`. From a quiz with ≥1 question in the dashboard, click "Host li
 - Manually `curl -X POST .../answer` for a joined participant, then either wait out the timer or answer for everyone — confirm the view flips to `HostReveal` with the correct answer highlighted and leaderboard populated.
 - "Next question" is disabled for ~2s then enabled; clicking through to the last question shows "Show podium"; clicking it renders `HostPodium` with the top-3 blocks and stagger animation.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/components/game/HostPodium.tsx
@@ -2657,7 +2657,7 @@ git commit -m "feat(live): HostPodium — animated final results"
 - Consumes: `POST /api/games/[code]/join` from Task 6.
 - Produces: on success, writes `localStorage['quez_game_<code>']` = `JSON.stringify({ participantId, sessionToken })`. **This exact key format is the contract Task 19's `StudentGameView` reads to detect an existing join** — same key (`quez_game_<code>`), same two fields.
 
-- [ ] **Step 1: Create JoinForm**
+- [x] **Step 1: Create JoinForm**
 
 Create `src/components/game/JoinForm.tsx`:
 
@@ -2758,7 +2758,7 @@ export function JoinForm({ initialCode }: { initialCode?: string }) {
 }
 ```
 
-- [ ] **Step 2: Create the pages**
+- [x] **Step 2: Create the pages**
 
 Create `src/app/join/page.tsx`:
 
@@ -2781,12 +2781,12 @@ export default async function JoinCodePage({ params }: { params: Promise<{ code:
 }
 ```
 
-- [ ] **Step 3: Verify types, lint**
+- [x] **Step 3: Verify types, lint**
 
 Run: `npx tsc --noEmit && pnpm lint`
 Expected: clean.
 
-- [ ] **Step 4: Manual check**
+- [x] **Step 4: Manual check**
 
 Run: `pnpm dev`, with a game already in `waiting` (via Task 17's host flow):
 - Visit `/join/<code>` — code is prefilled, readonly-feeling but still editable; enter a nickname, submit.
@@ -2794,7 +2794,7 @@ Run: `pnpm dev`, with a game already in `waiting` (via Task 17's host flow):
 - Visit `/join` directly — code field is empty, can be typed manually.
 - Try joining with a nickname already taken in that room (join twice with different sessionTokens, same nickname) — shows the inline "already taken" error.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/game/JoinForm.tsx src/app/join/page.tsx "src/app/join/[code]/page.tsx"
@@ -2814,7 +2814,7 @@ git commit -m "feat(live): join flow — room code + nickname entry"
 - Consumes: `localStorage['quez_game_<code>']` written by Task 18's `JoinForm`; `useGamePolling`/`GameStateView`/`GameParticipantView` from `src/hooks/useGamePolling.ts` (Task 12).
 - Produces: `StudentGameView({ code })` — the orchestrator Tasks 20-22 plug their components into. It lifts `selectedIndex` (the student's tapped answer) keyed by `currentQuestionIndex`, so it survives the `question → reveal` remount and can be passed into `StudentReveal` (Task 21) for the correct/wrong sound cue. `StudentWaitingRoom({ participants, you })`.
 
-- [ ] **Step 1: Student page (no auth — anonymous play)**
+- [x] **Step 1: Student page (no auth — anonymous play)**
 
 Create `src/app/game/[code]/page.tsx`:
 
@@ -2827,7 +2827,7 @@ export default async function GamePage({ params }: { params: Promise<{ code: str
 }
 ```
 
-- [ ] **Step 2: StudentGameView orchestrator**
+- [x] **Step 2: StudentGameView orchestrator**
 
 Create `src/components/game/StudentGameView.tsx`:
 
@@ -2926,7 +2926,7 @@ export function StudentGameView({ code }: { code: string }) {
 
 (`StudentQuestionLive`, `StudentReveal`, `StudentPodium` don't exist until Tasks 20-22 — expected not to type-check until then, same as the host tree in Task 14.)
 
-- [ ] **Step 3: StudentWaitingRoom**
+- [x] **Step 3: StudentWaitingRoom**
 
 Create `src/components/game/StudentWaitingRoom.tsx`:
 
@@ -2961,7 +2961,7 @@ export function StudentWaitingRoom({
 }
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add "src/app/game/[code]/page.tsx" src/components/game/StudentGameView.tsx src/components/game/StudentWaitingRoom.tsx
@@ -2979,7 +2979,7 @@ git commit -m "feat(live): student page shell, orchestrator, and waiting room"
 - Consumes: `useCountdown` from `src/hooks/useCountdown.ts` (Task 12); `GameQuestionView` type; `POST /api/games/[code]/answer` from Task 9.
 - Produces: `StudentQuestionLive({ code, participantId, question, phaseStartedAt, currentQuestionIndex, onAnswered })` — used by `StudentGameView` (Task 19). Calls `onAnswered(index | null)` exactly once per question, whether the student tapped a tile or the timer ran out, so the parent can remember it for `StudentReveal` (Task 21).
 
-- [ ] **Step 1: Create the component**
+- [x] **Step 1: Create the component**
 
 Create `src/components/game/StudentQuestionLive.tsx`:
 
@@ -3099,7 +3099,7 @@ export function StudentQuestionLive({
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 Still not type-checkable in isolation (`StudentReveal`/`StudentPodium` remain, Tasks 21-22).
 
@@ -3119,7 +3119,7 @@ git commit -m "feat(live): StudentQuestionLive — tappable tiles, countdown rin
 - Consumes: `useGameSound` from `src/hooks/useGameSound.ts` (Task 12); `GameQuestionView`/`GameStateView` types.
 - Produces: `StudentReveal({ question, correctIndex, selectedIndex, you })` — used by `StudentGameView` (Task 19), which keys it by `currentQuestionIndex` so the sound cue fires exactly once per question (remount, not a re-render).
 
-- [ ] **Step 1: Create the component**
+- [x] **Step 1: Create the component**
 
 Create `src/components/game/StudentReveal.tsx`:
 
@@ -3199,7 +3199,7 @@ export function StudentReveal({
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 Still not type-checkable in isolation (`StudentPodium` remains, Task 22).
 
@@ -3219,7 +3219,7 @@ git commit -m "feat(live): StudentReveal — correct/wrong banner, sound cue, st
 - Consumes: `GameLeaderboardEntry`/`GameStateView` types from `src/hooks/useGamePolling.ts` (Task 12); same `.animate-fade-up`/`-delay-*` CSS as `HostPodium` (Task 17).
 - Produces: `StudentPodium({ leaderboard, you })` — used by `StudentGameView` (Task 19). This completes the full student component tree.
 
-- [ ] **Step 1: Create the component**
+- [x] **Step 1: Create the component**
 
 Create `src/components/game/StudentPodium.tsx`:
 
@@ -3345,12 +3345,12 @@ export function StudentPodium({
 }
 ```
 
-- [ ] **Step 2: Verify the full student tree type-checks and lints**
+- [x] **Step 2: Verify the full student tree type-checks and lints**
 
 Run: `npx tsc --noEmit && pnpm lint`
 Expected: clean. This is the first point where `StudentGameView` (Task 19) has all its imports satisfied.
 
-- [ ] **Step 3: Manual check (two browser windows)**
+- [x] **Step 3: Manual check (two browser windows)**
 
 Run: `pnpm dev`. Window A: dashboard → "Host live" → `/host/<code>`. Window B: `/join/<code>` → enter a nickname → join.
 
@@ -3362,7 +3362,7 @@ Run: `pnpm dev`. Window A: dashboard → "Host live" → `/host/<code>`. Window 
 - Refresh Window B mid-game → it reconnects to the same seat/score (via the `sessionToken` in `localStorage`) instead of being asked to join again.
 - From Window A's waiting room, kick a not-yet-started player — their Window B shows "You were removed from this game by the host."
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/components/game/StudentPodium.tsx
@@ -3375,12 +3375,12 @@ git commit -m "feat(live): StudentPodium — final rank, animated top-3, own-row
 
 **Files:** none new.
 
-- [ ] **Step 1: Full test + lint + type-check + build**
+- [x] **Step 1: Full test + lint + type-check + build**
 
 Run: `pnpm test && pnpm lint && npx tsc --noEmit && pnpm build`
 Expected: all tests pass (Tasks 2-3, 5-11 — 54 tests total: 10+3+5+6+7+5+7+5+6), lint clean, no type errors, production build succeeds.
 
-- [ ] **Step 2: End-to-end manual pass covering every spec edge case**
+- [x] **Step 2: End-to-end manual pass covering every spec edge case**
 
 With `pnpm dev`, two browser windows (host + student, per Task 22 Step 3), work through:
 
@@ -3394,7 +3394,7 @@ With `pnpm dev`, two browser windows (host + student, per Task 22 Step 3), work 
 8. **Quiz deleted mid-game:** as the quiz owner, delete the quiz (dashboard) while a game on it is still `waiting`/`question` — the next poll from host or student 404s and shows "host ended this quiz" (cascade delete via the `quizzes` FK).
 9. **Scoring sanity:** answer one question instantly and correctly, another correctly at the last second — confirm the instant answer scores roughly double the last-second one (per the `computePoints` formula), and that a 2-streak scores more than the same speed with no streak.
 
-- [ ] **Step 3: Fix anything found, commit fixes**
+- [x] **Step 3: Fix anything found, commit fixes**
 
 Any failures: fix, re-run Step 1, commit with a `fix:` message.
 
