@@ -8,9 +8,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
 
   const participantId = typeof body?.participantId === 'string' ? body.participantId : ''
   const questionId = typeof body?.questionId === 'string' ? body.questionId : ''
+  const sessionToken = typeof body?.sessionToken === 'string' ? body.sessionToken : ''
   const selectedIndex = typeof body?.selectedIndex === 'number' ? body.selectedIndex : null
-  if (!participantId || !questionId) {
-    return NextResponse.json({ error: 'participantId and questionId are required' }, { status: 400 })
+  if (!participantId || !questionId || !sessionToken) {
+    return NextResponse.json({ error: 'participantId, questionId, and sessionToken are required' }, { status: 400 })
   }
 
   const game = await getGameByCode(code)
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
     return NextResponse.json({ error: 'That is not the current question' }, { status: 409 })
   }
 
-  const result = await submitAnswer(game, currentQuestion, participantId, selectedIndex)
+  const result = await submitAnswer(game, currentQuestion, participantId, sessionToken, selectedIndex)
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status })
 
   return NextResponse.json({ ok: true })

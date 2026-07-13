@@ -97,6 +97,7 @@ export async function submitAnswer(
   game: GameSession,
   question: { id: string; correctIndex: number; timeLimit: number },
   participantId: string,
+  sessionToken: string,
   selectedIndex: number | null
 ): Promise<AnswerResult> {
   const [participant] = await db
@@ -106,6 +107,7 @@ export async function submitAnswer(
       and(
         eq(gameParticipants.id, participantId),
         eq(gameParticipants.gameId, game.id),
+        eq(gameParticipants.sessionToken, sessionToken),
         isNull(gameParticipants.kickedAt)
       )
     )

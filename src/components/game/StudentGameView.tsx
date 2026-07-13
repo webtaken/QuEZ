@@ -16,6 +16,7 @@ export function StudentGameView({ code }: { code: string }) {
   const router = useRouter()
   // undefined = not yet read from localStorage, null = no join found (redirecting)
   const [participantId, setParticipantId] = useState<string | null | undefined>(undefined)
+  const [sessionToken, setSessionToken] = useState<string | undefined>(undefined)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [answeredQuestionIndex, setAnsweredQuestionIndex] = useState<number | null>(null)
 
@@ -27,8 +28,9 @@ export function StudentGameView({ code }: { code: string }) {
       setParticipantId(null)
       return
     }
-    const parsed = JSON.parse(raw) as { participantId: string }
+    const parsed = JSON.parse(raw) as { participantId: string; sessionToken: string }
     setParticipantId(parsed.participantId)
+    setSessionToken(parsed.sessionToken)
   }, [code, router])
 
   const { state, error } = useGamePolling(code, participantId ?? undefined)
@@ -66,6 +68,7 @@ export function StudentGameView({ code }: { code: string }) {
       <StudentQuestionLive
         code={code}
         participantId={participantId}
+        sessionToken={sessionToken ?? ''}
         question={state.question}
         phaseStartedAt={state.phaseStartedAt}
         currentQuestionIndex={state.currentQuestionIndex}

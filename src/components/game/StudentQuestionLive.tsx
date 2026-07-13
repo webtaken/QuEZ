@@ -25,6 +25,7 @@ function CountdownRing({ secondsLeft, timeLimit }: { secondsLeft: number; timeLi
 export function StudentQuestionLive({
   code,
   participantId,
+  sessionToken,
   question,
   phaseStartedAt,
   currentQuestionIndex,
@@ -32,6 +33,7 @@ export function StudentQuestionLive({
 }: {
   code: string
   participantId: string
+  sessionToken: string
   question: GameQuestionView
   phaseStartedAt: string
   currentQuestionIndex: number
@@ -63,7 +65,7 @@ export function StudentQuestionLive({
     fetch(`/api/games/${code}/answer`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ participantId, questionId: question.id, selectedIndex: index }),
+      body: JSON.stringify({ participantId, sessionToken, questionId: question.id, selectedIndex: index }),
     }).catch(() => {})
   }
 

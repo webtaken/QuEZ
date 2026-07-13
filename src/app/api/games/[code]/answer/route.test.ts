@@ -31,27 +31,43 @@ beforeEach(() => {
 
 describe('POST /api/games/[code]/answer', () => {
   it('returns 400 when participantId or questionId is missing', async () => {
-    const res = await POST(req({ questionId: 'q_1', selectedIndex: 0 }), ctx('854123'))
+    const res = await POST(req({ questionId: 'q_1', sessionToken: 't1', selectedIndex: 0 }), ctx('854123'))
     expect(res.status).toBe(400)
     expect(getGameByCode).not.toHaveBeenCalled()
   })
 
+  it('returns 400 when sessionToken is missing', async () => {
+    const res = await POST(req({ participantId: 'p1', questionId: 'q_1', selectedIndex: 0 }), ctx('854123'))
+    expect(res.status).toBe(400)
+    expect(getGameByCode).not.toHaveBeenCalled()
+    expect(submitAnswer).not.toHaveBeenCalled()
+  })
+
   it('returns 404 for an unknown code', async () => {
     getGameByCode.mockResolvedValue(null)
-    const res = await POST(req({ participantId: 'p1', questionId: 'q_1', selectedIndex: 0 }), ctx('000000'))
+    const res = await POST(
+      req({ participantId: 'p1', questionId: 'q_1', sessionToken: 't1', selectedIndex: 0 }),
+      ctx('000000')
+    )
     expect(res.status).toBe(404)
   })
 
   it('returns 409 when the game is not in the question phase', async () => {
     getGameByCode.mockResolvedValue({ ...GAME_ON_Q1, status: 'reveal' })
-    const res = await POST(req({ participantId: 'p1', questionId: 'q_1', selectedIndex: 0 }), ctx('854123'))
+    const res = await POST(
+      req({ participantId: 'p1', questionId: 'q_1', sessionToken: 't1', selectedIndex: 0 }),
+      ctx('854123')
+    )
     expect(res.status).toBe(409)
     expect(submitAnswer).not.toHaveBeenCalled()
   })
 
   it('returns 409 when questionId does not match the current question', async () => {
     getGameByCode.mockResolvedValue(GAME_ON_Q1)
-    const res = await POST(req({ participantId: 'p1', questionId: 'stale-question', selectedIndex: 0 }), ctx('854123'))
+    const res = await POST(
+      req({ participantId: 'p1', questionId: 'stale-question', sessionToken: 't1', selectedIndex: 0 }),
+      ctx('854123')
+    )
     expect(res.status).toBe(409)
     expect(submitAnswer).not.toHaveBeenCalled()
   })
@@ -59,24 +75,33 @@ describe('POST /api/games/[code]/answer', () => {
   it('propagates the error + status from submitAnswer', async () => {
     getGameByCode.mockResolvedValue(GAME_ON_Q1)
     submitAnswer.mockResolvedValue({ ok: false, error: 'Participant not found', status: 404 })
-    const res = await POST(req({ participantId: 'p1', questionId: 'q_1', selectedIndex: 0 }), ctx('854123'))
+    const res = await POST(
+      req({ participantId: 'p1', questionId: 'q_1', sessionToken: 't1', selectedIndex: 0 }),
+      ctx('854123')
+    )
     expect(res.status).toBe(404)
   })
 
   it('accepts a null selectedIndex (explicit no-answer) and never echoes correctness', async () => {
     getGameByCode.mockResolvedValue(GAME_ON_Q1)
     submitAnswer.mockResolvedValue({ ok: true })
-    const res = await POST(req({ participantId: 'p1', questionId: 'q_1', selectedIndex: null }), ctx('854123'))
+    const res = await POST(
+      req({ participantId: 'p1', questionId: 'q_1', sessionToken: 't1', selectedIndex: null }),
+      ctx('854123')
+    )
     expect(res.status).toBe(200)
     await expect(res.json()).resolves.toEqual({ ok: true })
-    expect(submitAnswer).toHaveBeenCalledWith(GAME_ON_Q1, QUESTIONS[0], 'p1', null)
+    expect(submitAnswer).toHaveBeenCalledWith(GAME_ON_Q1, QUESTIONS[0], 'p1', 't1', null)
   })
 
   it('scores a chosen answer', async () => {
     getGameByCode.mockResolvedValue(GAME_ON_Q1)
     submitAnswer.mockResolvedValue({ ok: true })
-    const res = await POST(req({ participantId: 'p1', questionId: 'q_1', selectedIndex: 1 }), ctx('854123'))
+    const res = await POST(
+      req({ participantId: 'p1', questionId: 'q_1', sessionToken: 't1', selectedIndex: 1 }),
+      ctx('854123')
+    )
     expect(res.status).toBe(200)
-    expect(submitAnswer).toHaveBeenCalledWith(GAME_ON_Q1, QUESTIONS[0], 'p1', 1)
+    expect(submitAnswer).toHaveBeenCalledWith(GAME_ON_Q1, QUESTIONS[0], 'p1', 't1', 1)
   })
 })
