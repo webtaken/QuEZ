@@ -1,0 +1,63 @@
+'use client'
+
+import { Clock } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import { useCountdown } from '@/hooks/useCountdown'
+import type { GameQuestionView, GameParticipantView } from '@/hooks/useGamePolling'
+
+export function HostQuestionLive({
+  question,
+  currentQuestionIndex,
+  totalQuestions,
+  phaseStartedAt,
+  participants,
+}: {
+  question: GameQuestionView
+  currentQuestionIndex: number
+  totalQuestions: number
+  phaseStartedAt: string
+  participants: GameParticipantView[]
+}) {
+  const secondsLeft = useCountdown(phaseStartedAt, question.timeLimit)
+  const answeredCount = participants.filter((p) => p.answered).length
+
+  return (
+    <div className="max-w-2xl mx-auto px-6 py-10 space-y-6 text-center">
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <span>
+          Question {currentQuestionIndex + 1} / {totalQuestions}
+        </span>
+        <Badge
+          variant="secondary"
+          className={cn('gap-1 tabular-nums', secondsLeft <= 5 && 'bg-destructive/20 text-destructive')}
+        >
+          <Clock className="w-3 h-3" />
+          {secondsLeft}s
+        </Badge>
+      </div>
+
+      <h1 className="font-[family-name:var(--font-syne)] font-bold text-2xl text-foreground leading-snug">
+        {question.text}
+      </h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {question.options.map((opt, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-secondary/50 text-left text-sm"
+          >
+            <span className="w-6 h-6 rounded-full border text-xs font-bold flex items-center justify-center shrink-0">
+              {String.fromCharCode(65 + i)}
+            </span>
+            <span>{opt}</span>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-accent-lime font-semibold">
+        {answeredCount} / {participants.length} answered
+      </p>
+    </div>
+  )
+}
