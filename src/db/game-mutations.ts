@@ -181,7 +181,7 @@ export async function maybeAdvancePhase(
 
   const missing = active.filter((p) => !answeredIds.has(p.id))
   if (missing.length > 0) {
-    await db
+    const backfilled = await db
       .insert(gameAnswers)
       .values(
         missing.map((p) => ({
@@ -195,16 +195,23 @@ export async function maybeAdvancePhase(
         }))
       )
       .onConflictDoNothing({ target: [gameAnswers.participantId, gameAnswers.questionId] })
+      .returning({ participantId: gameAnswers.participantId })
 
-    await db
-      .update(gameParticipants)
-      .set({ streak: 0, totalAnswerMs: sql`${gameParticipants.totalAnswerMs} + ${timeLimitMs}` })
-      .where(
-        inArray(
-          gameParticipants.id,
-          missing.map((p) => p.id)
+    // Only this call's own inserted rows (not rows that already existed via
+    // onConflictDoNothing) should affect participant stats — otherwise
+    // concurrent pollers double-count totalAnswerMs and stomp a streak a
+    // last-second submitAnswer just earned.
+    if (backfilled.length > 0) {
+      await db
+        .update(gameParticipants)
+        .set({ streak: 0, totalAnswerMs: sql`${gameParticipants.totalAnswerMs} + ${timeLimitMs}` })
+        .where(
+          inArray(
+            gameParticipants.id,
+            backfilled.map((b) => b.participantId)
+          )
         )
-      )
+    }
   }
 
   const [updated] = await db
