@@ -584,7 +584,7 @@ Any failures: fix, re-run Step 1, commit with a `fix:` message.
 
 **Background:** Spec (2026-07-14 update): students see the FULL ranked leaderboard on every reveal — every active participant, no top-N cut — with their own row highlighted. Today only the host sees a leaderboard mid-game; students see nothing until the podium. The list markup mirrors `HostReveal.tsx:59-74` and the own-row highlight mirrors `StudentPodium.tsx:97-114`.
 
-- [ ] **Step 1: Rewrite StudentReveal**
+- [x] **Step 1: Rewrite StudentReveal**
 
 Replace the entire contents of `src/components/game/StudentReveal.tsx` with:
 
@@ -696,7 +696,7 @@ export function StudentReveal({
 
 What changed vs the old file: `GameLeaderboardEntry` added to the type import; new required `leaderboard` prop; the new Leaderboard block between the options grid and the "Total score" line (full list — NO `.slice()`), own row `bg-accent-lime/10` + lime nickname + `" (you)"` suffix, hidden entirely when `leaderboard` is empty. Everything else byte-identical — the mount-keyed sound effect and its eslint-disable comment must survive.
 
-- [ ] **Step 2: Pass the leaderboard from StudentGameView**
+- [x] **Step 2: Pass the leaderboard from StudentGameView**
 
 In `src/components/game/StudentGameView.tsx`, the `reveal` branch, add one prop to the `StudentReveal` call:
 
@@ -713,12 +713,12 @@ In `src/components/game/StudentGameView.tsx`, the `reveal` branch, add one prop 
 
 No other line in the file changes.
 
-- [ ] **Step 3: Typecheck + lint + tests**
+- [x] **Step 3: Typecheck + lint + tests**
 
 Run: `npx tsc --noEmit && pnpm lint && pnpm test`
 Expected: 155/155 tests; tsc/lint clean except the pre-existing debt in Global Constraints.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/components/game/StudentReveal.tsx src/components/game/StudentGameView.tsx
