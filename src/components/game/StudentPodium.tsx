@@ -68,7 +68,7 @@ export function StudentPodium({
             entry={second}
             place={2}
             heightClass="h-28"
-            delayClass="animate-fade-up-delay-2"
+            delayClass="animate-fade-up animate-fade-up-delay-2"
             isYou={second.id === you?.id}
           />
         )}
@@ -86,14 +86,14 @@ export function StudentPodium({
             entry={third}
             place={3}
             heightClass="h-20"
-            delayClass="animate-fade-up-delay-3"
+            delayClass="animate-fade-up animate-fade-up-delay-3"
             isYou={third.id === you?.id}
           />
         )}
       </div>
 
       {rest.length > 0 && (
-        <div className="rounded-2xl border border-border bg-card divide-y divide-border text-left animate-fade-up-delay-3">
+        <div className="rounded-2xl border border-border bg-card divide-y divide-border text-left animate-fade-up animate-fade-up-delay-3">
           {rest.map((p) => (
             <div
               key={p.id}

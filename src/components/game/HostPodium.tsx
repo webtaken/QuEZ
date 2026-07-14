@@ -49,13 +49,13 @@ export function HostPodium({
       </div>
 
       <div className="flex items-end justify-center gap-3">
-        {second && <PodiumBlock entry={second} place={2} heightClass="h-28" delayClass="animate-fade-up-delay-2" />}
+        {second && <PodiumBlock entry={second} place={2} heightClass="h-28" delayClass="animate-fade-up animate-fade-up-delay-2" />}
         {first && <PodiumBlock entry={first} place={1} heightClass="h-36" delayClass="animate-fade-up" />}
-        {third && <PodiumBlock entry={third} place={3} heightClass="h-20" delayClass="animate-fade-up-delay-3" />}
+        {third && <PodiumBlock entry={third} place={3} heightClass="h-20" delayClass="animate-fade-up animate-fade-up-delay-3" />}
       </div>
 
       {rest.length > 0 && (
-        <div className="rounded-2xl border border-border bg-card divide-y divide-border text-left animate-fade-up-delay-3">
+        <div className="rounded-2xl border border-border bg-card divide-y divide-border text-left animate-fade-up animate-fade-up-delay-3">
           {rest.map((p) => (
             <div key={p.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
               <span className="flex items-center gap-3">
