@@ -3,6 +3,7 @@
 **Date:** 2026-07-12
 **Status:** Approved
 **Updated:** 2026-07-13 — select-then-submit answering, host-side music, podium visibility fix (plan: `docs/superpowers/plans/2026-07-13-live-mode-refinements.md`)
+**Updated:** 2026-07-14 — students see the full ranked leaderboard on every reveal (same plan, Task 6)
 
 ## Goal
 
@@ -222,9 +223,11 @@ unit-tested without touching the DB.
   Submit button — disabled while nothing is selected — sends the final
   answer and locks; timer expiry auto-submits the current selection, null
   if none), reveal (correct/wrong banner,
-  synthesized Web Audio cue, points earned this round, streak indicator),
-  leaderboard (own rank highlighted), podium (final rank; confetti-style CSS
-  animation if top 3).
+  synthesized Web Audio cue, points earned this round, streak indicator, and
+  the FULL ranked leaderboard — every active participant, not a top-N cut —
+  with the student's own row highlighted; added 2026-07-14, students
+  previously saw no ranking until the podium), podium (final rank;
+  confetti-style CSS animation if top 3).
 
 A shared `useGamePolling(code, participantId?)` hook drives both `/host` and
 `/game` views: polls `state` on an interval (~1.5s), exposes the parsed
