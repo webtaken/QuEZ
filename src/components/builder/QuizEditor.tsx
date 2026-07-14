@@ -18,6 +18,7 @@ import { ChatPanel } from './ChatPanel'
 import { QuestionEditor } from './QuestionEditor'
 import { MusicPicker } from './MusicPicker'
 import { PublishToggle } from '@/components/quiz/PublishToggle'
+import { HostLiveButton } from '@/components/quiz/HostLiveButton'
 import { DeleteQuizDialog } from '@/components/quiz/DeleteQuizDialog'
 import { quizPayloadSchema, type QuizPayload, type QuizQuestion } from '@/lib/quiz-schema'
 import type { Quiz, Question } from '@/db/schema'
@@ -216,6 +217,7 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
+              <HostLiveButton quizId={initialQuiz.id} disabled={quiz.questions.length === 0} />
               <PublishToggle quizId={initialQuiz.id} initialIsPublic={initialQuiz.isPublic} />
               <DeleteQuizDialog
                 quizId={initialQuiz.id}
