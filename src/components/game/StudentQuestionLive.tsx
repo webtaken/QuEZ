@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { useCountdown } from '@/hooks/useCountdown'
 import { cn } from '@/lib/utils'
 import type { GameQuestionView } from '@/hooks/useGamePolling'
@@ -51,8 +52,11 @@ export function StudentQuestionLive({
     submittedRef.current = false
   }, [currentQuestionIndex])
 
+  // Timer expiry auto-submits whatever is currently selected (null if
+  // nothing) — a student who picked but never pressed Submit still gets
+  // their pick scored, at full elapsed time.
   useEffect(() => {
-    if (secondsLeft === 0 && !submittedRef.current) submit(null)
+    if (secondsLeft === 0 && !submittedRef.current) submit(selected)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [secondsLeft])
 
@@ -87,7 +91,7 @@ export function StudentQuestionLive({
           return (
             <button
               key={i}
-              onClick={() => submit(i)}
+              onClick={() => setSelected(i)}
               disabled={answered}
               className={cn(
                 'flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all',
@@ -105,6 +109,17 @@ export function StudentQuestionLive({
           )
         })}
       </div>
+
+      {!answered && (
+        <Button
+          onClick={() => submit(selected)}
+          disabled={selected === null}
+          size="lg"
+          className="w-full rounded-xl bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 font-semibold"
+        >
+          Submit answer
+        </Button>
+      )}
 
       {answered && (
         <p className="text-center text-accent-lime font-semibold text-sm">
