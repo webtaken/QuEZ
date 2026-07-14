@@ -84,6 +84,7 @@ export function StudentGameView({ code }: { code: string }) {
         correctIndex={state.correctIndex ?? -1}
         selectedIndex={answeredQuestionIndex === state.currentQuestionIndex ? selectedIndex : null}
         you={state.you}
+        leaderboard={state.leaderboard ?? []}
       />
     )
   }

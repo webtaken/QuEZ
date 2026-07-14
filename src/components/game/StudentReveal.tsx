@@ -3,18 +3,20 @@
 import { useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { useGameSound } from '@/hooks/useGameSound'
-import type { GameQuestionView, GameStateView } from '@/hooks/useGamePolling'
+import type { GameLeaderboardEntry, GameQuestionView, GameStateView } from '@/hooks/useGamePolling'
 
 export function StudentReveal({
   question,
   correctIndex,
   selectedIndex,
   you,
+  leaderboard,
 }: {
   question: GameQuestionView
   correctIndex: number
   selectedIndex: number | null
   you: NonNullable<GameStateView['you']>
+  leaderboard: GameLeaderboardEntry[]
 }) {
   const { playCorrect, playWrong } = useGameSound()
   const isCorrect = selectedIndex !== null && selectedIndex === correctIndex
@@ -64,6 +66,34 @@ export function StudentReveal({
           </div>
         ))}
       </div>
+
+      {leaderboard.length > 0 && (
+        <div className="space-y-2 text-left">
+          <h2 className="font-[family-name:var(--font-syne)] font-semibold text-sm text-muted-foreground">
+            Leaderboard
+          </h2>
+          <div className="rounded-2xl border border-border bg-card divide-y divide-border">
+            {leaderboard.map((p) => (
+              <div
+                key={p.id}
+                className={cn(
+                  'flex items-center justify-between px-4 py-2.5 text-sm',
+                  p.id === you.id && 'bg-accent-lime/10'
+                )}
+              >
+                <span className="flex items-center gap-3">
+                  <span className="w-6 text-muted-foreground font-mono">{p.rank}</span>
+                  <span className={p.id === you.id ? 'text-accent-lime font-semibold' : 'text-foreground'}>
+                    {p.nickname}
+                    {p.id === you.id && ' (you)'}
+                  </span>
+                </span>
+                <span className="font-semibold text-accent-lime tabular-nums">{p.score}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <p className="text-muted-foreground text-sm">
         Total score: <span className="font-semibold text-accent-lime">{you.score}</span>
