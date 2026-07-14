@@ -3,6 +3,10 @@ import { Hero } from '@/components/landing/Hero'
 import { QuizDirectory } from '@/components/landing/QuizDirectory'
 import { getPublicQuizzes } from '@/lib/quiz-queries'
 
+// Requires a live DB connection, so it must not be prerendered at build time
+// (Docker builds run without DATABASE_URL).
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   const { quizzes, total } = await getPublicQuizzes()
 

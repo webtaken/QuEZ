@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   description: 'Browse and play quizzes created by the QuEZ community.',
 }
 
+// Requires a live DB connection, so it must not be prerendered at build time
+// (Docker builds run without DATABASE_URL).
+export const dynamic = 'force-dynamic'
+
 export default async function CommunityPage() {
   const { quizzes, total } = await getPublicQuizzes()
 
