@@ -31,7 +31,7 @@
 
 **Background:** `.animate-fade-up-delay-2` and `-delay-3` only set `animation-delay` + initial `opacity: 0`; the `animation` property lives on `.animate-fade-up`. A delay class used alone leaves the element permanently invisible (this hid 2nd/3rd podium blocks and the 4th-place-and-below list). The correct pairing pattern is in `src/components/landing/Hero.tsx:56` — `animate-fade-up animate-fade-up-delay-1`.
 
-- [ ] **Step 1: Fix HostPodium**
+- [x] **Step 1: Fix HostPodium**
 
 In `src/components/game/HostPodium.tsx`, three edits:
 
@@ -55,7 +55,7 @@ Line 58 — the `rest` list container, change `animate-fade-up-delay-3` to `anim
 
 (Line 53, first place, already uses plain `animate-fade-up` — leave it.)
 
-- [ ] **Step 2: Fix StudentPodium**
+- [x] **Step 2: Fix StudentPodium**
 
 In `src/components/game/StudentPodium.tsx`, three edits:
 
@@ -77,7 +77,7 @@ Line 96 (`rest` list container) — change `animate-fade-up-delay-3` to `animate
         <div className="rounded-2xl border border-border bg-card divide-y divide-border text-left animate-fade-up animate-fade-up-delay-3">
 ```
 
-- [ ] **Step 3: Verify no stray solo delay classes remain, lint + typecheck**
+- [x] **Step 3: Verify no stray solo delay classes remain, lint + typecheck**
 
 Run: `grep -rn "animate-fade-up-delay" src/components/game/`
 Expected: every hit also contains `animate-fade-up ` (paired) on the same class string.
@@ -85,7 +85,7 @@ Expected: every hit also contains `animate-fade-up ` (paired) on the same class 
 Run: `npx tsc --noEmit && pnpm lint`
 Expected: clean except the pre-existing debt listed in Global Constraints.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/components/game/HostPodium.tsx src/components/game/StudentPodium.tsx
@@ -107,7 +107,7 @@ git commit -m "fix(live): pair animate-fade-up with delay classes so 2nd/3rd pod
 
 **Background:** Students currently sit on the final reveal forever unless the host clicks "Show podium". Spec now requires the final reveal to auto-flip to podium after ~5s for everyone, using the same lazy-transition-on-poll mechanism as question→reveal. The host's button (gated at 2s by `HostReveal`) stays as an early skip; the `WHERE status='reveal'` guard makes button and lazy flip race-safe against each other. `maybeAdvancePhase` itself is DB-layer (mocked in route tests, per convention) — the route-level test verifies the new argument wiring, and Task 5 verifies the flip end-to-end.
 
-- [ ] **Step 1: Update the route test to expect the new third argument**
+- [x] **Step 1: Update the route test to expect the new third argument**
 
 In `src/app/api/games/[code]/state/route.test.ts`, replace the last test (lines 120-124):
 
@@ -119,12 +119,12 @@ In `src/app/api/games/[code]/state/route.test.ts`, replace the last test (lines 
   })
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `pnpm test -- src/app/api/games/[code]/state/route.test.ts`
 Expected: FAIL — `toHaveBeenCalledWith` mismatch (called with 2 args, expected 3).
 
-- [ ] **Step 3: Extend `maybeAdvancePhase` and the call site**
+- [x] **Step 3: Extend `maybeAdvancePhase` and the call site**
 
 In `src/db/game-mutations.ts`, add a constant above `maybeAdvancePhase` and replace the function's opening (signature + the early guard at lines 161-165). The `reveal` branch goes before the existing `question` logic; everything from `const elapsedMs = Date.now() - ...` (line 167) down is unchanged:
 
@@ -173,7 +173,7 @@ In `src/app/api/games/[code]/state/route.ts` line 16, change the call to:
   const settled = await maybeAdvancePhase(game, currentQuestion, allQuestions.length)
 ```
 
-- [ ] **Step 4: Run the test to verify it passes, then the full suite**
+- [x] **Step 4: Run the test to verify it passes, then the full suite**
 
 Run: `pnpm test -- src/app/api/games/[code]/state/route.test.ts`
 Expected: PASS (7 tests).
@@ -181,7 +181,7 @@ Expected: PASS (7 tests).
 Run: `pnpm test && npx tsc --noEmit && pnpm lint`
 Expected: 155/155 tests pass (the reworded test replaces one, count unchanged); tsc/lint clean except pre-existing debt.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/db/game-mutations.ts "src/app/api/games/[code]/state/route.ts" "src/app/api/games/[code]/state/route.test.ts"
@@ -201,7 +201,7 @@ git commit -m "feat(live): final reveal auto-advances to podium after 5s via laz
 
 **Background:** Today a tap immediately POSTs and locks. New UX: tap selects (highlight, changeable), a Submit button — disabled until something is selected — sends the final answer and locks. Timer expiry auto-submits the current selection (a student who picked but forgot to press Submit gets their pick scored at full elapsed time), or null if nothing selected. `answerMs` is server-computed at the submit moment; the scoring formula is untouched. The `submittedRef` synchronous guard still prevents the submit-click vs timeout race double-POST. No component test exists for this file (repo has no component tests); Task 5's manual pass covers it.
 
-- [ ] **Step 1: Rewrite the interaction portion of the component**
+- [x] **Step 1: Rewrite the interaction portion of the component**
 
 Replace the entire contents of `src/components/game/StudentQuestionLive.tsx` with:
 
@@ -341,12 +341,12 @@ export function StudentQuestionLive({
 
 What changed vs the old file: option `onClick` now only does `setSelected(i)` (was `submit(i)`); the timeout effect submits `selected` instead of `null`, with a new explanatory comment; the Submit `Button` block is new; `Button` import is new. Everything else is byte-identical.
 
-- [ ] **Step 2: Typecheck + lint**
+- [x] **Step 2: Typecheck + lint**
 
 Run: `npx tsc --noEmit && pnpm lint`
 Expected: clean except pre-existing debt. In particular the two existing `eslint-disable` comments must survive (the rule reports at the setState call site).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/game/StudentQuestionLive.tsx
@@ -368,7 +368,7 @@ git commit -m "feat(live): select-then-submit answering — changeable pick, Sub
 
 **Background:** Quizzes already carry a `musicTrack`; single-player plays it, live mode never did. Spec: host device only — `start()` inside the "Start quiz" click handler (user gesture → autoplay-safe), loop through question/reveal phases, stop at podium, mute toggle while playing. If the host refreshes mid-game the browser blocks autoplay until a gesture — so `resume()` is also called from the "Next question"/"Show podium" click, which restores music one click after a refresh and is a no-op when music is already playing.
 
-- [ ] **Step 1: Add `resume()` to `useQuizMusic`**
+- [x] **Step 1: Add `resume()` to `useQuizMusic`**
 
 In `src/hooks/useQuizMusic.ts`, insert after the `start()` function (line 30) and add `resume` to the return (line 44):
 
@@ -390,7 +390,7 @@ In `src/hooks/useQuizMusic.ts`, insert after the `start()` function (line 30) an
   return { start, resume, stop, muted, toggleMute }
 ```
 
-- [ ] **Step 2: Pass `musicTrack` from the host page**
+- [x] **Step 2: Pass `musicTrack` from the host page**
 
 In `src/app/host/[code]/page.tsx`, add `musicTrack: quizzes.musicTrack` to the select (lines 18-22) and pass it through (line 25):
 
@@ -412,7 +412,7 @@ In `src/app/host/[code]/page.tsx`, add `musicTrack: quizzes.musicTrack` to the s
   )
 ```
 
-- [ ] **Step 3: Wire music into HostGameView**
+- [x] **Step 3: Wire music into HostGameView**
 
 Replace the entire contents of `src/components/game/HostGameView.tsx` with:
 
@@ -531,12 +531,12 @@ export function HostGameView({
 
 What changed vs the old file: early returns became a `view` variable so the fixed-position mute button can render alongside every phase; `onStart`/`onAdvance` gained `music.start()`/`music.resume()`; the podium-stop effect, the three music imports, and the `musicTrack` prop are new. The phase components receive identical props.
 
-- [ ] **Step 4: Typecheck + lint + full tests**
+- [x] **Step 4: Typecheck + lint + full tests**
 
 Run: `npx tsc --noEmit && pnpm lint && pnpm test`
 Expected: clean except pre-existing debt; 155/155 tests (no route/lib behavior touched).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/hooks/useQuizMusic.ts "src/app/host/[code]/page.tsx" src/components/game/HostGameView.tsx
@@ -549,12 +549,12 @@ git commit -m "feat(live): loop quiz music on host device — start on Start, re
 
 **Files:** none new.
 
-- [ ] **Step 1: Full test + lint + type-check + build**
+- [x] **Step 1: Full test + lint + type-check + build**
 
 Run: `pnpm test && pnpm lint && npx tsc --noEmit && pnpm build`
 Expected: 155/155 tests, production build succeeds; only the pre-existing debt from Global Constraints appears in lint/tsc.
 
-- [ ] **Step 2: Manual two-window pass over the four changes**
+- [x] **Step 2: Manual two-window pass over the four changes**
 
 With `pnpm dev`, Window A (host, logged in via Google) hosts a quiz **with a music track set** and ≥2 questions; Window B (+ C, incognito) join as students:
 
@@ -566,7 +566,7 @@ With `pnpm dev`, Window A (host, logged in via Google) hosts a quiz **with a mus
 
 Kill the dev server afterwards and verify with `ps` that it is gone.
 
-- [ ] **Step 3: Fix anything found, commit fixes**
+- [x] **Step 3: Fix anything found, commit fixes**
 
 Any failures: fix, re-run Step 1, commit with a `fix:` message.
 
