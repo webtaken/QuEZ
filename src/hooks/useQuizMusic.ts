@@ -29,6 +29,18 @@ export function useQuizMusic(file: string | null) {
     audioRef.current.play().catch(() => {})
   }
 
+  // Like start(), but never rewinds: no-op if already playing, falls back
+  // to start() when no Audio element exists yet (e.g. after a page refresh
+  // killed the old one). Must also be called from a user gesture.
+  function resume() {
+    if (!file) return
+    if (!audioRef.current) {
+      start()
+      return
+    }
+    if (audioRef.current.paused) audioRef.current.play().catch(() => {})
+  }
+
   function stop() {
     audioRef.current?.pause()
   }
@@ -41,5 +53,5 @@ export function useQuizMusic(file: string | null) {
     })
   }
 
-  return { start, stop, muted, toggleMute }
+  return { start, resume, stop, muted, toggleMute }
 }

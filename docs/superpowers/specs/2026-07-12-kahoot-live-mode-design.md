@@ -2,6 +2,8 @@
 
 **Date:** 2026-07-12
 **Status:** Approved
+**Updated:** 2026-07-13 — select-then-submit answering, host-side music, podium visibility fix (plan: `docs/superpowers/plans/2026-07-13-live-mode-refinements.md`)
+**Updated:** 2026-07-14 — students see the full ranked leaderboard on every reveal (same plan, Task 6)
 
 ## Goal
 
@@ -22,13 +24,24 @@ with a speed + streak formula, and the game ends on an animated top-3 podium.
   `getSession` pattern (same as `/api/quizzes/[id]` routes).
 - **Scoring:** speed-scaled base points + consecutive-correct streak bonus
   (formula below). Ties broken by lowest total answer time across the game.
-- **Pacing:** host-controlled. After reveal+leaderboard, the game only
-  advances when the host clicks "Next" (or "Podium" on the last question).
+- **Pacing:** host-controlled between questions — after reveal+leaderboard
+  the game advances when the host clicks "Next". Exception (2026-07-13): the
+  *last* question's reveal auto-advances to podium after ~5s for everyone;
+  the host's "Show podium" button remains as an early skip.
 - **Reconnect vs late join:** a student with a matching `sessionToken` can
   rejoin mid-game after a refresh/disconnect. A *new* nickname cannot join
   once `status !== 'waiting'`.
 - **Host moderation:** host can kick a participant from the waiting room or
   a live game.
+- **Answering UX:** select-then-submit. A student taps an option to select it
+  (highlighted, changeable), and a Submit button sends the final answer. Timer
+  expiry auto-submits the current selection — or a null no-answer if nothing
+  is selected. `answerMs` is measured at the submit moment.
+- **Live music:** the quiz's `musicTrack` loops on the host device only —
+  started from the "Start quiz" click (a user gesture, so autoplay-safe),
+  stopped at podium, with a mute toggle. If the host refreshes mid-game,
+  music resumes on the next "Next question" click. Student devices keep only
+  the synthesized correct/wrong cues.
 - **Join URL:** `/join/[code]` (code prefilled, student only types a
   nickname); `/join` alone supports manual code entry.
 - **No new infra dependency:** correct/wrong sound cues are synthesized with
@@ -117,6 +130,13 @@ Transitions:
 - `reveal → question[i+1]` or `reveal → podium`: `POST
   /api/games/[code]/advance`, host-only. `podium` is chosen when
   `currentQuestionIndex` was the last question; it also sets `endedAt`.
+- `reveal → podium` (automatic, last question only, added 2026-07-13): the
+  same lazy-transition check in `state` also flips the *final* reveal to
+  podium once `elapsed ≥ 5s`, via
+  `UPDATE game_sessions SET status='podium', ended_at=now(), phase_started_at=now() WHERE id=$1 AND status='reveal'`
+  — so students reach the podium even if the host never clicks. The host's
+  "Show podium" button stays as an early skip; the `WHERE status='reveal'`
+  guard makes the button and the lazy flip race-safe against each other.
 
 ## Scoring
 
@@ -164,8 +184,11 @@ unit-tested without touching the DB.
   }`.
 - `POST /api/games/[code]/start` — host-only, `waiting → question`.
 - `POST /api/games/[code]/answer` — body `{ participantId, questionId,
-  selectedIndex }`. Validates `status==='question'`, `questionId` matches
-  the current question, participant is active. Computes points via
+  selectedIndex, sessionToken }`. The `sessionToken` must match the
+  participant row (added 2026-07-12 to close an answer-spoofing gap —
+  `participantId` alone is public via the state poll). Validates
+  `status==='question'`, `questionId` matches the current question,
+  participant is active. Computes points via
   `computePoints`, inserts `game_answers` (unique index makes a duplicate
   submit a no-op that returns the existing row), updates the participant's
   `score`/`streak`/`totalAnswerMs`.
@@ -180,7 +203,9 @@ unit-tested without touching the DB.
   quiz has ≥1 question) that calls `POST /api/games` and routes to
   `/host/[code]`.
 - `/host/[code]` — host-only (redirects to login/dashboard if session's
-  user isn't `hostUserId`). Renders one of: waiting room (roster of
+  user isn't `hostUserId`). Loops the quiz's `musicTrack` (if set) from the
+  "Start" click until podium, with a mute toggle in the header (reuses
+  `useQuizMusic`). Renders one of: waiting room (roster of
   nickname chips, room code + shareable `/join/[code]` link, per-participant
   kick button, "Start" button), live question (question text, live
   answered-count / total, timer bar — no answer options shown to the host),
@@ -194,10 +219,15 @@ unit-tested without touching the DB.
 - `/game/[code]` — student view, same phase set as the host view: waiting
   room (nickname roster, "waiting for host"), live question (large tappable
   answer tiles, countdown ring computed client-side from `phaseStartedAt` +
-  `timeLimit`, locks immediately on tap), reveal (correct/wrong banner,
-  synthesized Web Audio cue, points earned this round, streak indicator),
-  leaderboard (own rank highlighted), podium (final rank; confetti-style CSS
-  animation if top 3).
+  `timeLimit`; tap selects with a highlight and stays changeable until a
+  Submit button — disabled while nothing is selected — sends the final
+  answer and locks; timer expiry auto-submits the current selection, null
+  if none), reveal (correct/wrong banner,
+  synthesized Web Audio cue, points earned this round, streak indicator, and
+  the FULL ranked leaderboard — every active participant, not a top-N cut —
+  with the student's own row highlighted; added 2026-07-14, students
+  previously saw no ranking until the podium), podium (final rank;
+  confetti-style CSS animation if top 3).
 
 A shared `useGamePolling(code, participantId?)` hook drives both `/host` and
 `/game` views: polls `state` on an interval (~1.5s), exposes the parsed
@@ -210,7 +240,14 @@ state plus `isConnected`.
   files, no attribution bookkeeping. This intentionally reopens the "sound
   effects" item the quiz-music design explicitly left out of scope.
 - Podium: CSS stagger rise/scale-in on the top-3 blocks using the
-  already-installed `tw-animate-css`; no new animation dependency.
+  already-installed `tw-animate-css`; no new animation dependency. The
+  `.animate-fade-up-delay-*` classes only add `animation-delay` + initial
+  `opacity: 0` — they must always be paired with `.animate-fade-up` (the
+  class carrying the `animation` property), as in `Hero.tsx`; a delay class
+  alone leaves the element permanently invisible.
+- Host music: `useQuizMusic` (the existing single-player hook) wired into
+  `HostGameView` — the host page server component already loads the quiz for
+  its ownership check and passes `musicTrack` down.
 - Visuals follow `DESIGN.md` tokens throughout (`accent-lime`, `success`,
   `destructive`, `warning`) — correct = `success`, wrong = `destructive`,
   countdown urgency = `warning`.
@@ -252,6 +289,11 @@ state plus `isConnected`.
 - Zombie-game expiry/cleanup job for abandoned sessions.
 - Pause/resume mid-question.
 - Team play, multiple-choice-only is assumed (no new question types).
+- Multi-answer (select-all-that-apply) questions — considered 2026-07-13 and
+  deferred: every question keeps exactly one `correctIndex`, so multi-select
+  UI has nothing to grade against without a schema + builder + AI-generation
+  change.
+- Music playback on student devices (host screen only, Kahoot-style).
 - Tying anonymous student results to a user account / gradebook export.
 - Editing quiz questions while a game is live.
 - Per-question or per-quiz configurable `maxPoints`/streak-cap tuning UI —
