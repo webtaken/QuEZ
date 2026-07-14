@@ -16,11 +16,18 @@ export default async function HostPage({ params }: { params: Promise<{ code: str
   if (!game || game.hostUserId !== session.user.id) notFound()
 
   const [quiz] = await db
-    .select({ title: quizzes.title, coverEmoji: quizzes.coverEmoji })
+    .select({ title: quizzes.title, coverEmoji: quizzes.coverEmoji, musicTrack: quizzes.musicTrack })
     .from(quizzes)
     .where(eq(quizzes.id, game.quizId))
     .limit(1)
   if (!quiz) notFound()
 
-  return <HostGameView code={code} quizTitle={quiz.title} coverEmoji={quiz.coverEmoji ?? '🧠'} />
+  return (
+    <HostGameView
+      code={code}
+      quizTitle={quiz.title}
+      coverEmoji={quiz.coverEmoji ?? '🧠'}
+      musicTrack={quiz.musicTrack}
+    />
+  )
 }
