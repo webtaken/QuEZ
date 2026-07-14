@@ -117,9 +117,9 @@ describe('GET /api/games/[code]/state', () => {
     expect(data.you).toBeNull()
   })
 
-  it('runs the lazy phase transition on every poll', async () => {
+  it('runs the lazy phase transition on every poll, passing the question count', async () => {
     getGameByCode.mockResolvedValue(GAME)
     await GET(makeReq('854123'), ctx('854123'))
-    expect(maybeAdvancePhase).toHaveBeenCalledWith(GAME, QUESTIONS[0])
+    expect(maybeAdvancePhase).toHaveBeenCalledWith(GAME, QUESTIONS[0], QUESTIONS.length)
   })
 })

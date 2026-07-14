@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ code
   const allQuestions = await getQuestionsForQuiz(game.quizId)
   const currentQuestion = allQuestions[game.currentQuestionIndex]
 
-  const settled = await maybeAdvancePhase(game, currentQuestion)
+  const settled = await maybeAdvancePhase(game, currentQuestion, allQuestions.length)
 
   const list = await getParticipantsWithAnswerStatus(
     settled.id,

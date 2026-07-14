@@ -150,6 +150,8 @@ export async function submitAnswer(
   return { ok: true }
 }
 
+const REVEAL_TO_PODIUM_MS = 5000
+
 // The core state-machine step: called on every poll of GET /state. If the
 // question phase's timer has elapsed, or every active participant has
 // answered, it backfills a 0-point "no answer" for anyone who didn't answer
@@ -158,10 +160,29 @@ export async function submitAnswer(
 // if two pollers both pass the elapsed/all-answered check at once, only one
 // UPDATE actually applies — the loser just returns the (soon-stale) game it
 // was given, and picks up 'reveal' on its next poll ~1.5s later.
+//
+// The *final* question's reveal also advances lazily: after
+// REVEAL_TO_PODIUM_MS it flips to 'podium' so students reach the podium
+// even if the host never clicks "Show podium". The host's /advance click
+// remains an early skip; the `WHERE status='reveal'` guard keeps the two
+// paths race-safe against each other.
 export async function maybeAdvancePhase(
   game: GameSession,
-  currentQuestion: { id: string; timeLimit: number } | undefined
+  currentQuestion: { id: string; timeLimit: number } | undefined,
+  totalQuestions: number
 ): Promise<GameSession> {
+  if (game.status === 'reveal') {
+    const isLast = game.currentQuestionIndex + 1 >= totalQuestions
+    const revealElapsedMs = Date.now() - game.phaseStartedAt.getTime()
+    if (!isLast || revealElapsedMs < REVEAL_TO_PODIUM_MS) return game
+    const [updated] = await db
+      .update(gameSessions)
+      .set({ status: 'podium', endedAt: new Date(), phaseStartedAt: new Date() })
+      .where(and(eq(gameSessions.id, game.id), eq(gameSessions.status, 'reveal')))
+      .returning()
+    return updated ?? game
+  }
+
   if (game.status !== 'question' || !currentQuestion) return game
 
   const elapsedMs = Date.now() - game.phaseStartedAt.getTime()
