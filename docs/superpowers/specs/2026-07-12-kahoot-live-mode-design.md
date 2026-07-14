@@ -23,8 +23,10 @@ with a speed + streak formula, and the game ends on an animated top-3 podium.
   `getSession` pattern (same as `/api/quizzes/[id]` routes).
 - **Scoring:** speed-scaled base points + consecutive-correct streak bonus
   (formula below). Ties broken by lowest total answer time across the game.
-- **Pacing:** host-controlled. After reveal+leaderboard, the game only
-  advances when the host clicks "Next" (or "Podium" on the last question).
+- **Pacing:** host-controlled between questions — after reveal+leaderboard
+  the game advances when the host clicks "Next". Exception (2026-07-13): the
+  *last* question's reveal auto-advances to podium after ~5s for everyone;
+  the host's "Show podium" button remains as an early skip.
 - **Reconnect vs late join:** a student with a matching `sessionToken` can
   rejoin mid-game after a refresh/disconnect. A *new* nickname cannot join
   once `status !== 'waiting'`.
@@ -127,6 +129,13 @@ Transitions:
 - `reveal → question[i+1]` or `reveal → podium`: `POST
   /api/games/[code]/advance`, host-only. `podium` is chosen when
   `currentQuestionIndex` was the last question; it also sets `endedAt`.
+- `reveal → podium` (automatic, last question only, added 2026-07-13): the
+  same lazy-transition check in `state` also flips the *final* reveal to
+  podium once `elapsed ≥ 5s`, via
+  `UPDATE game_sessions SET status='podium', ended_at=now(), phase_started_at=now() WHERE id=$1 AND status='reveal'`
+  — so students reach the podium even if the host never clicks. The host's
+  "Show podium" button stays as an early skip; the `WHERE status='reveal'`
+  guard makes the button and the lazy flip race-safe against each other.
 
 ## Scoring
 
