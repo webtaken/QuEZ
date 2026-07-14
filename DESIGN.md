@@ -1,268 +1,284 @@
-# QuEZ Design System
+# Quizzy Design System
 
-The single source of truth for QuEZ's visual language. Every color, radius, font, and
-motion in the frontend derives from the tokens defined in
-[`src/app/globals.css`](src/app/globals.css). **This file documents those tokens and the
-rules for using them.**
+A **playful, bold** design system for a modern quizzes app. Inspired by **neo-brutalism**:
+vibrant flat colors, hard offset shadows, and strong ink borders. Light-first — a warm
+cream page with white card surfaces and near-black ink for text, borders, and shadows.
 
-> **Golden rule:** never hardcode a color. Use a theme token (`bg-accent-lime`,
-> `text-destructive`, `bg-success/20`, …). Never write arbitrary values like
-> `bg-[oklch(...)]`, `text-green-400`, or `bg-purple-600`. See [Usage rules](#usage-rules).
+> **Golden rule:** every surface and control is **bordered and hard-shadowed**, fills are
+> **flat vibrant color** (no gradients, no glows), and type is **Space Grotesk**
+> everywhere. Color is used **semantically** — see [Usage rules](#usage-rules).
 
-QuEZ ships **dark-first**. The `.dark` block is the real product theme (deep navy + lime).
-`:root` is a light fallback only.
+> **Implementation status:** This is the **target** design spec. The running codebase still
+> ships the previous dark-navy + lime theme (`src/app/globals.css`, `src/app/layout.tsx`);
+> migrating the tokens, fonts, and components to this system is tracked separately. Until
+> then, treat this file as the design contract to build toward, not a description of what is
+> currently live. The "Proposed token names" below are the intended `globals.css` tokens for
+> that migration.
 
 ---
 
-## 1. Color tokens
+## 1. Color palette
 
-All colors are CSS custom properties in OKLCH, mapped to Tailwind utilities via
-`@theme inline`. Use the **Tailwind token**, not the raw value.
+Eight colors. Canonical values are **hex** (matching the source design); at implementation
+they convert to OKLCH custom properties. Every colored fill pairs with a fixed text color
+for legibility — never guess it, use the table.
 
-### Brand & surface
-
-| Token (Tailwind) | Var | Dark value | Role |
+| Name | Hex | Role | Text on fill |
 |---|---|---|---|
-| `background` | `--background` | `oklch(0.13 0.03 264)` | Page background — deep navy |
-| `foreground` | `--foreground` | `oklch(0.985 0 0)` | Primary text — near-white |
-| `card` / `popover` | `--card` | `oklch(0.17 0.03 264)` | Card & popover surfaces |
-| `secondary` / `muted` / `accent` | `--secondary` | `oklch(0.22 0.04 264)` | Raised slate surfaces, chips, emoji tiles |
-| `muted-foreground` | `--muted-foreground` | `oklch(0.65 0.02 264)` | Secondary / meta text |
-| `border` | `--border` | `oklch(1 0 0 / 8%)` | Hairline borders (white @ 8%) |
-| `input` | `--input` | `oklch(1 0 0 / 10%)` | Input borders |
-| `ring` | `--ring` | `oklch(0.93 0.22 127)` | Focus ring — lime |
+| **Coral** | `#FF5E5B` | Error / destructive / delete · Expert difficulty | White |
+| **Purple** | `#6C5CE7` | Secondary actions · Hard difficulty | White |
+| **Teal** | `#00C9A7` | Accent · Success · Easy difficulty · Create · Featured | Ink |
+| **Yellow** | `#FFD84D` | **Primary CTA** · Medium difficulty · New | Ink |
+| **Orange** | `#FF8A4C` | Highlight · Popular | Ink |
+| **Cream** | `#FFF7E8` | Page background | Ink |
+| **White** | `#FFFFFF` | Card & control surfaces | Ink |
+| **Ink** | `#1E1E1E` | Text · borders · hard shadows | — |
 
-### Accent & semantic
+**Proposed token names** (for the `globals.css` migration), each with a `-foreground` pair
+set to Ink or White per the table above:
 
-| Token (Tailwind) | Var | Dark value | Role |
-|---|---|---|---|
-| `accent-lime` | `--accent-lime` | `oklch(0.93 0.22 127)` | **Primary brand accent.** CTAs, active nav, highlights, progress, logo |
-| `accent-lime-foreground` | `--accent-lime-foreground` | `oklch(0.13 0.03 264)` | Text/icons on a lime fill (dark navy) |
-| `success` | `--success` | `oklch(0.79 0.21 152)` | Correct answers, "easy" difficulty |
-| `warning` | `--warning` | `oklch(0.85 0.19 92)` | Skipped answers, "medium" difficulty |
-| `destructive` | `--destructive` | `oklch(0.704 0.191 22.216)` | Wrong answers, "hard" difficulty, delete, errors |
+| Token | Value | `-foreground` |
+|---|---|---|
+| `--background` | Cream `#FFF7E8` | Ink |
+| `--card` / `--popover` | White `#FFFFFF` | Ink |
+| `--foreground` / `--border` / `--shadow` | Ink `#1E1E1E` | — |
+| `--primary` | Yellow `#FFD84D` | Ink |
+| `--secondary` | Purple `#6C5CE7` | White |
+| `--accent` | Teal `#00C9A7` | Ink |
+| `--highlight` | Orange `#FF8A4C` | Ink |
+| `--success` | Teal `#00C9A7` | Ink |
+| `--warning` | Yellow `#FFD84D` | Ink |
+| `--destructive` | Coral `#FF5E5B` | White |
 
-> `success` and `warning` carry `-foreground` pairs too (dark navy), for use on solid fills.
-
-`primary` in dark mode resolves to the same lime as `accent-lime` (`--primary: oklch(0.93 0.22 127)`).
-Prefer `accent-lime` in app code so intent stays explicit; `primary` is reserved for
-shadcn primitives that ship with it.
-
-### Sidebar tokens
-
-The sidebar has its own surface scale: `sidebar`, `sidebar-foreground`,
-`sidebar-primary` (lime), `sidebar-accent`, `sidebar-border`, `sidebar-ring`. Defined in
-both `:root` and `.dark`. Used only inside `src/components/ui/sidebar.tsx` and
-`Sidebar.tsx`.
-
-### Opacity modifiers
-
-Tints come from the `/NN` opacity syntax on a token — never a second hardcoded color:
-
-- Lime tint backgrounds: `bg-accent-lime/20`, `bg-accent-lime/15`, `bg-accent-lime/10`, `bg-accent-lime/8`
-- Lime hover/borders: `hover:bg-accent-lime/90`, `border-accent-lime/30`, `hover:border-accent-lime/50`
-- Semantic tints: `bg-success/20 text-success`, `bg-destructive/20 text-destructive`, `bg-warning/20 text-warning`
-- Colored shadows: `shadow-accent-lime/20`, `shadow-accent-lime/30`
+**Tints:** when a lighter surface is needed (e.g. a selected answer row), wash the hue over
+white/cream at low opacity — a soft `coral/15`, `teal/15`, etc. Never introduce a new color
+to make a tint.
 
 ---
 
 ## 2. Typography
 
-Three font families, wired through CSS vars and applied via Tailwind.
+**Space Grotesk** — one family for everything (display *and* body). Bold for headings,
+regular/medium for body.
 
-| Family | Var / utility | Use |
-|---|---|---|
-| **Syne** | `--font-syne` → `font-[family-name:var(--font-syne)]` (also `font-display`) | Display: all headings, quiz/question titles, logo, stat numbers |
-| **DM Sans** | `--font-dm-sans` → `font-sans` (default) | Body, labels, UI copy |
-| **Geist Mono** | `--font-mono` → `font-mono` | Code / technical text |
-
-Headings consistently set `font-[family-name:var(--font-syne)]` + a weight.
-
-**Weights:** `font-bold` (page/hero headings, stat values), `font-semibold` (card &
-question titles), `font-medium` (labels, badges, buttons), normal (body).
-
-**Size scale (representative):**
-
-| Class | Use |
+| Style | Weight / Size / Line-height |
 |---|---|
-| `text-xs` (12px) | Labels, badges, meta, difficulty/status chips |
-| `text-sm` (14px) | Body, sidebar, chat bubbles |
-| `text-base` (16px) | Buttons, inputs |
-| `text-lg`–`text-xl` | Question text, section titles |
-| `text-2xl`–`text-4xl` | Page & dashboard headings |
-| `text-5xl sm:text-6xl lg:text-7xl` | Hero headline (`Hero.tsx`) |
+| **Heading XL** | Bold · 48px · 120% |
+| **Heading L** | Bold · 32px · 120% |
+| **Heading M** | Bold · 24px · 120% |
+| **Body Large** | Medium · 16px · 150% |
+| **Body** | Regular · 14px · 150% |
+| **Small** | Regular · 12px · 140% |
 
-**Tracking / leading:** `tracking-tight` + `leading-[1.2]` on the hero headline
-(Syne's natural line-height; descender ink reaches −25.4% of em vs the font's −27.5%
-declared descent, so `≥1.2` guarantees `g`/`y`/`p` never clip — `1.05` clipped them);
-`leading-snug` for question text; `leading-relaxed` for chat; `line-clamp-2` on directory
-card titles.
+Uppercase `ABCDEFGHIJKLMNOPQRSTUVWXYZ`, lowercase, and `0123456789` all set in Space
+Grotesk. Headings are always **bold**; supporting/meta text is **Small**.
 
 ---
 
-## 3. Radius
+## 3. Icon style
 
-Base token `--radius: 0.75rem` (12px); the scale is computed from it.
+- **2px outline** stroke.
+- **Rounded corners** on strokes.
+- **Bold style** — chunky, high-contrast, ink-colored on light surfaces.
 
-| Tailwind | Formula | ≈ px | Used for |
-|---|---|---|---|
-| `rounded-sm` | `--radius × 0.6` | 7.2 | small inner elements |
-| `rounded-md` | `--radius × 0.8` | 9.6 | `<select>` / native inputs |
-| `rounded-lg` | `--radius × 1.0` | 12 | buttons, inputs, dropdowns, sheets (shadcn default) |
-| `rounded-xl` | `--radius × 1.4` | 16.8 | quiz options, answer rows, emoji tiles |
-| `rounded-2xl` | `--radius × 1.8` | 21.6 | **primary card shape** — every panel/card |
-| `rounded-full` | — | — | pills, badges, avatars, CTAs, FAB, progress bar |
-
-**Convention:** structural cards = `rounded-2xl`; interactive sub-elements = `rounded-xl`;
-controls = `rounded-lg`; anything pill-shaped or circular = `rounded-full`.
+Icons sit inside colored **rounded-square tiles** (≈12px radius) when used as card/section
+markers.
 
 ---
 
-## 4. Borders
+## 4. Buttons
 
-- **Default:** `border border-border` (1px, white @ 8%) — the standard card/divider outline.
-- **Directional dividers:** `border-b` / `border-t` / `border-l` / `border-r border-border`
-  for section separators (chat header, editor header, preview panes).
-- **Dashed:** `border-2 border-dashed border-border` for "add" / empty drop zones
-  (Add question button, empty preview tile).
-- **Rings (focus & subtle outline):** shadcn primitives use `ring-1 ring-foreground/10`
-  for card edges and `focus-visible:ring-[3px] focus-visible:ring-ring/50` for focus.
-  Error state: `aria-invalid:ring-destructive/20 aria-invalid:border-destructive`.
-- **Selected/active outline:** `border-accent-lime` (+ `bg-accent-lime/15`) for the
-  locked quiz answer; `border-accent-lime/30` for selected chips.
+All buttons get an **ink border + hard offset shadow** and the signature press motion
+(see [Core rules](#core-rules)).
+
+| Variant | Fill | Text |
+|---|---|---|
+| **Primary** | Yellow | Ink |
+| **Secondary** | Purple | White |
+| **Accent** | Teal | Ink |
+| **Outline** | White | Ink |
+
+- **Icon buttons:** square, ≈12px radius, a single colored fill (teal / green / orange /
+  coral, etc.) with an ink border + shadow.
+- **Size variants:** **Large** · **Default** · **Small** — scale padding and font together;
+  keep the border weight constant.
 
 ---
 
-## 5. Shadows & elevation
+## 5. Inputs
 
-| Class | Use |
+White fill, ink border, hard shadow. Focus deepens the shadow; active/checked states use the
+accent fills.
+
+- **Text input** — placeholder in muted ink; trailing icon optional (e.g. search).
+- **Filled input** — same shape, carries a value.
+- **Select / dropdown** — ink border, chevron affordance.
+- **Checkbox** — square, ink border; checked = coral fill + white check.
+- **Radio** — circle, ink border; selected = purple dot.
+- **Toggle switch** — Active = teal track; Inactive = neutral track. Knob is a bordered
+  white circle.
+
+---
+
+## 6. Cards
+
+The primary container. **White surface · ink border · hard offset shadow.**
+
+Composition (top→bottom): a **colored rounded-square icon tile**, the **title** (Heading M),
+a **meta line** (question count, Small), a **difficulty badge**, and a **progress bar** with
+its percentage. Difficulty color follows the badge scale in §7.
+
+---
+
+## 7. Badges & labels
+
+Pill-shaped (fully rounded), ink border + small hard shadow, optional leading icon.
+
+**Difficulty:**
+
+| Label | Fill |
 |---|---|
-| `shadow-xs` | inputs / `<select>` |
-| `shadow-sm` | floating sidebar, sheets |
-| `shadow-md` | dropdown menus |
-| `shadow-lg` | primary CTAs (`Get Started`, FAB) |
-| `shadow-2xl` | hero floating mock cards |
+| Easy | Teal |
+| Medium | Yellow |
+| Hard | Purple |
+| Expert | Coral |
 
-**Colored action glow:** primary lime buttons add `shadow-accent-lime/20` (or `/30`) for a
-brand-tinted ambient glow.
+**Status:**
 
-**`.card-glow`** (custom, in `globals.css`) — hover treatment for directory cards
-(`QuizDirectory.tsx`): lifts `translateY(-4px)` and paints a dual lime shadow
-(1px ring @ 40% + 32px ambient @ 12%), both derived from `var(--accent-lime)`.
-
----
-
-## 6. Spacing & layout
-
-- **Gaps:** `gap-1/1.5` (tight icon+label), `gap-2/3` (standard flex), `gap-4` (card
-  content), `gap-6` (grids/sections), `gap-8` (hero stats).
-- **Padding:** cards `p-4`–`p-5`/`p-6`; pages `p-8`; compact chips `px-3 py-1`.
-- **Max-widths:** `max-w-2xl`/`3xl` (reading/quiz/editor columns), `max-w-6xl` (dashboard),
-  `max-w-7xl` (directory & landing grids).
-- **Responsive grid pattern (canonical):**
-  `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6` (directory, landing).
-  Dashboard stats use `grid-cols-2 lg:grid-cols-4`.
-- **App shell:** dashboard = fixed sidebar + `flex-1` content; builder = chat
-  `w-[28%] min-w-[280px] max-w-[380px]` + `flex-1` editor; quiz player = centered
-  `max-w-2xl`/`3xl`.
-- Breakpoints are Tailwind defaults (`sm` 640 · `md` 768 · `lg` 1024 · `xl` 1280).
-
----
-
-## 7. Custom utilities & animation
-
-Defined in `globals.css`:
-
-| Class | Effect | Used in |
+| Label | Fill | Icon |
 |---|---|---|
-| `.dot-grid` | 28px radial dot pattern (foreground @ 8%) | Hero background |
-| `.card-glow` | hover lift + lime glow (see §5) | Directory cards |
-| `.animate-fade-up` | `fade-up` keyframe, 0.5s, 24px rise + fade-in | Cards, chat messages, hero |
-| `.animate-fade-up-delay-1/2/3` | staggered 0.1/0.2/0.3s delays | Hero sequence |
-| `.stagger-item` (+`.visible`) | 20px rise + fade, toggled by IntersectionObserver | Directory grid reveal |
-
-Built-in Tailwind animations in use: `animate-pulse` (skeletons), `animate-bounce`
-(empty-state emoji, scroll cue), `animate-in`/`animate-out` (menus, sheets).
+| New | Yellow | bell |
+| Popular | Orange | star |
+| Featured | Teal | star |
 
 ---
 
-## 8. shadcn/ui component conventions
+## 8. Navigation
 
-Primitives live in `src/components/ui/` (built on `@base-ui/react`, variants via CVA).
-They are **already token-based** — extend them, don't restyle them inline.
+- **Bottom navigation** — 5 items (Home · Explore · **Create** · Stats · Profile). The center
+  **Create** action is a raised **yellow tile** with ink border + shadow; the rest are
+  ink icon + label, active item emphasized.
+- **Tabs** — a segmented, bordered strip; the **active tab is a yellow fill**, others are
+  transparent on white.
+- **Breadcrumb** — ink text separated by chevrons (e.g. `Home › Science › Physics Quiz`).
 
-| Component | Default shape | Variants |
+---
+
+## 9. Question types
+
+Each answer container is white with an ink border; the **selected/answered option takes a
+colored fill + ink border**.
+
+- **Multiple choice** — radio list; selected row washed in the accent (e.g. coral tint on
+  the chosen answer).
+- **True / False** — two side-by-side buttons; the chosen one fills solid.
+- **Multiple select** — checkbox list; each checked box fills coral.
+- **Short answer** — a single text input.
+
+---
+
+## 10. Progress & feedback
+
+- **Progress bar** — rounded track with ink border; **teal fill** advancing left→right with
+  a percentage label.
+- **Step progress** — numbered circles connected by a line; completed/active steps are
+  filled, upcoming steps are outline-only.
+- **Alert / feedback rows** — bordered, hard-shadowed, with a leading status icon and a
+  trailing dismiss `×`:
+
+| State | Fill / accent | Example copy |
 |---|---|---|
-| `Button` | `rounded-lg h-8 text-sm font-medium`, focus `ring-3 ring-ring/50` | `default · outline · secondary · ghost · destructive · link` × `xs · sm · default · lg · icon` |
-| `Card` | `rounded-xl bg-card ring-1 ring-foreground/10` | `default · sm` |
-| `Input` / `Textarea` | `rounded-lg`, `focus-visible:ring-[3px]`, `border-input` | — |
-| `Badge` | `rounded-4xl h-5 text-xs font-medium` | `default · secondary · destructive · outline · ghost · link` |
-| `Avatar` | `rounded-full size-8 ring-2 ring-background` | `sm · default · lg` |
-| `Dropdown` / `Tooltip` / `Sheet` / `Sidebar` / `Skeleton` / `Separator` | per shadcn | — |
+| Success | Teal | "Great! That's correct." |
+| Warning | Yellow | "Almost there! Try again." |
+| Error | Coral | "Incorrect. Keep practicing!" |
 
-**App pattern:** primary actions are `rounded-full` lime buttons
-(`bg-accent-lime text-accent-lime-foreground`), secondary actions use the `outline` or
-`secondary` Button variant.
+---
+
+## 11. Modals
+
+White card, **thick ink border (3px)**, hard shadow, title (Heading M) + close `×`, body
+copy, and an action button.
+
+- **Welcome / info** — friendly heading, primary (yellow) action ("Let's Go!").
+- **Confirm / delete** — warning icon, `Cancel` (outline) + `Delete` (**coral**) actions.
+- **Share** — social buttons (link · Facebook · Twitter · WhatsApp) as bordered colored
+  tiles.
+
+---
+
+## 12. Empty & states
+
+Centered icon + heading (Heading M) + supporting copy (Small) + one action button.
+
+| State | Copy | Action |
+|---|---|---|
+| **No quizzes yet** | "You haven't created any quizzes yet." | Create Quiz (yellow) |
+| **No results found** | "We couldn't find any quizzes matching …" | Clear Search (outline) |
+| **All caught up** | "You've completed all available quizzes." | Explore More (yellow) |
+| **Offline** | "You're offline. Check your connection and try again." | Retry (teal) |
+
+---
+
+## 13. Illustrations & decor
+
+Playful accents that reinforce the bold, celebratory tone: **confetti shapes** (small
+squares, diamonds, and stars in the palette colors), a **trophy**, and a **stack of books**.
+Use sparingly around empty states, celebration moments, and hero areas — always in the
+palette colors with ink outlines.
+
+---
+
+## Core rules
+
+The four moves that make the neo-brutalism style read correctly:
+
+1. **Borders** — every surface and control has a **solid ink border**: `2px` default, `3px`
+   for emphasis (modals, primary CTAs). No hairline or translucent borders.
+2. **Shadows** — **hard offset, zero blur**, always ink:
+   - `2px 2px 0` — small (badges, chips)
+   - `4px 4px 0` — default (buttons, cards, inputs)
+   - `6px 6px 0` — raised (modals, hovered cards)
+
+   A colored offset shadow is allowed on colored icon tiles.
+3. **Radius** — chunky but rounded: cards ≈16–20px · buttons & inputs ≈12px · icon tiles
+   ≈12px · badges/pills fully rounded.
+4. **Motion** — the signature interaction:
+   - **Press:** `translate(2px, 2px)` and the shadow **collapses to `0`** (the control
+     "sinks" onto the page).
+   - **Hover:** lift `translate(-2px, -2px)` and the shadow **grows**.
+5. **Flat fills** — solid vibrant color only. No gradients, no glows. Tints are a light wash
+   of the *same* hue over white/cream, never a second brand color.
 
 ---
 
 ## Usage rules
 
-1. **Color only via tokens.** `bg-accent-lime`, `text-success`, `bg-destructive/20`, etc.
-   - ❌ `bg-[oklch(0.93_0.22_127)]` → ✅ `bg-accent-lime`
-   - ❌ `text-[oklch(0.13_0.03_264)]` (text on lime) → ✅ `text-accent-lime-foreground`
-   - ❌ `hover:bg-[oklch(0.88_0.22_127)]` → ✅ `hover:bg-accent-lime/90`
-   - ❌ `shadow-[oklch(0.93_0.22_127/20%)]` → ✅ `shadow-accent-lime/20`
-2. **Status palette is semantic, not literal.** Correct/easy = `success`;
-   skipped/medium = `warning`; wrong/hard/error/delete = `destructive`. Never `green-*`,
-   `yellow-*`, `red-*`.
-3. **No second brand color.** Lime is the only accent — there is no purple. Decorative
-   surfaces use `secondary`; accents use `accent-lime`.
-4. **Tints = opacity modifiers** on a token (`/8 /10 /15 /20 /30 /50 /90`), never a new color.
-5. **New semantic need?** Add a `--token` (+ `-foreground`) in `:root` **and** `.dark`,
-   register `--color-token` in `@theme inline`, then use the utility. Don't reach for a raw
-   Tailwind palette shade.
-6. **Cards = `rounded-2xl border border-border bg-card`.** Keep the shape consistent.
-7. **Headings = Syne** via `font-[family-name:var(--font-syne)]`.
-8. `src/components/ui/*` are generated/regenerable — keep them token-based; don't bake in
-   one-off colors.
+1. **Color is semantic, not decorative.** Success/Easy = **teal**; Medium/New = **yellow**;
+   Hard/Secondary = **purple**; Error/Delete/Expert = **coral**; Highlight/Popular =
+   **orange**. Don't repurpose a color outside its role.
+2. **Text-on-fill is fixed.** White text on Coral and Purple; Ink text on Yellow, Teal,
+   Orange, White, and Cream. Use the [palette table](#1-color-palette) — never eyeball it.
+3. **Everything is bordered and hard-shadowed.** A borderless or blurred-shadow element is
+   off-system.
+4. **Space Grotesk everywhere.** One family for headings and body; weight and size carry the
+   hierarchy (see §2).
+5. **Flat fills, no gradients or glows.** Tints come from opacity over white/cream on the
+   same hue.
+6. **Light-only.** Cream page, white cards, ink ink. There is no dark theme in this system.
+7. **Cards = white · ink border · hard shadow · ~16–20px radius.** Keep the container shape
+   consistent.
 
 ---
 
-## Adherence audit
+## For the code migration
 
-State of `globals.css` compliance. A full sweep on **2026-06-16** found **64** hardcoded
-color values bypassing the theme; **all were remediated** in the same change.
+When this spec is implemented in `src/app/globals.css` (Tailwind v4, `@theme inline`) and
+`src/app/layout.tsx`:
 
-### What was fixed
-
-| Category | Count | Resolution |
-|---|---|---|
-| Arbitrary `oklch(...)` lime values (`bg-[oklch(0.93_0.22_127)]`, …) | 30 | → `accent-lime` / `accent-lime-foreground` tokens (incl. `shadow-accent-lime/NN`, `hover:bg-accent-lime/90`) |
-| Hardcoded `green-*` / `yellow-*` (status & difficulty) | ~14 | → new `success` / `warning` tokens |
-| Hardcoded `red-*` (errors, wrong, hard) | ~8 | → existing `destructive` token |
-| Hardcoded `purple-*` (avatars, badges, glows, tiles) | ~9 | Purple retired — solid accents → `accent-lime`, decorative → `secondary` |
-| Raw oklch in `.dot-grid` / `.card-glow` | 3 | → relative-color `oklch(from var(--token) …)` |
-
-New tokens added: `--success` / `--success-foreground`, `--warning` /
-`--warning-foreground` (in `:root`, `.dark`, and `@theme inline`).
-
-Files touched: `globals.css`; `builder/{QuestionCard,QuestionEditor,QuizPreview,ChatPanel,QuizEditor}.tsx`;
-`quiz/{QuizPlayer,QuestionReview}.tsx`; `landing/{Hero,QuizDirectory}.tsx`;
-`dashboard/Sidebar.tsx`; `app/dashboard/page.tsx`.
-
-### Known acceptable exception
-
-- `src/components/ui/sheet.tsx` uses `bg-black/10` for the modal overlay scrim — a
-  conventional neutral dim, left as-is (low priority). Promote to an `--overlay` token if
-  overlay theming is ever needed.
-
-### Verification
-
-`npx next build` — compiles clean, TypeScript passes. Re-audit with:
-
-```bash
-grep -rn "oklch(0\." src --include=*.tsx          # → no matches
-grep -rn "purple-" src --include=*.tsx            # → no matches
-grep -rnE "(bg|text|border)-(green|yellow|red)-[0-9]" src --include=*.tsx   # → no matches
-```
+- Add the tokens from §1's "Proposed token names" table to `:root` (light-only — no `.dark`
+  block), and register each `--color-*` in `@theme inline`.
+- Load **Space Grotesk** via `next/font/google` in `layout.tsx`, mapped to `--font-sans`
+  and `--font-display` (retiring Syne, DM Sans, and Geist Mono). Remove the hard-coded
+  `dark` class on `<html>`.
+- Add utilities for the hard-shadow scale and the press/hover motion so components share one
+  source of truth.
