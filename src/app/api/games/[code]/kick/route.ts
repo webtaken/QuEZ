@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { getGameByCode } from '@/db/game-queries'
 import { kickParticipant } from '@/db/game-mutations'
+import { syncGameById } from '@/lib/realtime/sync'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -23,6 +24,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
 
   const kicked = await kickParticipant(game.id, participantId)
   if (!kicked) return NextResponse.json({ error: 'Participant not found' }, { status: 404 })
+
+  await syncGameById(game.id)
 
   return NextResponse.json({ ok: true })
 }

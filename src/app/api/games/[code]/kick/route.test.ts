@@ -19,6 +19,11 @@ vi.mock('@/db/game-mutations', () => ({
   kickParticipant: (...a: unknown[]) => kickParticipant(...a),
 }))
 
+const syncGameById = vi.fn()
+vi.mock('@/lib/realtime/sync', () => ({
+  syncGameById: (...a: unknown[]) => syncGameById(...a),
+}))
+
 process.env.DATABASE_URL ??= 'postgres://test:test@localhost:5432/test'
 
 const { POST } = await import('./route')
@@ -33,6 +38,7 @@ beforeEach(() => {
   getSession.mockReset()
   getGameByCode.mockReset()
   kickParticipant.mockReset()
+  syncGameById.mockReset()
 })
 
 describe('POST /api/games/[code]/kick', () => {
@@ -70,6 +76,7 @@ describe('POST /api/games/[code]/kick', () => {
     kickParticipant.mockResolvedValue(false)
     const res = await POST(req({ participantId: 'not-in-this-game' }), ctx('854123'))
     expect(res.status).toBe(404)
+    expect(syncGameById).not.toHaveBeenCalled()
   })
 
   it('kicks the participant', async () => {
@@ -79,5 +86,6 @@ describe('POST /api/games/[code]/kick', () => {
     const res = await POST(req({ participantId: 'p1' }), ctx('854123'))
     expect(res.status).toBe(200)
     expect(kickParticipant).toHaveBeenCalledWith('g1', 'p1')
+    expect(syncGameById).toHaveBeenCalledWith('g1')
   })
 })

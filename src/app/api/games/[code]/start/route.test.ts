@@ -19,6 +19,11 @@ vi.mock('@/db/game-mutations', () => ({
   startGame: (...a: unknown[]) => startGame(...a),
 }))
 
+const syncGameById = vi.fn()
+vi.mock('@/lib/realtime/sync', () => ({
+  syncGameById: (...a: unknown[]) => syncGameById(...a),
+}))
+
 process.env.DATABASE_URL ??= 'postgres://test:test@localhost:5432/test'
 
 const { POST } = await import('./route')
@@ -31,6 +36,7 @@ beforeEach(() => {
   getSession.mockReset()
   getGameByCode.mockReset()
   startGame.mockReset()
+  syncGameById.mockReset()
 })
 
 describe('POST /api/games/[code]/start', () => {
@@ -61,6 +67,7 @@ describe('POST /api/games/[code]/start', () => {
     startGame.mockResolvedValue({ ok: false, error: 'No players have joined yet', status: 400 })
     const res = await POST(req, ctx('854123'))
     expect(res.status).toBe(400)
+    expect(syncGameById).not.toHaveBeenCalled()
   })
 
   it('starts the game', async () => {
@@ -70,5 +77,6 @@ describe('POST /api/games/[code]/start', () => {
     const res = await POST(req, ctx('854123'))
     expect(res.status).toBe(200)
     expect(startGame).toHaveBeenCalledWith('g1')
+    expect(syncGameById).toHaveBeenCalledWith('g1')
   })
 })
