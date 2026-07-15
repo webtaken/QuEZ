@@ -16,21 +16,29 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 # React Compiler + Turbopack memory headroom; uncomment if the build OOMs:
 # ENV NODE_OPTIONS=--max-old-space-size=4096
-RUN pnpm build
+RUN pnpm build && rm -rf .next/cache
+
+# The custom server (server.mjs) is incompatible with output:'standalone', so
+# the runner needs real node_modules — production-only to keep the image sane.
+FROM base AS prod-deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile --prod
 
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-# The standalone server reads HOSTNAME/PORT from the environment; Railway
-# injects PORT at runtime and it overrides the default below.
+# server.mjs reads HOSTNAME/PORT from the environment; Railway injects PORT
+# at runtime and it overrides the default below.
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 nextjs
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --chown=nextjs:nodejs package.json server.mjs ./
 USER nextjs
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["node", "server.mjs"]
