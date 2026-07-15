@@ -7,9 +7,9 @@
     "node": ">=20.9"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "node server.mjs",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production node server.mjs",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
