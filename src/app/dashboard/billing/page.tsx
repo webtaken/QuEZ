@@ -37,7 +37,7 @@ export default async function CreditsPage() {
   return (
     <div className="p-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="font-[family-name:var(--font-syne)] font-bold text-3xl text-foreground">
+        <h1 className="font-display font-bold text-3xl text-foreground">
           AI Credits
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -45,13 +45,13 @@ export default async function CreditsPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 mb-10 flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-accent-lime/20 flex items-center justify-center">
-          <Coins className="w-6 h-6 text-accent-lime" />
+      <div className="rounded-2xl border-2 border-border bg-card p-6 mb-10 flex items-center gap-4 shadow-brutal">
+        <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+          <Coins className="w-6 h-6 text-accent" />
         </div>
         <div>
           <p className="text-xs text-muted-foreground">Current balance</p>
-          <p className="font-[family-name:var(--font-syne)] font-bold text-3xl text-foreground">
+          <p className="font-display font-bold text-3xl text-foreground">
             {formatCredits(balance)} <span className="text-base font-medium">credits</span>
           </p>
         </div>
@@ -88,7 +88,7 @@ export default async function CreditsPage() {
                       {quizId && (
                         <Link
                           href={`/dashboard/quizzes/${quizId}`}
-                          className="text-accent-lime ml-2 text-xs hover:underline"
+                          className="text-accent ml-2 text-xs hover:underline"
                         >
                           View quiz
                         </Link>
@@ -97,7 +97,7 @@ export default async function CreditsPage() {
                     <td
                       className={cn(
                         'px-5 py-3 text-right font-medium whitespace-nowrap',
-                        tx.amount >= 0 ? 'text-accent-lime' : 'text-foreground'
+                        tx.amount >= 0 ? 'text-accent' : 'text-foreground'
                       )}
                     >
                       {tx.amount >= 0 ? '+' : ''}

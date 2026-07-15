@@ -25,12 +25,12 @@ export function QuizCard({ quiz }: { quiz: DashboardQuiz }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:border-accent-lime/30 transition-colors">
+    <div className="flex items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 shadow-brutal hover:border-accent/50 transition-colors">
       <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-2xl shrink-0">
         {quiz.coverEmoji ?? '🧠'}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-[family-name:var(--font-syne)] font-semibold text-foreground truncate">
+        <p className="font-display font-semibold text-foreground truncate">
           {quiz.title}
         </p>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -52,7 +52,7 @@ export function QuizCard({ quiz }: { quiz: DashboardQuiz }) {
         <Badge
           variant={quiz.isPublic ? 'default' : 'secondary'}
           className={
-            quiz.isPublic ? 'bg-accent-lime/20 text-accent-lime border-accent-lime/30' : ''
+            quiz.isPublic ? 'bg-accent/20 text-accent border-accent/40' : ''
           }
         >
           {quiz.isPublic ? 'Public' : 'Draft'}

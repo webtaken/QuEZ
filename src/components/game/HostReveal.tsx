@@ -33,7 +33,7 @@ export function HostReveal({
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
-      <h1 className="font-[family-name:var(--font-syne)] font-semibold text-xl text-foreground text-center">
+      <h1 className="font-display font-semibold text-xl text-foreground text-center">
         {question.text}
       </h1>
 
@@ -57,17 +57,17 @@ export function HostReveal({
       </div>
 
       <div className="space-y-2">
-        <h2 className="font-[family-name:var(--font-syne)] font-semibold text-sm text-muted-foreground">
+        <h2 className="font-display font-semibold text-sm text-muted-foreground">
           Leaderboard
         </h2>
-        <div className="rounded-2xl border border-border bg-card divide-y divide-border">
+        <div className="rounded-2xl border-2 border-border bg-card divide-y divide-border shadow-brutal">
           {leaderboard.slice(0, 8).map((p) => (
             <div key={p.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
               <span className="flex items-center gap-3">
                 <span className="w-6 text-muted-foreground font-mono">{p.rank}</span>
                 <span className="text-foreground">{p.nickname}</span>
               </span>
-              <span className="font-semibold text-accent-lime tabular-nums">{p.score}</span>
+              <span className="font-semibold text-accent tabular-nums">{p.score}</span>
             </div>
           ))}
         </div>
@@ -78,7 +78,7 @@ export function HostReveal({
           onClick={onAdvance}
           disabled={!canAdvance}
           size="lg"
-          className="rounded-xl bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 font-semibold"
+          className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-brutal border-2 border-border"
         >
           {isLast ? 'Show podium' : 'Next question'}
         </Button>

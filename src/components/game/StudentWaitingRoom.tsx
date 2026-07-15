@@ -12,7 +12,7 @@ export function StudentWaitingRoom({
 }) {
   return (
     <div className="max-w-md mx-auto px-6 py-16 space-y-6 text-center">
-      <h1 className="font-[family-name:var(--font-syne)] font-bold text-2xl text-foreground">You&apos;re in!</h1>
+      <h1 className="font-display font-bold text-2xl text-foreground">You&apos;re in!</h1>
       <p className="text-muted-foreground text-sm">Waiting for the host to start the quiz...</p>
 
       <div className="flex flex-wrap gap-2 justify-center">

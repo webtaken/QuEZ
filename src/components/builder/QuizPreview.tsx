@@ -69,7 +69,7 @@ export function QuizPreview({ quiz, onSave, saving }: QuizPreviewProps) {
               <>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">{quiz.coverEmoji}</span>
-                  <h2 className="font-[family-name:var(--font-syne)] font-bold text-xl text-foreground truncate">
+                  <h2 className="font-display font-bold text-xl text-foreground truncate">
                     {quiz.title}
                   </h2>
                 </div>
@@ -92,7 +92,7 @@ export function QuizPreview({ quiz, onSave, saving }: QuizPreviewProps) {
               </>
             ) : (
               <div>
-                <h2 className="font-[family-name:var(--font-syne)] font-bold text-xl text-muted-foreground">
+                <h2 className="font-display font-bold text-xl text-muted-foreground">
                   Quiz Preview
                 </h2>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -116,7 +116,7 @@ export function QuizPreview({ quiz, onSave, saving }: QuizPreviewProps) {
               </Button>
               <Button
                 size="sm"
-                className="rounded-full bg-accent-lime text-accent-lime-foreground gap-1.5 font-semibold"
+                className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 font-semibold"
                 onClick={() => handleSave(true)}
                 disabled={saving}
               >

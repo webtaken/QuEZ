@@ -205,7 +205,7 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
               value={quiz.title}
               onChange={(e) => setField('title', e.target.value)}
               placeholder="Quiz title"
-              className="font-[family-name:var(--font-syne)] font-bold text-xl h-12"
+              className="font-display font-bold text-xl h-12"
             />
             <div className="flex items-center gap-2 shrink-0">
               <Button
@@ -230,7 +230,7 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
                 onClick={handleSave}
                 disabled={saving || !dirty}
                 size="sm"
-                className="gap-1.5 rounded-full bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 font-semibold"
+                className="gap-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
               >
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 {dirty ? 'Save changes' : 'Saved'}
@@ -242,7 +242,7 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
         {/* Body */}
         <div className="p-6 space-y-6 max-w-3xl mx-auto">
           {/* Metadata */}
-          <section className="rounded-2xl border border-border bg-card p-5 space-y-4">
+          <section className="rounded-2xl border-2 border-border bg-card p-5 space-y-4 shadow-brutal">
             <h2 className="font-semibold text-sm text-foreground">Quiz details</h2>
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">Description</label>

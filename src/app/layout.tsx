@@ -1,22 +1,15 @@
 import type { Metadata } from 'next'
-import { DM_Sans, Syne, Geist_Mono } from 'next/font/google'
+import { Space_Grotesk } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import './globals.css'
 
-const dmSans = DM_Sans({
-  variable: '--font-dm-sans',
+// Single family for display + body (DESIGN.md §2). One variable drives
+// both --font-sans and --font-display in globals.css.
+const spaceGrotesk = Space_Grotesk({
+  variable: '--font-space-grotesk',
   subsets: ['latin'],
-})
-
-const syne = Syne({
-  variable: '--font-syne',
-  subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
 })
 
 export const metadata: Metadata = {
@@ -31,10 +24,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${dmSans.variable} ${syne.variable} ${geistMono.variable} dark`}
-    >
+    <html lang="en" className={spaceGrotesk.variable}>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <TooltipProvider>
           {children}

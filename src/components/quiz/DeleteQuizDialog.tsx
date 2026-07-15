@@ -58,14 +58,14 @@ export function DeleteQuizDialog({
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
-        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-card p-6 shadow-lg transition-all duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0">
+        <Dialog.Backdrop className="fixed inset-0 z-50 bg-foreground/40 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border-2 border-border bg-card p-6 shadow-brutal-lg transition-all duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
               <Trash2 className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <Dialog.Title className="font-[family-name:var(--font-syne)] text-lg font-bold text-foreground">
+              <Dialog.Title className="font-display text-lg font-bold text-foreground">
                 Delete quiz
               </Dialog.Title>
               <Dialog.Description className="mt-1 text-sm text-muted-foreground">

@@ -44,7 +44,7 @@ export default async function DashboardPage() {
     <div className="p-8 max-w-6xl">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-[family-name:var(--font-syne)] font-bold text-3xl text-foreground">
+          <h1 className="font-display font-bold text-3xl text-foreground">
             My Dashboard
           </h1>
           <p className="text-muted-foreground mt-1">Manage your quizzes and track performance</p>
@@ -52,7 +52,7 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-3">
           <CreditsPill balance={balance} />
           <Link href="/dashboard/quizzes/new">
-            <Button className="bg-accent-lime text-accent-lime-foreground rounded-full gap-2 font-semibold">
+            <Button className="bg-primary text-primary-foreground rounded-full gap-2 font-semibold shadow-brutal hover:bg-primary/90">
               <Sparkles className="w-4 h-4" />
               New Quiz
             </Button>
@@ -68,9 +68,9 @@ export default async function DashboardPage() {
           { label: 'Total Plays', value: totalPlays.toLocaleString(), icon: Gamepad2 },
           { label: 'Public Quizzes', value: publicCount, icon: Globe },
         ].map((s) => (
-          <div key={s.label} className="rounded-2xl border border-border bg-card p-5">
+          <div key={s.label} className="rounded-2xl border-2 border-border bg-card p-5 shadow-brutal">
             <p className="text-xs text-muted-foreground mb-1">{s.label}</p>
-            <p className="font-[family-name:var(--font-syne)] font-bold text-2xl text-foreground">
+            <p className="font-display font-bold text-2xl text-foreground">
               {s.value}
             </p>
           </div>
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
 
       {/* FAB */}
       <Link href="/dashboard/quizzes/new">
-        <button className="fixed bottom-8 right-8 flex items-center gap-2 bg-accent-lime text-accent-lime-foreground rounded-full px-5 h-12 font-semibold shadow-lg shadow-accent-lime/30 hover:bg-accent-lime/90 transition-colors">
+        <button className="fixed bottom-8 right-8 flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-5 h-12 font-semibold shadow-brutal border-2 border-border hover:bg-primary/90 transition-colors">
           <Plus className="w-4 h-4" />
           New Quiz
         </button>
@@ -114,14 +114,14 @@ function EmptyDashboard({ balance }: { balance: number }) {
         <CreditsPill balance={balance} />
       </div>
       <div className="text-7xl mb-6 animate-bounce">🧠</div>
-      <h2 className="font-[family-name:var(--font-syne)] font-bold text-3xl text-foreground mb-3">
+      <h2 className="font-display font-bold text-3xl text-foreground mb-3">
         You haven&apos;t created any quizzes yet
       </h2>
       <p className="text-muted-foreground mb-8 max-w-sm">
         Use the AI quiz builder to generate your first quiz in seconds.
       </p>
       <Link href="/dashboard/quizzes/new">
-        <Button className="bg-accent-lime text-accent-lime-foreground rounded-full px-8 h-12 font-semibold gap-2 text-base shadow-lg shadow-accent-lime/20">
+        <Button className="bg-primary text-primary-foreground rounded-full px-8 h-12 font-semibold gap-2 text-base shadow-brutal hover:bg-primary/90">
           <Sparkles className="w-5 h-5" />
           Create My First Quiz
         </Button>

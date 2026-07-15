@@ -40,7 +40,7 @@ export default function FaqPage() {
     <main className="px-6 py-16">
       <div className="mx-auto max-w-3xl">
         <div className="text-center">
-          <h1 className="font-[family-name:var(--font-syne)] font-bold text-4xl sm:text-5xl text-foreground">
+          <h1 className="font-display font-bold text-4xl sm:text-5xl text-foreground">
             Frequently asked questions
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
@@ -52,7 +52,7 @@ export default function FaqPage() {
           {FAQS.map((item) => (
             <details
               key={item.q}
-              className="group rounded-2xl border border-border bg-card px-6 py-4"
+              className="group rounded-2xl border-2 border-border bg-card px-6 py-4 shadow-brutal-sm"
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-foreground">
                 {item.q}

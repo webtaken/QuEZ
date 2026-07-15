@@ -11,7 +11,7 @@ export function CreditsPill({ balance }: { balance: number | null }) {
     balance <= 0
       ? 'text-destructive border-destructive/40 bg-destructive/10'
       : balance < 10
-        ? 'text-amber-500 border-amber-500/40 bg-amber-500/10'
+        ? 'text-warning border-warning/40 bg-warning/10'
         : 'text-muted-foreground border-border bg-secondary'
   return (
     <Link

@@ -57,7 +57,7 @@ export function JoinForm({ initialCode }: { initialCode?: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-sm mx-auto px-6 py-16 space-y-5 text-center">
-      <h1 className="font-[family-name:var(--font-syne)] font-bold text-2xl text-foreground">Join a game</h1>
+      <h1 className="font-display font-bold text-2xl text-foreground">Join a game</h1>
       <div className="space-y-3 text-left">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Room code</label>
@@ -85,7 +85,7 @@ export function JoinForm({ initialCode }: { initialCode?: string }) {
         type="submit"
         disabled={joining}
         size="lg"
-        className="w-full rounded-xl bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 font-semibold"
+        className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-brutal border-2 border-border"
       >
         {joining ? 'Joining...' : 'Join'}
       </Button>

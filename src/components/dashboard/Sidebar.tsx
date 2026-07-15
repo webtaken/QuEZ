@@ -79,9 +79,9 @@ export function AppSidebar() {
             href="/"
             className="inline-flex items-baseline group-data-[collapsible=icon]:hidden"
           >
-            <span className="font-[family-name:var(--font-syne)] font-bold text-2xl text-sidebar-foreground">
-              <span className="text-accent-lime text-3xl">Q</span>uE
-              <span className="inline-block -rotate-6 text-accent-lime">
+            <span className="font-display font-bold text-2xl text-sidebar-foreground">
+              <span className="text-primary text-3xl">Q</span>uE
+              <span className="inline-block -rotate-6 text-primary">
                 Z
               </span>
             </span>
@@ -96,7 +96,7 @@ export function AppSidebar() {
       <div className="flex items-center gap-3 px-4 py-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:justify-center">
         <Avatar className="w-9 h-9 shrink-0 group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7">
           <AvatarImage src={user?.image ?? undefined} />
-          <AvatarFallback className="bg-accent-lime text-accent-lime-foreground text-sm">
+          <AvatarFallback className="bg-primary text-primary-foreground text-sm">
             {initials ?? "?"}
           </AvatarFallback>
         </Avatar>
@@ -130,7 +130,7 @@ export function AppSidebar() {
                         item.disabled
                           ? "opacity-40 pointer-events-none"
                           : item.accent
-                            ? "text-accent-lime hover:text-accent-lime hover:bg-accent-lime/10 data-active:bg-accent-lime/15 data-active:text-accent-lime"
+                            ? "text-accent hover:text-accent hover:bg-accent/10 data-active:bg-accent/15 data-active:text-accent"
                             : ""
                       }
                       render={

@@ -8,9 +8,9 @@ export function Logo({ className }: { className?: string }) {
       aria-label="QuEZ home"
       className={cn('inline-flex items-baseline', className)}
     >
-      <span className="font-[family-name:var(--font-syne)] font-bold text-2xl text-foreground">
-        <span className="text-accent-lime text-3xl">Q</span>uE
-        <span className="inline-block -rotate-6 text-accent-lime">Z</span>
+      <span className="font-display font-bold text-2xl text-foreground">
+        <span className="text-primary text-3xl">Q</span>uE
+        <span className="inline-block -rotate-6 text-primary">Z</span>
       </span>
     </Link>
   )

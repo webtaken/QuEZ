@@ -26,13 +26,13 @@ export function HostWaitingRoom({
     <div className="max-w-3xl mx-auto px-6 py-10 space-y-8 text-center">
       <div className="space-y-2">
         <div className="text-5xl">{coverEmoji}</div>
-        <h1 className="font-[family-name:var(--font-syne)] font-bold text-2xl text-foreground">{quizTitle}</h1>
+        <h1 className="font-display font-bold text-2xl text-foreground">{quizTitle}</h1>
         <p className="text-muted-foreground text-sm">Waiting for players to join</p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 space-y-2">
+      <div className="rounded-2xl border-2 border-border bg-card p-6 space-y-2 shadow-brutal">
         <p className="text-xs text-muted-foreground uppercase tracking-wide">Room code</p>
-        <p className="font-[family-name:var(--font-syne)] font-bold text-5xl text-accent-lime tabular-nums tracking-widest">
+        <p className="font-display font-bold text-5xl text-primary tabular-nums tracking-widest">
           {code}
         </p>
         <p className="text-xs text-muted-foreground break-all">{joinUrl}</p>
@@ -62,7 +62,7 @@ export function HostWaitingRoom({
         onClick={onStart}
         disabled={participants.length === 0}
         size="lg"
-        className="gap-2 rounded-xl bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 font-semibold"
+        className="gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-brutal border-2 border-border"
       >
         <Play className="w-4 h-4" />
         Start quiz

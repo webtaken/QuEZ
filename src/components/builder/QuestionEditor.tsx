@@ -78,10 +78,10 @@ export function QuestionEditor({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+    <div className="rounded-2xl border-2 border-border bg-card p-5 space-y-4 shadow-brutal-sm">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <span className="w-7 h-7 rounded-full bg-accent-lime/20 text-accent-lime text-xs font-bold flex items-center justify-center shrink-0">
+        <span className="w-7 h-7 rounded-full bg-accent/20 text-accent text-xs font-bold flex items-center justify-center shrink-0">
           {index + 1}
         </span>
         <span className="text-xs text-muted-foreground">Question {index + 1}</span>
@@ -198,7 +198,7 @@ export function QuestionEditor({
                 name={`correct-${index}`}
                 checked={i === question.correctIndex}
                 onChange={() => setField('correctIndex', i)}
-                className="w-4 h-4 accent-accent-lime shrink-0"
+                className="w-4 h-4 accent-accent shrink-0"
                 aria-label={`Mark option ${String.fromCharCode(65 + i)} as correct`}
               />
               <span className="text-xs font-bold text-muted-foreground w-4 shrink-0">

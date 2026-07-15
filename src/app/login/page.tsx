@@ -11,12 +11,12 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <main className="relative min-h-screen flex items-center justify-center dot-grid px-6">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-2xl">
+    <main className="relative min-h-screen flex items-center justify-center px-6">
+      <div className="w-full max-w-md rounded-2xl border-2 border-border bg-card p-8 shadow-brutal-lg">
         <div className="flex justify-center mb-6">
           <Logo />
         </div>
-        <h1 className="font-[family-name:var(--font-syne)] font-bold text-2xl text-center text-foreground">
+        <h1 className="font-display font-bold text-2xl text-center text-foreground">
           Welcome back
         </h1>
         <p className="mt-2 text-center text-sm text-muted-foreground">

@@ -18,7 +18,7 @@ export default async function CommunityPage() {
   return (
     <main className="px-6 pt-16">
       <div className="mx-auto max-w-7xl text-center">
-        <h1 className="font-[family-name:var(--font-syne)] font-bold text-4xl sm:text-5xl text-foreground">
+        <h1 className="font-display font-bold text-4xl sm:text-5xl text-foreground">
           Community Quizzes
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">

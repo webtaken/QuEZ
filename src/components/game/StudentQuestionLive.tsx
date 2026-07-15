@@ -6,7 +6,7 @@ import { useCountdown } from '@/hooks/useCountdown'
 import { cn } from '@/lib/utils'
 import type { GameQuestionView } from '@/hooks/useGameSocket'
 
-// A lightweight ring built from the same accent-lime/secondary CSS custom
+// A lightweight ring built from the same accent/muted CSS custom
 // properties Tailwind maps its utility classes to — not a hardcoded color,
 // just read directly since conic-gradient can't take a Tailwind class.
 function CountdownRing({ secondsLeft, timeLimit }: { secondsLeft: number; timeLimit: number }) {
@@ -14,7 +14,7 @@ function CountdownRing({ secondsLeft, timeLimit }: { secondsLeft: number; timeLi
   return (
     <div
       className="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
-      style={{ background: `conic-gradient(var(--accent-lime) ${pct}%, var(--secondary) ${pct}%)` }}
+      style={{ background: `conic-gradient(var(--accent) ${pct}%, var(--muted) ${pct}%)` }}
     >
       <div className="w-11 h-11 rounded-full bg-card flex items-center justify-center text-sm font-bold tabular-nums text-foreground">
         {secondsLeft}
@@ -80,7 +80,7 @@ export function StudentQuestionLive({
         <CountdownRing secondsLeft={secondsLeft} timeLimit={question.timeLimit} />
       </div>
 
-      <h1 className="font-[family-name:var(--font-syne)] font-bold text-xl text-foreground text-center leading-snug">
+      <h1 className="font-display font-bold text-xl text-foreground text-center leading-snug">
         {question.text}
       </h1>
 
@@ -96,8 +96,8 @@ export function StudentQuestionLive({
               className={cn(
                 'flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all',
                 isSelected
-                  ? 'border-accent-lime bg-accent-lime/15 text-foreground'
-                  : 'border-border bg-secondary/50 text-foreground hover:border-accent-lime/50 hover:bg-secondary',
+                  ? 'border-accent bg-accent/15 text-foreground'
+                  : 'border-border bg-card text-foreground hover:border-accent/50 hover:bg-card',
                 dim && 'opacity-40'
               )}
             >
@@ -115,14 +115,14 @@ export function StudentQuestionLive({
           onClick={() => submit(selected)}
           disabled={selected === null}
           size="lg"
-          className="w-full rounded-xl bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 font-semibold"
+          className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-brutal border-2 border-border"
         >
           Submit answer
         </Button>
       )}
 
       {answered && (
-        <p className="text-center text-accent-lime font-semibold text-sm">
+        <p className="text-center text-accent font-semibold text-sm">
           {selected === null ? "Time's up!" : 'Answer locked'} — waiting for the others...
         </p>
       )}

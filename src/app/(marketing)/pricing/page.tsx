@@ -70,7 +70,7 @@ export default function PricingPage() {
     <main className="px-6 py-16">
       <div className="mx-auto max-w-7xl">
         <div className="text-center">
-          <h1 className="font-[family-name:var(--font-syne)] font-bold text-4xl sm:text-5xl text-foreground">
+          <h1 className="font-display font-bold text-4xl sm:text-5xl text-foreground">
             Simple, honest pricing
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
@@ -84,21 +84,21 @@ export default function PricingPage() {
               key={tier.name}
               className={
                 tier.featured
-                  ? 'relative rounded-2xl border border-accent-lime/30 bg-card p-8 shadow-lg shadow-accent-lime/20'
-                  : 'rounded-2xl border border-border bg-card p-8'
+                  ? 'relative rounded-2xl border-2 border-border bg-card p-8 shadow-brutal-lg'
+                  : 'rounded-2xl border-2 border-border bg-card p-8 shadow-brutal'
               }
             >
               {tier.featured && (
-                <span className="absolute -top-3 left-8 rounded-full bg-accent-lime px-3 py-1 text-xs font-medium text-accent-lime-foreground">
+                <span className="absolute -top-3 left-8 rounded-full border-2 border-border bg-primary px-3 py-1 text-xs font-bold text-primary-foreground shadow-brutal-sm">
                   Most popular
                 </span>
               )}
-              <h2 className="font-[family-name:var(--font-syne)] font-semibold text-xl text-foreground">
+              <h2 className="font-display font-semibold text-xl text-foreground">
                 {tier.name}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">{tier.blurb}</p>
               <div className="mt-6 flex items-baseline gap-1">
-                <span className="font-[family-name:var(--font-syne)] font-bold text-4xl text-foreground">
+                <span className="font-display font-bold text-4xl text-foreground">
                   {tier.price}
                 </span>
                 <span className="text-sm text-muted-foreground">
@@ -108,7 +108,7 @@ export default function PricingPage() {
               <ul className="mt-6 space-y-3">
                 {tier.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-foreground">
-                    <Check className="mt-0.5 size-4 shrink-0 text-accent-lime" />
+                    <Check className="mt-0.5 size-4 shrink-0 text-accent" />
                     {f}
                   </li>
                 ))}
@@ -116,7 +116,7 @@ export default function PricingPage() {
               <Button
                 className={
                   tier.featured
-                    ? 'mt-8 w-full rounded-full bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90'
+                    ? 'mt-8 w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-brutal border-2 border-border'
                     : 'mt-8 w-full rounded-full'
                 }
                 variant={tier.featured ? 'default' : 'outline'}

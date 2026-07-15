@@ -19,11 +19,11 @@ function PodiumBlock({
 }) {
   return (
     <div className={`flex flex-col items-center gap-2 w-24 ${delayClass}`}>
-      {place === 1 && <Trophy className="w-6 h-6 text-accent-lime" />}
+      {place === 1 && <Trophy className="w-6 h-6 text-accent" />}
       <p
         className={cn(
           'text-sm font-semibold truncate w-full text-center',
-          isYou ? 'text-accent-lime' : 'text-foreground'
+          isYou ? 'text-accent' : 'text-foreground'
         )}
       >
         {entry.nickname}
@@ -31,9 +31,9 @@ function PodiumBlock({
       </p>
       <p className="text-xs text-muted-foreground tabular-nums">{entry.score}</p>
       <div
-        className={`w-full rounded-t-xl bg-accent-lime/20 border border-accent-lime/40 flex items-start justify-center pt-2 ${heightClass}`}
+        className={`w-full rounded-t-xl bg-accent/20 border border-accent/40 flex items-start justify-center pt-2 ${heightClass}`}
       >
-        <span className="font-[family-name:var(--font-syne)] font-bold text-2xl text-accent-lime">{place}</span>
+        <span className="font-display font-bold text-2xl text-accent">{place}</span>
       </div>
     </div>
   )
@@ -53,11 +53,11 @@ export function StudentPodium({
   return (
     <div className="max-w-2xl mx-auto px-6 py-10 space-y-8 text-center">
       <div className="space-y-2">
-        <h1 className="font-[family-name:var(--font-syne)] font-bold text-2xl text-foreground">Final results</h1>
+        <h1 className="font-display font-bold text-2xl text-foreground">Final results</h1>
         {yourEntry && (
           <p className="text-muted-foreground text-sm">
-            You finished <span className="font-semibold text-accent-lime">#{yourEntry.rank}</span> with{' '}
-            <span className="font-semibold text-accent-lime">{yourEntry.score}</span> points
+            You finished <span className="font-semibold text-accent">#{yourEntry.rank}</span> with{' '}
+            <span className="font-semibold text-accent">{yourEntry.score}</span> points
           </p>
         )}
       </div>
@@ -93,23 +93,23 @@ export function StudentPodium({
       </div>
 
       {rest.length > 0 && (
-        <div className="rounded-2xl border border-border bg-card divide-y divide-border text-left animate-fade-up animate-fade-up-delay-3">
+        <div className="rounded-2xl border-2 border-border bg-card divide-y divide-border shadow-brutal text-left animate-fade-up animate-fade-up-delay-3">
           {rest.map((p) => (
             <div
               key={p.id}
               className={cn(
                 'flex items-center justify-between px-4 py-2.5 text-sm',
-                p.id === you?.id && 'bg-accent-lime/10'
+                p.id === you?.id && 'bg-accent/10'
               )}
             >
               <span className="flex items-center gap-3">
                 <span className="w-6 text-muted-foreground font-mono">{p.rank}</span>
-                <span className={p.id === you?.id ? 'text-accent-lime font-semibold' : 'text-foreground'}>
+                <span className={p.id === you?.id ? 'text-accent font-semibold' : 'text-foreground'}>
                   {p.nickname}
                   {p.id === you?.id && ' (you)'}
                 </span>
               </span>
-              <span className="font-semibold text-accent-lime tabular-nums">{p.score}</span>
+              <span className="font-semibold text-accent tabular-nums">{p.score}</span>
             </div>
           ))}
         </div>

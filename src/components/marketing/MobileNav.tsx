@@ -28,7 +28,7 @@ export function MobileNav({ authSlot }: { authSlot: React.ReactNode }) {
       </SheetTrigger>
       <SheetContent side="right" className="w-72">
         <SheetHeader>
-          <SheetTitle className="font-[family-name:var(--font-syne)]">
+          <SheetTitle className="font-display">
             Menu
           </SheetTitle>
         </SheetHeader>

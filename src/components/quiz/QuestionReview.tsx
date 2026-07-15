@@ -33,7 +33,7 @@ export function QuestionReview({
       : 'text-destructive'
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-brutal">
       <div className="flex items-start gap-3 mb-4">
         <span
           className={cn(
@@ -47,7 +47,7 @@ export function QuestionReview({
         >
           {order}
         </span>
-        <p className="font-[family-name:var(--font-syne)] font-semibold text-foreground leading-snug flex-1">
+        <p className="font-display font-semibold text-foreground leading-snug flex-1">
           {text}
         </p>
         <span className={cn('shrink-0 text-xs font-medium', statusColor)}>
@@ -68,7 +68,7 @@ export function QuestionReview({
                   ? 'border-success/40 bg-success/10 text-success'
                   : isSelectedWrong
                     ? 'border-destructive/40 bg-destructive/10 text-destructive'
-                    : 'border-border bg-secondary/50 text-muted-foreground'
+                    : 'border-border bg-card text-muted-foreground'
               )}
             >
               <span className="w-5 h-5 rounded-full border text-xs font-bold flex items-center justify-center shrink-0">

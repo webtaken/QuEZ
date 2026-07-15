@@ -11,12 +11,14 @@ export function Hero() {
   }
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden dot-grid px-6">
-      {/* Ambient glows */}
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6">
+      {/* Confetti decor — flat bordered shapes in palette colors (DESIGN.md §13) */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-accent-lime/8 blur-3xl" />
-        <div className="absolute top-1/3 -left-20 w-80 h-80 rounded-full bg-accent-lime/10 blur-3xl" />
-        <div className="absolute top-1/3 -right-20 w-80 h-80 rounded-full bg-accent-lime/10 blur-3xl" />
+        <div className="absolute left-[8%] top-[18%] size-10 rotate-12 rounded-lg border-2 border-border bg-primary" />
+        <div className="absolute right-[10%] top-[22%] size-12 -rotate-6 rounded-lg border-2 border-border bg-accent" />
+        <div className="absolute left-[14%] bottom-[16%] size-8 rotate-45 border-2 border-border bg-highlight" />
+        <div className="absolute right-[14%] bottom-[20%] size-9 -rotate-12 rounded-full border-2 border-border bg-secondary" />
+        <div className="absolute left-[46%] top-[8%] size-6 rotate-12 rounded-lg border-2 border-border bg-destructive" />
       </div>
 
       {/* Floating decorative cards */}
@@ -40,17 +42,17 @@ export function Hero() {
       {/* Content */}
       <div className="relative z-10 max-w-4xl text-center">
         {/* Logo */}
-        <div className="mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-card text-sm text-muted-foreground">
-          <Sparkles className="w-3.5 h-3.5 text-accent-lime" />
+        <div className="mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border-2 border-border bg-card text-sm font-medium text-foreground shadow-brutal-sm">
+          <Sparkles className="w-3.5 h-3.5 text-accent" />
           AI-Powered Quiz Builder
         </div>
 
         <h1
-          className="font-[family-name:var(--font-syne)] font-bold text-5xl sm:text-6xl lg:text-7xl text-foreground leading-[1.2] tracking-tight animate-fade-up"
+          className="font-display font-bold text-5xl sm:text-6xl lg:text-7xl text-foreground leading-[1.2] tracking-tight animate-fade-up"
           style={{ animationDelay: "0ms" }}
         >
           Build something{' '}
-          <span className="text-accent-lime">QuEZ</span>
+          <span className="text-primary">QuEZ</span>
         </h1>
 
         <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-up animate-fade-up-delay-1">
@@ -78,7 +80,7 @@ export function Hero() {
             { label: "Active educators", value: "1,200+" },
           ].map((s) => (
             <div key={s.label} className="text-center">
-              <div className="font-[family-name:var(--font-syne)] font-bold text-2xl text-foreground">
+              <div className="font-display font-bold text-2xl text-foreground">
                 {s.value}
               </div>
               <div className="text-sm text-muted-foreground mt-0.5">
@@ -113,12 +115,12 @@ function MockQuizCard({
   count: number;
 }) {
   return (
-    <div className="w-56 rounded-2xl border border-border bg-card p-4 shadow-2xl">
-      <div className="w-full h-20 rounded-xl bg-secondary flex items-center justify-center text-3xl mb-3">
+    <div className="w-56 rounded-2xl border-2 border-border bg-card p-4 shadow-brutal">
+      <div className="w-full h-20 rounded-xl bg-muted flex items-center justify-center text-3xl mb-3">
         {emoji}
       </div>
-      <div className="text-xs font-medium text-accent-lime mb-1">{topic}</div>
-      <div className="font-[family-name:var(--font-syne)] font-semibold text-sm text-foreground leading-tight">
+      <div className="text-xs font-bold text-accent mb-1">{topic}</div>
+      <div className="font-display font-semibold text-sm text-foreground leading-tight">
         {title}
       </div>
       <div className="mt-2 text-xs text-muted-foreground">

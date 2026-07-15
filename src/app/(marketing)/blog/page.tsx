@@ -53,7 +53,7 @@ export default function BlogPage() {
     <main className="px-6 py-16">
       <div className="mx-auto max-w-7xl">
         <div className="text-center">
-          <h1 className="font-[family-name:var(--font-syne)] font-bold text-4xl sm:text-5xl text-foreground">
+          <h1 className="font-display font-bold text-4xl sm:text-5xl text-foreground">
             The QuEZ Blog
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
@@ -66,15 +66,15 @@ export default function BlogPage() {
           {POSTS.map((post) => (
             <article
               key={post.title}
-              className="flex flex-col rounded-2xl border border-border bg-card p-6"
+              className="flex flex-col rounded-2xl border-2 border-border bg-card p-6 shadow-brutal"
             >
-              <div className="flex h-32 items-center justify-center rounded-xl bg-secondary text-5xl">
+              <div className="flex h-32 items-center justify-center rounded-xl bg-muted text-5xl">
                 {post.emoji}
               </div>
-              <div className="mt-4 text-xs font-medium text-accent-lime">
+              <div className="mt-4 text-xs font-medium text-accent">
                 {post.category}
               </div>
-              <h2 className="mt-2 font-[family-name:var(--font-syne)] font-semibold text-lg leading-snug text-foreground">
+              <h2 className="mt-2 font-display font-semibold text-lg leading-snug text-foreground">
                 {post.title}
               </h2>
               <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">

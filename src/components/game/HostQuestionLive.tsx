@@ -37,7 +37,7 @@ export function HostQuestionLive({
         </Badge>
       </div>
 
-      <h1 className="font-[family-name:var(--font-syne)] font-bold text-2xl text-foreground leading-snug">
+      <h1 className="font-display font-bold text-2xl text-foreground leading-snug">
         {question.text}
       </h1>
 
@@ -45,7 +45,7 @@ export function HostQuestionLive({
         {question.options.map((opt, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-secondary/50 text-left text-sm"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border bg-card text-left text-sm"
           >
             <span className="w-6 h-6 rounded-full border text-xs font-bold flex items-center justify-center shrink-0">
               {String.fromCharCode(65 + i)}
@@ -55,7 +55,7 @@ export function HostQuestionLive({
         ))}
       </div>
 
-      <p className="text-accent-lime font-semibold">
+      <p className="text-accent font-semibold">
         {answeredCount} / {participants.length} answered
       </p>
     </div>

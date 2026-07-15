@@ -82,7 +82,7 @@ export function HeroPrompt() {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-3 shadow-2xl transition-colors focus-within:border-accent-lime/50 text-left">
+    <div className="rounded-2xl border-2 border-border bg-card p-3 shadow-brutal transition-shadow text-left focus-within:border-accent focus-within:shadow-brutal-lg">
       <div className="relative">
         {animate && (
           <div
@@ -91,7 +91,7 @@ export function HeroPrompt() {
           >
             <span>Describe your quiz… </span>
             <span className="text-foreground/70">{typed}</span>
-            <span className="ml-px inline-block h-[1.1em] w-px translate-y-[2px] animate-pulse bg-accent-lime" />
+            <span className="ml-px inline-block h-[1.1em] w-px translate-y-[2px] animate-pulse bg-accent" />
           </div>
         )}
         <Textarea
@@ -113,7 +113,7 @@ export function HeroPrompt() {
           size="icon"
           disabled={!value.trim()}
           aria-label="Build quiz"
-          className="w-10 h-10 shrink-0 rounded-full bg-accent-lime text-accent-lime-foreground shadow-lg shadow-accent-lime/20 hover:bg-accent-lime/90"
+          className="w-10 h-10 shrink-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
         >
           <ArrowUp className="w-4 h-4" />
         </Button>

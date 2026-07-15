@@ -25,12 +25,12 @@ export function QuestionCard({ question, onDelete }: QuestionCardProps) {
   const [showExplanation, setShowExplanation] = useState(false)
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 animate-fade-up">
+    <div className="rounded-2xl border-2 border-border bg-card p-5 animate-fade-up shadow-brutal-sm">
       <div className="flex items-start gap-3 mb-4">
-        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-accent-lime/20 text-accent-lime text-xs font-bold flex items-center justify-center">
+        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-accent/20 text-accent text-xs font-bold flex items-center justify-center">
           {question.order}
         </span>
-        <p className="font-[family-name:var(--font-syne)] font-semibold text-foreground leading-snug flex-1">
+        <p className="font-display font-semibold text-foreground leading-snug flex-1">
           {question.text}
         </p>
         <div className="flex items-center gap-1 shrink-0">

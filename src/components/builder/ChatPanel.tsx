@@ -375,11 +375,11 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   }
 
   return (
-    <div className="flex flex-col h-full bg-card border-r border-border">
+    <div className="flex flex-col h-full bg-card border-r-2 border-border">
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border px-5 py-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-accent-lime/20 flex items-center justify-center">
-          <Bot className="w-4 h-4 text-accent-lime" />
+        <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+          <Bot className="w-4 h-4 text-accent" />
         </div>
         <div>
           <p className="font-semibold text-sm text-foreground">QuEZ AI</p>
@@ -394,7 +394,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Greeting */}
         <div className="flex justify-start">
-          <div className="max-w-[85%] px-4 py-3 rounded-2xl rounded-tl-sm bg-secondary text-sm text-foreground leading-relaxed">
+          <div className="max-w-[85%] px-4 py-3 rounded-2xl rounded-tl-sm bg-card text-sm text-foreground leading-relaxed border-2 border-border shadow-brutal-sm">
             <ReactMarkdown>{GREETING}</ReactMarkdown>
           </div>
         </div>
@@ -436,8 +436,8 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                   className={cn(
                     'max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed',
                     msg.role === 'user'
-                      ? 'bg-accent-lime text-accent-lime-foreground rounded-tr-sm font-medium'
-                      : 'bg-secondary text-foreground rounded-tl-sm'
+                      ? 'bg-primary text-primary-foreground rounded-tr-sm font-medium'
+                      : 'bg-card text-foreground rounded-tl-sm border-2 border-border shadow-brutal-sm'
                   )}
                 >
                   {msg.role === 'user' && (
@@ -527,7 +527,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                       v{versionByMsgId.get(msg.id)}
                     </span>
                     <button
-                      className="text-xs text-accent-lime"
+                      className="text-xs text-accent"
                       onClick={() => {
                         const row = rowsRef.current.find((r) => r.id === msg.id)
                         if (row?.quizSnapshot) onQuizUpdate(row.quizSnapshot as QuizPayload)
@@ -599,7 +599,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                   className={cn(
                     'shrink-0 w-11 h-11 border border-border',
                     webSearch
-                      ? 'text-accent-lime bg-accent-lime/15 border-accent-lime/40'
+                      ? 'text-accent bg-accent/15 border-accent/40'
                       : 'text-muted-foreground'
                   )}
                 >
@@ -629,7 +629,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
             onClick={submit}
             size="icon"
             disabled={isLoading || attachments.anyBusy || outOfCredits || (!input.trim() && attachments.items.filter((i) => i.status === 'ready').length === 0)}
-            className="shrink-0 bg-accent-lime text-accent-lime-foreground hover:bg-accent-lime/90 w-11 h-11"
+            className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 w-11 h-11"
           >
             <Send className="w-4 h-4" />
           </Button>

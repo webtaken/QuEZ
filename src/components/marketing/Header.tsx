@@ -36,7 +36,7 @@ export async function Header() {
     >
       <Avatar className="size-8">
         <AvatarImage src={user.image ?? undefined} />
-        <AvatarFallback className="bg-accent-lime text-accent-lime-foreground text-xs">
+        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
           {initials ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -44,7 +44,7 @@ export async function Header() {
     </Link>
   ) : (
     <Button
-      className="rounded-full bg-accent-lime px-5 text-accent-lime-foreground hover:bg-accent-lime/90"
+      className="rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90"
       nativeButton={false}
       render={<Link href="/login" />}
     >

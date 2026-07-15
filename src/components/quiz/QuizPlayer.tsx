@@ -147,7 +147,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
     return (
       <div className="max-w-2xl mx-auto p-6 text-center space-y-6 pt-16">
         <div className="text-7xl">{quiz.coverEmoji}</div>
-        <h1 className="font-[family-name:var(--font-syne)] font-bold text-3xl text-foreground">
+        <h1 className="font-display font-bold text-3xl text-foreground">
           {quiz.title}
         </h1>
         <p className="text-muted-foreground">
@@ -195,12 +195,12 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
       <div className="max-w-3xl mx-auto px-6 space-y-8">
         <div className="text-center space-y-3 pt-6">
           <div className="text-6xl">{quiz.coverEmoji}</div>
-          <h1 className="font-[family-name:var(--font-syne)] font-bold text-3xl text-foreground">
+          <h1 className="font-display font-bold text-3xl text-foreground">
             {quiz.title}
           </h1>
           <p className="text-muted-foreground text-sm">Quiz complete</p>
           <div className="space-y-1">
-            <p className="font-[family-name:var(--font-syne)] font-bold text-5xl text-accent-lime">
+            <p className="font-display font-bold text-5xl text-accent">
               {result.score} / {result.total}
             </p>
             <p className="text-muted-foreground">{pct}%</p>
@@ -252,7 +252,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
     <div className="max-w-2xl mx-auto px-6 space-y-6">
       <div className="space-y-2 pt-2">
         <div className="flex items-center justify-between text-sm">
-          <span className="font-[family-name:var(--font-syne)] font-semibold flex items-center gap-2 truncate">
+          <span className="font-display font-semibold flex items-center gap-2 truncate">
             <span className="text-2xl">{quiz.coverEmoji}</span>
             <span className="truncate">{quiz.title}</span>
           </span>
@@ -271,7 +271,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
         </div>
         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
           <div
-            className="h-full bg-accent-lime transition-all duration-300"
+            className="h-full bg-accent transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -279,13 +279,13 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
 
       <div
         key={current.id}
-        className="rounded-2xl border border-border bg-card p-6 animate-fade-up"
+        className="rounded-2xl border-2 border-border bg-card p-6 shadow-brutal animate-fade-up"
       >
         <div className="flex items-start gap-3 mb-5">
-          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-accent-lime/20 text-accent-lime text-sm font-bold flex items-center justify-center">
+          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-accent/20 text-accent text-sm font-bold flex items-center justify-center">
             {current.order}
           </span>
-          <p className="font-[family-name:var(--font-syne)] font-semibold text-lg text-foreground leading-snug flex-1">
+          <p className="font-display font-semibold text-lg text-foreground leading-snug flex-1">
             {current.text}
           </p>
           <Badge
@@ -312,8 +312,8 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all',
                   isLocked
-                    ? 'border-accent-lime bg-accent-lime/15 text-foreground'
-                    : 'border-border bg-secondary/50 text-foreground hover:border-accent-lime/50 hover:bg-secondary',
+                    ? 'border-accent bg-accent/15 text-foreground'
+                    : 'border-border bg-card text-foreground hover:border-accent/50',
                   dim && 'opacity-40'
                 )}
               >
