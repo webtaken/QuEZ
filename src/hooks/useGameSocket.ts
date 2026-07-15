@@ -32,14 +32,22 @@ export function useGameSocket(code: string, participantId?: string | null) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const socket = createSocket({ auth: { code } })
+    const socket = createSocket({ auth: { code, participantId: participantId ?? undefined } })
     const errorRef = { current: false }
     let retryTimeout: ReturnType<typeof setTimeout> | null = null
+    let kickedHandled = false
 
     socket.on('game:state', (snapshot: GameSnapshot) => {
       errorRef.current = false
       setError(null)
-      setState(snapshotToView(snapshot, participantId ?? null))
+      const view = snapshotToView(snapshot, participantId ?? null)
+      setState(view)
+      // Spec: a kicked client shows "removed by host" and closes its socket.
+      // Guard so a subsequent broadcast doesn't re-trigger the disconnect.
+      if (view.you?.kickedAt && !kickedHandled) {
+        kickedHandled = true
+        socket.disconnect()
+      }
     })
     socket.on('game:error', ({ reason }: { reason: GameErrorReason }) => {
       errorRef.current = true
