@@ -4,6 +4,7 @@ import { and, eq, inArray, isNull, sql } from 'drizzle-orm'
 import { generateUniqueGameCode } from '@/lib/game-code'
 import { computePoints } from '@/lib/game-scoring'
 import { hasActiveGameWithCode, getQuestionsForQuiz } from '@/db/game-queries'
+import { REVEAL_TO_PODIUM_MS } from '@/lib/realtime/types'
 
 type CreateGameResult = { ok: true; game: GameSession } | { ok: false; error: string; status: number }
 
@@ -149,8 +150,6 @@ export async function submitAnswer(
 
   return { ok: true }
 }
-
-const REVEAL_TO_PODIUM_MS = 5000
 
 // The core state-machine step: called on every poll of GET /state. If the
 // question phase's timer has elapsed, or every active participant has
