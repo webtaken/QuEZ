@@ -111,6 +111,19 @@ describe('syncGameById', () => {
     expect(timersMap.has('g1')).toBe(false)
   })
 
+  it('catches buildGameSnapshot rejections and resolves (never throws)', async () => {
+    const error = new Error('db down')
+    buildGameSnapshot.mockRejectedValue(error)
+
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      await expect(syncGameById('g1')).resolves.toBeUndefined()
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[realtime] sync failed for game g1:', error)
+    } finally {
+      consoleErrorSpy.mockRestore()
+    }
+  })
+
   it('catches and logs timer-fire sync rejections to prevent unhandled rejection crashes', async () => {
     buildGameSnapshot.mockResolvedValue(snapshotResult())
     await syncGameById('g1')
@@ -124,12 +137,12 @@ describe('syncGameById', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     // Deadline passes → timer fires → syncGameById runs again and rejects.
-    // The rejection must be caught and logged.
+    // The rejection is caught by the inner try/catch and logged.
     await vi.advanceTimersByTimeAsync(20_000 + 250)
 
     // Verify the rejection was handled by console.error.
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[realtime] timer sync failed for game g1:',
+      '[realtime] sync failed for game g1:',
       error
     )
 

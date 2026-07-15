@@ -35,18 +35,24 @@ export function phaseTimerSpec(
 // connects, and timer fires all call syncGameById. It settles overdue phases
 // (maybeAdvancePhase inside buildGameSnapshot), broadcasts one shared snapshot
 // to the game's room, and (re-)arms the phase deadline timer.
+// Never throws: broadcast is best-effort — the DB write is the source of
+// truth, and a client that misses a broadcast converges on the next sync.
 export async function syncGameById(gameId: string): Promise<void> {
-  const io = getIo()
-  const result = await buildGameSnapshot(gameId)
-  if (!result) {
-    ensurePhaseTimer(gameId, null, () => {})
-    io?.to(gameId).emit('game:error', { reason: 'ended' })
-    return
+  try {
+    const io = getIo()
+    const result = await buildGameSnapshot(gameId)
+    if (!result) {
+      ensurePhaseTimer(gameId, null, () => {})
+      io?.to(gameId).emit('game:error', { reason: 'ended' })
+      return
+    }
+    io?.to(gameId).emit('game:state', result.snapshot)
+    ensurePhaseTimer(gameId, phaseTimerSpec(result.game, result.currentQuestion, result.totalQuestions), () => {
+      // A failed timer-fire sync must not crash the process; the game self-heals
+      // on the next connect or mutation sync.
+      syncGameById(gameId).catch((err) => console.error(`[realtime] timer sync failed for game ${gameId}:`, err))
+    })
+  } catch (err) {
+    console.error(`[realtime] sync failed for game ${gameId}:`, err)
   }
-  io?.to(gameId).emit('game:state', result.snapshot)
-  ensurePhaseTimer(gameId, phaseTimerSpec(result.game, result.currentQuestion, result.totalQuestions), () => {
-    // A failed timer-fire sync must not crash the process; the game self-heals
-    // on the next connect or mutation sync.
-    syncGameById(gameId).catch((err) => console.error(`[realtime] timer sync failed for game ${gameId}:`, err))
-  })
 }
