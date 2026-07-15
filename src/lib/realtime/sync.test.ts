@@ -8,9 +8,11 @@ vi.mock('./game-state', () => ({
 const emit = vi.fn()
 const to = vi.fn(() => ({ emit }))
 const timersMap = new Map()
+const syncChains = new Map()
 vi.mock('./io', () => ({
   getIo: () => ({ to }),
   getPhaseTimers: () => timersMap,
+  getSyncChains: () => syncChains,
 }))
 
 const { syncGameById, phaseTimerSpec } = await import('./sync')
@@ -44,6 +46,7 @@ beforeEach(() => {
 afterEach(() => {
   for (const { timer } of timersMap.values()) clearTimeout(timer)
   timersMap.clear()
+  syncChains.clear()
   vi.useRealTimers()
 })
 
@@ -147,5 +150,69 @@ describe('syncGameById', () => {
     )
 
     consoleErrorSpy.mockRestore()
+  })
+
+  it('serializes concurrent syncs for the same game so the second reads state committed by the first', async () => {
+    const order: string[] = []
+    let resolveFirst!: () => void
+    const gate = new Promise<void>((resolve) => {
+      resolveFirst = resolve
+    })
+    buildGameSnapshot.mockImplementationOnce(async () => {
+      order.push('build-1-start')
+      await gate
+      order.push('build-1-end')
+      return snapshotResult()
+    })
+    buildGameSnapshot.mockImplementationOnce(async () => {
+      order.push('build-2-start')
+      return snapshotResult()
+    })
+
+    const p1 = syncGameById('g1')
+    const p2 = syncGameById('g1')
+
+    // Flush microtasks without releasing the gate: the second call must not
+    // have started its build yet.
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(order).toEqual(['build-1-start'])
+
+    resolveFirst()
+    await p1
+    await p2
+
+    expect(order).toEqual(['build-1-start', 'build-1-end', 'build-2-start'])
+  })
+
+  it('does not serialize syncs for different game ids', async () => {
+    const order: string[] = []
+    let resolveFirst!: () => void
+    const gate = new Promise<void>((resolve) => {
+      resolveFirst = resolve
+    })
+    buildGameSnapshot.mockImplementationOnce(async () => {
+      order.push('g1-start')
+      await gate
+      order.push('g1-end')
+      return snapshotResult()
+    })
+    buildGameSnapshot.mockImplementationOnce(async () => {
+      order.push('g2-start')
+      return snapshotResult({ game: { ...BASE_GAME, id: 'g2' } })
+    })
+
+    const p1 = syncGameById('g1')
+    const p2 = syncGameById('g2')
+
+    // g2's build starts even though g1's is still blocked on its gate —
+    // different games must not share a chain.
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(order).toEqual(['g1-start', 'g2-start'])
+
+    resolveFirst()
+    await p1
+    await p2
   })
 })

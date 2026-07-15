@@ -9,6 +9,7 @@ export type PhaseTimerEntry = { phaseKey: string; timer: NodeJS.Timeout }
 type RealtimeGlobal = typeof globalThis & {
   __quezIo?: Server
   __quezPhaseTimers?: Map<string, PhaseTimerEntry>
+  __quezSyncChains?: Map<string, Promise<void>>
 }
 
 export function getIo(): Server | null {
@@ -19,4 +20,10 @@ export function getPhaseTimers(): Map<string, PhaseTimerEntry> {
   const g = globalThis as RealtimeGlobal
   g.__quezPhaseTimers ??= new Map()
   return g.__quezPhaseTimers
+}
+
+export function getSyncChains(): Map<string, Promise<void>> {
+  const g = globalThis as RealtimeGlobal
+  g.__quezSyncChains ??= new Map()
+  return g.__quezSyncChains
 }

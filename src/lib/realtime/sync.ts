@@ -1,5 +1,5 @@
 import type { GameSession } from '@/db/schema'
-import { getIo } from './io'
+import { getIo, getSyncChains } from './io'
 import { ensurePhaseTimer, type PhaseTimerSpec } from './timers'
 import { buildGameSnapshot } from './game-state'
 import { REVEAL_TO_PODIUM_MS } from './types'
@@ -37,7 +37,7 @@ export function phaseTimerSpec(
 // to the game's room, and (re-)arms the phase deadline timer.
 // Never throws: broadcast is best-effort — the DB write is the source of
 // truth, and a client that misses a broadcast converges on the next sync.
-export async function syncGameById(gameId: string): Promise<void> {
+async function doSync(gameId: string): Promise<void> {
   try {
     const io = getIo()
     const result = await buildGameSnapshot(gameId)
@@ -55,4 +55,20 @@ export async function syncGameById(gameId: string): Promise<void> {
   } catch (err) {
     console.error(`[realtime] sync failed for game ${gameId}:`, err)
   }
+}
+
+// Concurrent syncs for one game (two answers landing together, a connect
+// racing an advance) must not interleave: the loser of maybeAdvancePhase's
+// guarded UPDATE would broadcast a stale phase AFTER the winner's fresh one
+// and re-arm/clear timers from stale state. A per-game promise chain makes
+// every sync read state committed by the previous one. Single-instance only
+// (in-process map) — matches the deployment decision.
+export function syncGameById(gameId: string): Promise<void> {
+  const chains = getSyncChains()
+  const next = (chains.get(gameId) ?? Promise.resolve()).then(() => doSync(gameId))
+  const tracked = next.finally(() => {
+    if (chains.get(gameId) === tracked) chains.delete(gameId)
+  })
+  chains.set(gameId, tracked)
+  return tracked
 }
