@@ -45,6 +45,8 @@ export async function syncGameById(gameId: string): Promise<void> {
   }
   io?.to(gameId).emit('game:state', result.snapshot)
   ensurePhaseTimer(gameId, phaseTimerSpec(result.game, result.currentQuestion, result.totalQuestions), () => {
-    void syncGameById(gameId)
+    // A failed timer-fire sync must not crash the process; the game self-heals
+    // on the next connect or mutation sync.
+    syncGameById(gameId).catch((err) => console.error(`[realtime] timer sync failed for game ${gameId}:`, err))
   })
 }
