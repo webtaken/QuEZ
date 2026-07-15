@@ -10,6 +10,11 @@ vi.mock('@/db/game-mutations', () => ({
   joinGame: (...a: unknown[]) => joinGame(...a),
 }))
 
+const syncGameById = vi.fn()
+vi.mock('@/lib/realtime/sync', () => ({
+  syncGameById: (...a: unknown[]) => syncGameById(...a),
+}))
+
 process.env.DATABASE_URL ??= 'postgres://test:test@localhost:5432/test'
 
 const { POST } = await import('./route')
@@ -23,6 +28,7 @@ const FAKE_GAME = { id: 'g1', status: 'waiting' }
 beforeEach(() => {
   getGameByCode.mockReset()
   joinGame.mockReset()
+  syncGameById.mockReset()
 })
 
 describe('POST /api/games/[code]/join', () => {
@@ -53,6 +59,7 @@ describe('POST /api/games/[code]/join', () => {
     joinGame.mockResolvedValue({ ok: false, error: 'That nickname is already taken in this game', status: 409 })
     const res = await POST(req({ nickname: 'Juan', sessionToken: 't1' }), ctx('854123'))
     expect(res.status).toBe(409)
+    expect(syncGameById).not.toHaveBeenCalled()
   })
 
   it('joins and returns the participant id + nickname', async () => {
@@ -62,5 +69,6 @@ describe('POST /api/games/[code]/join', () => {
     expect(res.status).toBe(200)
     await expect(res.json()).resolves.toEqual({ participantId: 'p1', nickname: 'Juan' })
     expect(joinGame).toHaveBeenCalledWith(FAKE_GAME, 'Juan', 't1')
+    expect(syncGameById).toHaveBeenCalledWith('g1')
   })
 })

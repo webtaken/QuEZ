@@ -1,7 +1,7 @@
 'use client'
 
 import { Trophy } from 'lucide-react'
-import type { GameLeaderboardEntry } from '@/hooks/useGamePolling'
+import type { GameLeaderboardEntry } from '@/hooks/useGameSocket'
 
 function PodiumBlock({
   entry,

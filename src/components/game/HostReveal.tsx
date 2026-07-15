@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { GameQuestionView, GameLeaderboardEntry } from '@/hooks/useGamePolling'
+import type { GameQuestionView, GameLeaderboardEntry } from '@/hooks/useGameSocket'
 
 export function HostReveal({
   question,

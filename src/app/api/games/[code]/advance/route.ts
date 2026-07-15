@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { getGameByCode, getQuestionsForQuiz } from '@/db/game-queries'
 import { advanceGame } from '@/db/game-mutations'
+import { syncGameById } from '@/lib/realtime/sync'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -18,6 +19,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
   const allQuestions = await getQuestionsForQuiz(game.quizId)
   const result = await advanceGame(game, allQuestions.length)
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status })
+
+  await syncGameById(result.game.id)
 
   return NextResponse.json({ status: result.game.status })
 }

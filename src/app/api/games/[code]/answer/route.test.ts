@@ -12,6 +12,11 @@ vi.mock('@/db/game-mutations', () => ({
   submitAnswer: (...a: unknown[]) => submitAnswer(...a),
 }))
 
+const syncGameById = vi.fn()
+vi.mock('@/lib/realtime/sync', () => ({
+  syncGameById: (...a: unknown[]) => syncGameById(...a),
+}))
+
 process.env.DATABASE_URL ??= 'postgres://test:test@localhost:5432/test'
 
 const { POST } = await import('./route')
@@ -27,6 +32,7 @@ beforeEach(() => {
   getGameByCode.mockReset()
   getQuestionsForQuiz.mockReset().mockResolvedValue(QUESTIONS)
   submitAnswer.mockReset()
+  syncGameById.mockReset()
 })
 
 describe('POST /api/games/[code]/answer', () => {
@@ -80,6 +86,7 @@ describe('POST /api/games/[code]/answer', () => {
       ctx('854123')
     )
     expect(res.status).toBe(404)
+    expect(syncGameById).not.toHaveBeenCalled()
   })
 
   it('accepts a null selectedIndex (explicit no-answer) and never echoes correctness', async () => {
@@ -92,6 +99,7 @@ describe('POST /api/games/[code]/answer', () => {
     expect(res.status).toBe(200)
     await expect(res.json()).resolves.toEqual({ ok: true })
     expect(submitAnswer).toHaveBeenCalledWith(GAME_ON_Q1, QUESTIONS[0], 'p1', 't1', null)
+    expect(syncGameById).toHaveBeenCalledWith('g1')
   })
 
   it('scores a chosen answer', async () => {
@@ -103,5 +111,6 @@ describe('POST /api/games/[code]/answer', () => {
     )
     expect(res.status).toBe(200)
     expect(submitAnswer).toHaveBeenCalledWith(GAME_ON_Q1, QUESTIONS[0], 'p1', 't1', 1)
+    expect(syncGameById).toHaveBeenCalledWith('g1')
   })
 })

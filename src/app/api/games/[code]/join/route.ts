@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getGameByCode } from '@/db/game-queries'
 import { joinGame } from '@/db/game-mutations'
+import { syncGameById } from '@/lib/realtime/sync'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params
@@ -20,6 +21,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
 
   const result = await joinGame(game, nickname, sessionToken)
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status })
+
+  await syncGameById(game.id)
 
   return NextResponse.json({ participantId: result.participant.id, nickname: result.participant.nickname })
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getGameByCode, getQuestionsForQuiz } from '@/db/game-queries'
 import { submitAnswer } from '@/db/game-mutations'
+import { syncGameById } from '@/lib/realtime/sync'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params
@@ -28,6 +29,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cod
 
   const result = await submitAnswer(game, currentQuestion, participantId, sessionToken, selectedIndex)
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status })
+
+  await syncGameById(game.id)
 
   return NextResponse.json({ ok: true })
 }

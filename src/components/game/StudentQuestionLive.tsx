@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useCountdown } from '@/hooks/useCountdown'
 import { cn } from '@/lib/utils'
-import type { GameQuestionView } from '@/hooks/useGamePolling'
+import type { GameQuestionView } from '@/hooks/useGameSocket'
 
 // A lightweight ring built from the same accent-lime/secondary CSS custom
 // properties Tailwind maps its utility classes to — not a hardcoded color,

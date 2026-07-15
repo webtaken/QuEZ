@@ -21,6 +21,11 @@ vi.mock('@/db/game-mutations', () => ({
   advanceGame: (...a: unknown[]) => advanceGame(...a),
 }))
 
+const syncGameById = vi.fn()
+vi.mock('@/lib/realtime/sync', () => ({
+  syncGameById: (...a: unknown[]) => syncGameById(...a),
+}))
+
 process.env.DATABASE_URL ??= 'postgres://test:test@localhost:5432/test'
 
 const { POST } = await import('./route')
@@ -34,6 +39,7 @@ beforeEach(() => {
   getGameByCode.mockReset()
   getQuestionsForQuiz.mockReset().mockResolvedValue([{ id: 'q_1' }, { id: 'q_2' }])
   advanceGame.mockReset()
+  syncGameById.mockReset()
 })
 
 describe('POST /api/games/[code]/advance', () => {
@@ -64,15 +70,17 @@ describe('POST /api/games/[code]/advance', () => {
     advanceGame.mockResolvedValue({ ok: false, error: 'Game is not in the reveal phase', status: 409 })
     const res = await POST(req, ctx('854123'))
     expect(res.status).toBe(409)
+    expect(syncGameById).not.toHaveBeenCalled()
   })
 
   it('advances and returns the new status, passing the total question count', async () => {
     getSession.mockResolvedValue({ user: { id: 'host1' } })
     getGameByCode.mockResolvedValue(GAME)
-    advanceGame.mockResolvedValue({ ok: true, game: { status: 'question' } })
+    advanceGame.mockResolvedValue({ ok: true, game: { id: 'g1', status: 'question' } })
     const res = await POST(req, ctx('854123'))
     expect(res.status).toBe(200)
     await expect(res.json()).resolves.toEqual({ status: 'question' })
     expect(advanceGame).toHaveBeenCalledWith(GAME, 2)
+    expect(syncGameById).toHaveBeenCalledWith('g1')
   })
 })

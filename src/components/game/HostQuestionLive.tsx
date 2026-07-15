@@ -4,7 +4,7 @@ import { Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useCountdown } from '@/hooks/useCountdown'
-import type { GameQuestionView, GameParticipantView } from '@/hooks/useGamePolling'
+import type { GameQuestionView, GameParticipantView } from '@/hooks/useGameSocket'
 
 export function HostQuestionLive({
   question,

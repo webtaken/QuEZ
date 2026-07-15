@@ -15,6 +15,11 @@ export async function getGameByCode(code: string) {
   return game ?? null
 }
 
+export async function getGameById(id: string) {
+  const [game] = await db.select().from(gameSessions).where(eq(gameSessions.id, id)).limit(1)
+  return game ?? null
+}
+
 export async function hasActiveGameWithCode(code: string): Promise<boolean> {
   const [existing] = await db
     .select({ id: gameSessions.id })

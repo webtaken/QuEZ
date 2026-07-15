@@ -3,7 +3,8 @@ import { gameSessions, gameParticipants, gameAnswers, quizzes, type GameSession 
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm'
 import { generateUniqueGameCode } from '@/lib/game-code'
 import { computePoints } from '@/lib/game-scoring'
-import { hasActiveGameWithCode, getQuestionsForQuiz } from '@/db/game-queries'
+import { hasActiveGameWithCode, getQuestionsForQuiz, getGameById } from '@/db/game-queries'
+import { REVEAL_TO_PODIUM_MS } from '@/lib/realtime/types'
 
 type CreateGameResult = { ok: true; game: GameSession } | { ok: false; error: string; status: number }
 
@@ -150,22 +151,25 @@ export async function submitAnswer(
   return { ok: true }
 }
 
-const REVEAL_TO_PODIUM_MS = 5000
-
-// The core state-machine step: called on every poll of GET /state. If the
-// question phase's timer has elapsed, or every active participant has
+// The core state-machine step: called from every snapshot build — a socket
+// connect, a mutation's post-write sync, or a phase-deadline timer fire. If
+// the question phase's timer has elapsed, or every active participant has
 // answered, it backfills a 0-point "no answer" for anyone who didn't answer
 // (keeping streak/tie-break consistent) and flips the game to 'reveal'. The
 // `WHERE status='question'` guard on the final UPDATE makes this race-safe:
-// if two pollers both pass the elapsed/all-answered check at once, only one
-// UPDATE actually applies — the loser just returns the (soon-stale) game it
-// was given, and picks up 'reveal' on its next poll ~1.5s later.
+// syncGameById serializes concurrent syncs for the same game, so only one
+// caller reaches this UPDATE with a given committed status at a time, but
+// the guard also protects against the timer-fire path racing a mutation
+// sync. If the UPDATE's row is already gone (guard didn't match — another
+// path already flipped it), the loser re-reads the settled row instead of
+// returning its now-stale input, so the broadcast it triggers reflects
+// reality rather than a phase that's already moved on.
 //
 // The *final* question's reveal also advances lazily: after
 // REVEAL_TO_PODIUM_MS it flips to 'podium' so students reach the podium
 // even if the host never clicks "Show podium". The host's /advance click
 // remains an early skip; the `WHERE status='reveal'` guard keeps the two
-// paths race-safe against each other.
+// paths race-safe against each other, with the same re-read-on-loss rule.
 export async function maybeAdvancePhase(
   game: GameSession,
   currentQuestion: { id: string; timeLimit: number } | undefined,
@@ -180,7 +184,7 @@ export async function maybeAdvancePhase(
       .set({ status: 'podium', endedAt: new Date(), phaseStartedAt: new Date() })
       .where(and(eq(gameSessions.id, game.id), eq(gameSessions.status, 'reveal')))
       .returning()
-    return updated ?? game
+    return updated ?? (await getGameById(game.id)) ?? game
   }
 
   if (game.status !== 'question' || !currentQuestion) return game
@@ -242,7 +246,7 @@ export async function maybeAdvancePhase(
     .set({ status: 'reveal', phaseStartedAt: new Date() })
     .where(and(eq(gameSessions.id, game.id), eq(gameSessions.status, 'question')))
     .returning()
-  return updated ?? game
+  return updated ?? (await getGameById(game.id)) ?? game
 }
 
 export async function advanceGame(

@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { useGameSound } from '@/hooks/useGameSound'
-import type { GameLeaderboardEntry, GameQuestionView, GameStateView } from '@/hooks/useGamePolling'
+import type { GameLeaderboardEntry, GameQuestionView, GameStateView } from '@/hooks/useGameSocket'
 
 export function StudentReveal({
   question,

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { db } from '@/db'
-import { quizzes, questions } from '@/db/schema'
-import { and, eq } from 'drizzle-orm'
+import { quizzes, questions, gameSessions } from '@/db/schema'
+import { and, eq, isNull } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { quizPayloadWithFlagsSchema } from '@/lib/quiz-schema'
 import { deleteQuiz } from '@/db/quiz-mutations'
 import { deleteObjects } from '@/lib/r2'
+import { syncGameById } from '@/lib/realtime/sync'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -129,6 +130,15 @@ export async function DELETE(
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
   }
 
+  // Collected before the delete so we can tell any connected clients their
+  // game just ended — the FK cascade removes these rows, but games in
+  // 'waiting' or a non-final 'reveal' have no timer running, so without an
+  // explicit broadcast nobody would ever learn the game is gone.
+  const liveGames = await db
+    .select({ id: gameSessions.id })
+    .from(gameSessions)
+    .where(and(eq(gameSessions.quizId, id), isNull(gameSessions.endedAt)))
+
   const res = await deleteQuiz(id, session.user.id)
   if (!res.ok) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
@@ -139,6 +149,11 @@ export async function DELETE(
   } catch (e) {
     console.error('[quizzes/delete] R2 cleanup failed', e)
   }
+
+  // Best-effort broadcast: syncGameById never throws. The null-snapshot path
+  // it takes for a now-deleted game emits game:error {reason:'ended'} and
+  // clears the game's phase timer.
+  await Promise.all(liveGames.map((g) => syncGameById(g.id)))
 
   return NextResponse.json({ id })
 }
