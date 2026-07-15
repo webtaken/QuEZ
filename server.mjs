@@ -21,14 +21,19 @@ globalThis.__quezIo = io
 const app = next({ dev, hostname, port, httpServer })
 const handle = app.getRequestHandler()
 
-app.prepare().then(() => {
-  httpServer.on('request', (req, res) => {
-    // engine.io answers /socket.io/* itself; without this guard Next would
-    // also try to handle those requests and double-write the response.
-    if (req.url && req.url.startsWith('/socket.io/')) return
-    handle(req, res)
+app.prepare()
+  .then(() => {
+    httpServer.on('request', (req, res) => {
+      // engine.io answers /socket.io/* itself; without this guard Next would
+      // also try to handle those requests and double-write the response.
+      if (req.url && req.url.startsWith('/socket.io/')) return
+      handle(req, res)
+    })
+    httpServer.listen(port, hostname, () => {
+      console.log(`> Ready on http://${hostname}:${port} (${dev ? 'dev' : 'production'})`)
+    })
   })
-  httpServer.listen(port, hostname, () => {
-    console.log(`> Ready on http://${hostname}:${port} (${dev ? 'dev' : 'production'})`)
+  .catch((err) => {
+    console.error('[server] Next.js failed to prepare:', err)
+    process.exit(1)
   })
-})
