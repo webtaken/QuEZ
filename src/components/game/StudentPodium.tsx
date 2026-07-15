@@ -2,7 +2,7 @@
 
 import { Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { GameLeaderboardEntry, GameStateView } from '@/hooks/useGamePolling'
+import type { GameLeaderboardEntry, GameStateView } from '@/hooks/useGameSocket'
 
 function PodiumBlock({
   entry,

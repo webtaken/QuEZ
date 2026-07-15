@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useGamePolling } from '@/hooks/useGamePolling'
+import { useGameSocket } from '@/hooks/useGameSocket'
 import { StudentWaitingRoom } from './StudentWaitingRoom'
 import { StudentQuestionLive } from './StudentQuestionLive'
 import { StudentReveal } from './StudentReveal'
@@ -33,7 +33,7 @@ export function StudentGameView({ code }: { code: string }) {
     setSessionToken(parsed.sessionToken)
   }, [code, router])
 
-  const { state, error } = useGamePolling(code, participantId ?? undefined)
+  const { state, error } = useGameSocket(code, participantId ?? undefined)
 
   if (participantId === undefined || participantId === null) return null
 

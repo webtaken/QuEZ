@@ -3,7 +3,7 @@
 import { X, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import type { GameParticipantView } from '@/hooks/useGamePolling'
+import type { GameParticipantView } from '@/hooks/useGameSocket'
 
 export function HostWaitingRoom({
   code,

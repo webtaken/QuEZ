@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Volume2, VolumeX } from 'lucide-react'
-import { useGamePolling } from '@/hooks/useGamePolling'
+import { useGameSocket } from '@/hooks/useGameSocket'
 import { useQuizMusic } from '@/hooks/useQuizMusic'
 import { getTrackById } from '@/lib/music'
 import { HostWaitingRoom } from './HostWaitingRoom'
@@ -22,7 +22,7 @@ export function HostGameView({
   coverEmoji: string
   musicTrack: string | null
 }) {
-  const { state, error } = useGamePolling(code)
+  const { state, error } = useGameSocket(code)
   const track = getTrackById(musicTrack)
   const music = useQuizMusic(track?.file ?? null)
 

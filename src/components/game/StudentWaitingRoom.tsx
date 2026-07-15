@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import type { GameParticipantView, GameStateView } from '@/hooks/useGamePolling'
+import type { GameParticipantView, GameStateView } from '@/hooks/useGameSocket'
 
 export function StudentWaitingRoom({
   participants,
