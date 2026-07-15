@@ -74,4 +74,26 @@ describe('wireRealtime', () => {
     expect(syncGameById).toHaveBeenCalledWith('g1')
     expect(socket.disconnect).not.toHaveBeenCalled()
   })
+
+  it('catches errors in the connection handler and disconnects the socket', async () => {
+    const error = new Error('Database connection failed')
+    getGameByCode.mockRejectedValue(error)
+
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      wireRealtime()
+      const socket = makeSocket('854123')
+
+      // The handler should resolve without throwing
+      await expect(connectionHandler!(socket)).resolves.toBeUndefined()
+
+      // Verify error was logged
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[realtime] connection handler failed:', error)
+
+      // Verify socket was disconnected
+      expect(socket.disconnect).toHaveBeenCalledWith(true)
+    } finally {
+      consoleErrorSpy.mockRestore()
+    }
+  })
 })

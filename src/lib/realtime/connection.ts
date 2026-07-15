@@ -23,6 +23,13 @@ async function handleConnection(socket: Socket): Promise<void> {
 export function wireRealtime(): void {
   const io = getIo()
   if (!io) return // next build / vitest — no socket server exists
-  // Return the promise (Socket.IO ignores it; the tests await it).
-  io.on('connection', (socket) => handleConnection(socket))
+  // Return the promise (Socket.IO ignores it; the tests await it). A failed
+  // connect must not crash the process — log and drop the socket; the client
+  // auto-reconnects.
+  io.on('connection', (socket) =>
+    handleConnection(socket).catch((err) => {
+      console.error('[realtime] connection handler failed:', err)
+      socket.disconnect(true)
+    })
+  )
 }
