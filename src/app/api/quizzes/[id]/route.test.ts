@@ -18,10 +18,29 @@ vi.mock('@/db/quiz-mutations', () => ({
 const deleteObjects = vi.fn()
 vi.mock('@/lib/r2', () => ({ deleteObjects: (...a: unknown[]) => deleteObjects(...a) }))
 
+const syncGameById = vi.fn()
+vi.mock('@/lib/realtime/sync', () => ({
+  syncGameById: (...a: unknown[]) => syncGameById(...a),
+}))
+
 // `@/db` (imported transitively by the route) builds a pg Pool from this.
 // pg does not connect until a query runs, and deleteQuiz is mocked, so a
 // dummy URL is enough to let the module import without a live database.
 process.env.DATABASE_URL ??= 'postgres://test:test@localhost:5432/test'
+
+// The route's own `db.select(...).from(gameSessions)...` call (collecting
+// live game ids before the delete) is NOT covered by the deleteQuiz mock —
+// stub the query builder chain directly so it resolves to a fixed list.
+let liveGameRows: { id: string }[] = []
+vi.mock('@/db', () => ({
+  db: {
+    select: () => ({
+      from: () => ({
+        where: async () => liveGameRows,
+      }),
+    }),
+  },
+}))
 
 const { DELETE } = await import('./route')
 
@@ -33,6 +52,8 @@ beforeEach(() => {
   getSession.mockReset()
   deleteQuiz.mockReset()
   deleteObjects.mockReset()
+  syncGameById.mockReset()
+  liveGameRows = []
 })
 
 describe('DELETE /api/quizzes/[id]', () => {
@@ -89,5 +110,23 @@ describe('DELETE /api/quizzes/[id]', () => {
     const res = await DELETE(req, ctx(VALID_ID))
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ id: VALID_ID })
+  })
+
+  it('broadcasts game:error to a live game when the delete succeeds', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    liveGameRows = [{ id: 'game-1' }]
+    deleteQuiz.mockResolvedValue({ ok: true, r2Keys: [] })
+    const res = await DELETE(req, ctx(VALID_ID))
+    expect(res.status).toBe(200)
+    expect(syncGameById).toHaveBeenCalledWith('game-1')
+  })
+
+  it('does not broadcast when the delete is rejected (non-owner/404 path)', async () => {
+    getSession.mockResolvedValue({ user: { id: 'u1' } })
+    liveGameRows = [{ id: 'game-1' }]
+    deleteQuiz.mockResolvedValue({ ok: false, r2Keys: [] })
+    const res = await DELETE(req, ctx(VALID_ID))
+    expect(res.status).toBe(404)
+    expect(syncGameById).not.toHaveBeenCalled()
   })
 })
