@@ -38,7 +38,7 @@ RUN addgroup --system --gid 1001 nodejs \
 COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --chown=nextjs:nodejs package.json server.mjs ./
+COPY --chown=nextjs:nodejs package.json server.mjs next.config.ts ./
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.mjs"]
