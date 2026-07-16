@@ -11,7 +11,7 @@ export function Hero() {
   }
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6">
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 sm:px-6">
       {/* Confetti decor — flat bordered shapes in palette colors (DESIGN.md §13) */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-[8%] top-[18%] size-10 rotate-12 rounded-lg border-2 border-border bg-primary" />
@@ -48,7 +48,7 @@ export function Hero() {
         </div>
 
         <h1
-          className="font-display font-bold text-5xl sm:text-6xl lg:text-7xl text-foreground leading-[1.2] tracking-tight animate-fade-up"
+          className="font-display font-bold text-4xl sm:text-6xl lg:text-7xl text-foreground leading-[1.2] tracking-tight animate-fade-up"
           style={{ animationDelay: "0ms" }}
         >
           Build something{' '}
@@ -73,7 +73,7 @@ export function Hero() {
         </div>
 
         {/* Stats */}
-        <div className="mt-16 flex gap-8 justify-center animate-fade-up animate-fade-up-delay-3">
+        <div className="mt-16 flex flex-wrap gap-x-8 gap-y-4 justify-center animate-fade-up animate-fade-up-delay-3">
           {[
             { label: "Quizzes created", value: "2,400+" },
             { label: "Questions generated", value: "48k+" },
