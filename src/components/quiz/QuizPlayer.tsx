@@ -147,7 +147,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
     return (
       <div className="max-w-2xl mx-auto p-6 text-center space-y-6 pt-16">
         <div className="text-7xl">{quiz.coverEmoji}</div>
-        <h1 className="font-display font-bold text-3xl text-foreground">
+        <h1 className="font-display font-bold text-3xl text-foreground break-words">
           {quiz.title}
         </h1>
         <p className="text-muted-foreground">
@@ -165,12 +165,12 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
       <div className="max-w-2xl mx-auto p-6 text-center space-y-4">
         <p className="text-destructive">{errorMsg}</p>
         <div className="flex gap-3 justify-center">
-          <Button onClick={reset} className="rounded-xl">
+          <Button onClick={reset} className="h-12 rounded-xl">
             Try again
           </Button>
           <Button
             variant="outline"
-            className="rounded-xl"
+            className="h-12 rounded-xl"
             nativeButton={false}
             render={<Link href="/" />}
           >
@@ -192,10 +192,10 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
   if (phase === 'finished' && result) {
     const pct = Math.round((result.score / result.total) * 100)
     return (
-      <div className="max-w-3xl mx-auto px-6 space-y-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-8">
         <div className="text-center space-y-3 pt-6">
           <div className="text-6xl">{quiz.coverEmoji}</div>
-          <h1 className="font-display font-bold text-3xl text-foreground">
+          <h1 className="font-display font-bold text-3xl text-foreground break-words">
             {quiz.title}
           </h1>
           <p className="text-muted-foreground text-sm">Quiz complete</p>
@@ -222,12 +222,12 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
         </div>
 
         <div className="flex gap-3 justify-center pb-8">
-          <Button onClick={reset} className="rounded-xl">
+          <Button onClick={reset} className="h-12 rounded-xl">
             Play again
           </Button>
           <Button
             variant="outline"
-            className="rounded-xl"
+            className="h-12 rounded-xl"
             nativeButton={false}
             render={<Link href="/" />}
           >
@@ -249,7 +249,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
   const progress = ((index + 1) / total) * 100
 
   return (
-    <div className="max-w-2xl mx-auto px-6 space-y-6">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-6">
       <div className="space-y-2 pt-2">
         <div className="flex items-center justify-between text-sm">
           <span className="font-display font-semibold flex items-center gap-2 truncate">
@@ -310,7 +310,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
                 onClick={() => chooseOption(i)}
                 disabled={locked !== null}
                 className={cn(
-                  'flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all',
+                  'flex items-center gap-3 px-4 py-3 min-h-14 rounded-xl border text-base text-left transition-all',
                   isLocked
                     ? 'border-accent bg-accent/15 text-foreground'
                     : 'border-border bg-card text-foreground hover:border-accent/50',
@@ -320,7 +320,7 @@ export function QuizPlayer({ quiz }: { quiz: Quiz }) {
                 <span className="w-6 h-6 rounded-full border text-xs font-bold flex items-center justify-center shrink-0">
                   {String.fromCharCode(65 + i)}
                 </span>
-                <span className="flex-1">{opt}</span>
+                <span className="flex-1 break-words">{opt}</span>
               </button>
             )
           })}

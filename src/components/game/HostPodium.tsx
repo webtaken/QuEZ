@@ -15,7 +15,7 @@ function PodiumBlock({
   delayClass: string
 }) {
   return (
-    <div className={`flex flex-col items-center gap-2 w-24 ${delayClass}`}>
+    <div className={`flex flex-col items-center gap-2 w-20 sm:w-24 xl:w-32 ${delayClass}`}>
       {place === 1 && <Trophy className="w-6 h-6 text-accent" />}
       <p className="text-sm font-semibold text-foreground truncate w-full text-center">{entry.nickname}</p>
       <p className="text-xs text-muted-foreground tabular-nums">{entry.score}</p>
@@ -41,7 +41,7 @@ export function HostPodium({
   const rest = leaderboard.slice(3)
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 space-y-8 text-center">
+    <div className="max-w-2xl xl:max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-8 text-center">
       <div className="space-y-2">
         <div className="text-5xl">{coverEmoji}</div>
         <h1 className="font-display font-bold text-2xl text-foreground">{quizTitle}</h1>

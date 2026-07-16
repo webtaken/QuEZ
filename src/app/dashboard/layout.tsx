@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies, headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { AppSidebar } from '@/components/dashboard/Sidebar'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 
 export default async function DashboardLayout({
   children,
@@ -18,7 +18,15 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset>
+        <div className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b-2 border-border bg-background px-4 md:hidden">
+          <SidebarTrigger className="size-9" />
+          <span className="font-display font-bold text-lg text-foreground">
+            <span className="text-primary">Q</span>uE<span className="inline-block -rotate-6 text-primary">Z</span>
+          </span>
+        </div>
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   )
 }
