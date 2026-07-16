@@ -64,7 +64,7 @@ describe('formatCredits', () => {
 })
 
 describe('constants', () => {
-  it('grants 100 credits on signup', () => {
-    expect(SIGNUP_GRANT_CREDITS).toBe(100)
+  it('grants 20 credits on signup', () => {
+    expect(SIGNUP_GRANT_CREDITS).toBe(20)
   })
 })

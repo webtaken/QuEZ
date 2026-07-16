@@ -2,7 +2,7 @@
 // the raw OpenRouter cost, so credits = rawCostUsd * MARGIN / CREDIT_USD_VALUE.
 export const CREDIT_USD_VALUE = 0.01
 export const MARGIN = 5
-export const SIGNUP_GRANT_CREDITS = 100
+export const SIGNUP_GRANT_CREDITS = 20
 // Floor for any completed generation, so a reported $0 cost is never free.
 export const MIN_DEBIT_CREDITS = 0.01
 // Conservative estimate used only when OpenRouter omits the cost field ($2/M tokens).
