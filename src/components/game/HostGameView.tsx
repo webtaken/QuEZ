@@ -99,7 +99,7 @@ export function HostGameView({
         <button
           onClick={music.toggleMute}
           aria-label={music.muted ? 'Unmute music' : 'Mute music'}
-          className="fixed top-4 right-4 z-10 text-muted-foreground hover:text-foreground transition-colors"
+          className="fixed top-2 right-2 sm:top-4 sm:right-4 z-10 p-2.5 text-muted-foreground hover:text-foreground transition-colors"
         >
           {music.muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
         </button>

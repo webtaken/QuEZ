@@ -32,17 +32,17 @@ export function HostReveal({
   }, [])
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
-      <h1 className="font-display font-semibold text-xl text-foreground text-center">
+    <div className="max-w-2xl xl:max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
+      <h1 className="font-display font-semibold text-fluid-question text-foreground text-center">
         {question.text}
       </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 xl:gap-4">
         {question.options.map((opt, i) => (
           <div
             key={i}
             className={cn(
-              'flex items-center gap-3 px-4 py-3 rounded-xl border text-left text-sm',
+              'flex items-center gap-3 px-4 py-3 xl:px-6 xl:py-5 rounded-xl border text-left text-fluid-answer',
               i === correctIndex
                 ? 'border-success bg-success/15 text-foreground'
                 : 'border-border bg-secondary/30 text-muted-foreground'
@@ -62,7 +62,7 @@ export function HostReveal({
         </h2>
         <div className="rounded-2xl border-2 border-border bg-card divide-y divide-border shadow-brutal">
           {leaderboard.slice(0, 8).map((p) => (
-            <div key={p.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
+            <div key={p.id} className="flex items-center justify-between px-4 py-2.5 text-sm xl:text-lg xl:py-3.5">
               <span className="flex items-center gap-3">
                 <span className="w-6 text-muted-foreground font-mono">{p.rank}</span>
                 <span className="text-foreground">{p.nickname}</span>
