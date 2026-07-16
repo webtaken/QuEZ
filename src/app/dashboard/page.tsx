@@ -41,10 +41,10 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="p-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-display font-bold text-3xl text-foreground">
+          <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground">
             My Dashboard
           </h1>
           <p className="text-muted-foreground mt-1">Manage your quizzes and track performance</p>
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
 
       {/* FAB */}
       <Link href="/dashboard/quizzes/new">
-        <button className="fixed bottom-8 right-8 flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-5 h-12 font-semibold shadow-brutal border-2 border-border hover:bg-primary/90 transition-colors">
+        <button className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 mb-[env(safe-area-inset-bottom)] flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-5 h-12 font-semibold shadow-brutal border-2 border-border hover:bg-primary/90 transition-colors">
           <Plus className="w-4 h-4" />
           New Quiz
         </button>
