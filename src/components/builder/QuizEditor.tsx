@@ -235,7 +235,7 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
               value={quiz.title}
               onChange={(e) => setField('title', e.target.value)}
               placeholder="Quiz title"
-              className="font-display font-bold text-xl h-12"
+              className="flex-1 min-w-0 font-display font-bold text-xl h-12"
             />
             <div className="flex items-center gap-2 shrink-0">
               <Button

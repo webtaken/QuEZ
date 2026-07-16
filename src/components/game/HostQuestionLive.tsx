@@ -30,7 +30,10 @@ export function HostQuestionLive({
         </span>
         <Badge
           variant="secondary"
-          className={cn('gap-1 tabular-nums', secondsLeft <= 5 && 'bg-destructive/20 text-destructive')}
+          className={cn(
+            'gap-1 tabular-nums xl:h-9 xl:text-xl xl:[&>svg]:size-5',
+            secondsLeft <= 5 && 'bg-destructive/20 text-destructive'
+          )}
         >
           <Clock className="w-3 h-3" />
           {secondsLeft}s
