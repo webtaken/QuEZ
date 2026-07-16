@@ -35,7 +35,7 @@ export default async function CreditsPage() {
   ])
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
       <div className="mb-8">
         <h1 className="font-display font-bold text-3xl text-foreground">
           AI Credits
@@ -61,57 +61,90 @@ export default async function CreditsPage() {
       {transactions.length === 0 ? (
         <p className="text-muted-foreground text-sm">No activity yet.</p>
       ) : (
-        <div className="rounded-2xl border border-border bg-card overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                <th className="px-5 py-3 font-medium">Date</th>
-                <th className="px-5 py-3 font-medium">Activity</th>
-                <th className="px-5 py-3 font-medium text-right">Credits</th>
-                <th className="px-5 py-3 font-medium text-right">Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((tx) => {
-                const meta = tx.metadata as Record<string, unknown> | null
-                const detail = txDetail(meta)
-                const quizId = typeof meta?.quizId === 'string' ? meta.quizId : null
-                return (
-                  <tr key={tx.id} className="border-b border-border last:border-0">
-                    <td className="px-5 py-3 text-muted-foreground whitespace-nowrap">
-                      {tx.createdAt.toLocaleDateString('en-US')}{' '}
-                      {tx.createdAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className="text-foreground">{txLabel(tx.type, meta)}</span>
-                      {detail && <span className="text-muted-foreground ml-2 text-xs">{detail}</span>}
-                      {quizId && (
-                        <Link
-                          href={`/dashboard/quizzes/${quizId}`}
-                          className="text-accent ml-2 text-xs hover:underline"
-                        >
-                          View quiz
-                        </Link>
-                      )}
-                    </td>
-                    <td
-                      className={cn(
-                        'px-5 py-3 text-right font-medium whitespace-nowrap',
-                        tx.amount >= 0 ? 'text-accent' : 'text-foreground'
-                      )}
-                    >
+        <>
+          <div className="space-y-3 md:hidden">
+            {transactions.map((tx) => {
+              const meta = tx.metadata as Record<string, unknown> | null
+              const detail = txDetail(meta)
+              const quizId = typeof meta?.quizId === 'string' ? meta.quizId : null
+              return (
+                <div key={tx.id} className="rounded-2xl border border-border bg-card p-4 text-sm space-y-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-foreground font-medium">{txLabel(tx.type, meta)}</span>
+                    <span className={cn('font-medium whitespace-nowrap', tx.amount >= 0 ? 'text-accent' : 'text-foreground')}>
                       {tx.amount >= 0 ? '+' : ''}
                       {tx.amount.toFixed(2)}
-                    </td>
-                    <td className="px-5 py-3 text-right text-muted-foreground whitespace-nowrap">
-                      {formatCredits(tx.balanceAfter)}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+                    </span>
+                  </div>
+                  {detail && <p className="text-muted-foreground text-xs">{detail}</p>}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>
+                      {tx.createdAt.toLocaleDateString('en-US')}{' '}
+                      {tx.createdAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                    <span>Balance: {formatCredits(tx.balanceAfter)}</span>
+                  </div>
+                  {quizId && (
+                    <Link href={`/dashboard/quizzes/${quizId}`} className="text-accent text-xs hover:underline">
+                      View quiz
+                    </Link>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+          <div className="hidden md:block rounded-2xl border border-border bg-card overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                  <th className="px-5 py-3 font-medium">Date</th>
+                  <th className="px-5 py-3 font-medium">Activity</th>
+                  <th className="px-5 py-3 font-medium text-right">Credits</th>
+                  <th className="px-5 py-3 font-medium text-right">Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((tx) => {
+                  const meta = tx.metadata as Record<string, unknown> | null
+                  const detail = txDetail(meta)
+                  const quizId = typeof meta?.quizId === 'string' ? meta.quizId : null
+                  return (
+                    <tr key={tx.id} className="border-b border-border last:border-0">
+                      <td className="px-5 py-3 text-muted-foreground whitespace-nowrap">
+                        {tx.createdAt.toLocaleDateString('en-US')}{' '}
+                        {tx.createdAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="text-foreground">{txLabel(tx.type, meta)}</span>
+                        {detail && <span className="text-muted-foreground ml-2 text-xs">{detail}</span>}
+                        {quizId && (
+                          <Link
+                            href={`/dashboard/quizzes/${quizId}`}
+                            className="text-accent ml-2 text-xs hover:underline"
+                          >
+                            View quiz
+                          </Link>
+                        )}
+                      </td>
+                      <td
+                        className={cn(
+                          'px-5 py-3 text-right font-medium whitespace-nowrap',
+                          tx.amount >= 0 ? 'text-accent' : 'text-foreground'
+                        )}
+                      >
+                        {tx.amount >= 0 ? '+' : ''}
+                        {tx.amount.toFixed(2)}
+                      </td>
+                      <td className="px-5 py-3 text-right text-muted-foreground whitespace-nowrap">
+                        {formatCredits(tx.balanceAfter)}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   )

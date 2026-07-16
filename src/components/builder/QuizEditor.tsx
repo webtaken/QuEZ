@@ -20,6 +20,7 @@ import { MusicPicker } from './MusicPicker'
 import { PublishToggle } from '@/components/quiz/PublishToggle'
 import { HostLiveButton } from '@/components/quiz/HostLiveButton'
 import { DeleteQuizDialog } from '@/components/quiz/DeleteQuizDialog'
+import { cn } from '@/lib/utils'
 import { quizPayloadSchema, type QuizPayload, type QuizQuestion } from '@/lib/quiz-schema'
 import type { Quiz, Question } from '@/db/schema'
 import type { UIMsgLike } from '@/lib/chat-messages'
@@ -78,6 +79,7 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
   const [dirty, setDirty] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [activeTab, setActiveTab] = useState<'chat' | 'editor'>('chat')
 
   useEffect(() => {
     if (!dirty) return
@@ -176,9 +178,32 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
   }
 
   return (
-    <div className="flex h-screen">
-      {/* Chat — 28% */}
-      <div className="w-[28%] min-w-[280px] max-w-[380px]">
+    <div className="flex h-dvh flex-col lg:flex-row">
+      {/* Mobile tab bar */}
+      <div className="flex shrink-0 border-b-2 border-border bg-card lg:hidden">
+        {(['chat', 'editor'] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={cn(
+              'flex-1 h-12 text-sm font-semibold capitalize transition-colors',
+              activeTab === tab
+                ? 'text-foreground border-b-2 border-primary -mb-0.5'
+                : 'text-muted-foreground'
+            )}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Chat — full width on mobile (when active), 28% column on lg+ */}
+      <div
+        className={cn(
+          'min-h-0 flex-1 lg:flex-none lg:w-[28%] lg:min-w-[280px] lg:max-w-[380px]',
+          activeTab !== 'chat' && 'hidden lg:block'
+        )}
+      >
         <ChatPanel
           onQuizUpdate={handleAgentUpdate}
           initialQuiz={quiz}
@@ -190,10 +215,15 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
       </div>
 
       {/* Editor — rest */}
-      <div className="flex-1 overflow-y-auto bg-background">
+      <div
+        className={cn(
+          'min-h-0 flex-1 overflow-y-auto bg-background',
+          activeTab !== 'editor' && 'hidden lg:block'
+        )}
+      >
         {/* Header */}
-        <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur px-6 py-4">
-          <div className="flex items-center gap-3">
+        <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur px-3 py-3 lg:px-6 lg:py-4">
+          <div className="flex flex-wrap items-center gap-2 lg:gap-3">
             <Input
               value={quiz.coverEmoji}
               onChange={(e) => setField('coverEmoji', e.target.value)}
@@ -205,7 +235,7 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
               value={quiz.title}
               onChange={(e) => setField('title', e.target.value)}
               placeholder="Quiz title"
-              className="font-display font-bold text-xl h-12"
+              className="flex-1 min-w-0 font-display font-bold text-xl h-12"
             />
             <div className="flex items-center gap-2 shrink-0">
               <Button
@@ -233,14 +263,14 @@ export function QuizEditor({ initialQuiz, initialQuestions, initialMessages, ini
                 className="gap-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
               >
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                {dirty ? 'Save changes' : 'Saved'}
+                <span className="hidden sm:inline">{dirty ? 'Save changes' : 'Saved'}</span>
               </Button>
             </div>
           </div>
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6 max-w-3xl mx-auto">
+        <div className="p-4 sm:p-6 space-y-6 max-w-3xl mx-auto">
           {/* Metadata */}
           <section className="rounded-2xl border-2 border-border bg-card p-5 space-y-4 shadow-brutal">
             <h2 className="font-semibold text-sm text-foreground">Quiz details</h2>

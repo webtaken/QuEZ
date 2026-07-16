@@ -74,7 +74,7 @@ export function StudentQuestionLive({
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">Question in progress</p>
         <CountdownRing secondsLeft={secondsLeft} timeLimit={question.timeLimit} />
@@ -84,7 +84,7 @@ export function StudentQuestionLive({
         {question.text}
       </h1>
 
-      <div className="grid grid-cols-1 gap-2">
+      <div className="grid grid-cols-1 landscape:grid-cols-2 gap-2">
         {question.options.map((opt, i) => {
           const isSelected = selected === i
           const dim = answered && !isSelected
@@ -94,7 +94,7 @@ export function StudentQuestionLive({
               onClick={() => setSelected(i)}
               disabled={answered}
               className={cn(
-                'flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all',
+                'flex items-center gap-3 px-4 py-3 min-h-14 rounded-xl border text-base text-left transition-all',
                 isSelected
                   ? 'border-accent bg-accent/15 text-foreground'
                   : 'border-border bg-card text-foreground hover:border-accent/50 hover:bg-card',
@@ -115,7 +115,7 @@ export function StudentQuestionLive({
           onClick={() => submit(selected)}
           disabled={selected === null}
           size="lg"
-          className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-brutal border-2 border-border"
+          className="w-full h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-brutal border-2 border-border"
         >
           Submit answer
         </Button>

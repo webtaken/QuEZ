@@ -139,6 +139,22 @@
     box-shadow: 6px 6px 0 0 var(--color-shadow);
   }
 
+  /* Fluid projector type (responsive spec §Foundations). Scales with
+     viewport width so host screens read from the back of a room at
+     1920px+ without a breakpoint ladder. */
+  .text-fluid-hero {
+    font-size: clamp(2.5rem, 1.5rem + 4vw, 6rem); /* room PIN */
+    line-height: 1.1;
+  }
+  .text-fluid-question {
+    font-size: clamp(1.5rem, 1rem + 1.8vw, 3.25rem);
+    line-height: 1.25;
+  }
+  .text-fluid-answer {
+    font-size: clamp(0.875rem, 0.65rem + 0.7vw, 1.5rem);
+    line-height: 1.4;
+  }
+
   /* Press + hover motion. Pair with a shadow-brutal-* utility. */
   .press {
     transition: transform 0.12s ease, box-shadow 0.12s ease;

@@ -30,7 +30,7 @@ export function StudentReveal({
   }, [])
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 space-y-6 text-center">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 text-center">
       <div
         className={cn(
           'rounded-2xl border p-6 space-y-1',
@@ -62,7 +62,7 @@ export function StudentReveal({
             <span className="w-6 h-6 rounded-full border text-xs font-bold flex items-center justify-center shrink-0">
               {String.fromCharCode(65 + i)}
             </span>
-            <span>{opt}</span>
+            <span className="break-words">{opt}</span>
           </div>
         ))}
       </div>
@@ -83,7 +83,7 @@ export function StudentReveal({
               >
                 <span className="flex items-center gap-3">
                   <span className="w-6 text-muted-foreground font-mono">{p.rank}</span>
-                  <span className={p.id === you.id ? 'text-accent font-semibold' : 'text-foreground'}>
+                  <span className={cn('truncate', p.id === you.id ? 'text-accent font-semibold' : 'text-foreground')}>
                     {p.nickname}
                     {p.id === you.id && ' (you)'}
                   </span>

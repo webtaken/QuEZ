@@ -375,7 +375,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
   }
 
   return (
-    <div className="flex flex-col h-full bg-card border-r-2 border-border">
+    <div className="flex flex-col h-full bg-card lg:border-r-2 border-border pb-[env(safe-area-inset-bottom)]">
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border px-5 py-4 flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
@@ -491,7 +491,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                   )}
                   {msg.role === 'user' && (
                     <button
-                      className="opacity-0 group-hover:opacity-100 text-xs text-muted-foreground transition-opacity"
+                      className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-xs text-muted-foreground transition-opacity"
                       onClick={() => startEdit(msg.id, text)}
                       disabled={isLoading}
                     >
@@ -500,7 +500,7 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                   )}
                   {msg.role === 'assistant' && (
                     <button
-                      className="opacity-0 group-hover:opacity-100 text-xs text-muted-foreground transition-opacity"
+                      className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-xs text-muted-foreground transition-opacity"
                       onClick={() => regenerate({ messageId: msg.id })}
                       disabled={isLoading || outOfCredits}
                     >
@@ -508,13 +508,13 @@ export function ChatPanel({ onQuizUpdate, initialQuiz, initialPrompt, quizId, in
                     </button>
                   )}
                   <button
-                    className="opacity-0 group-hover:opacity-100 text-xs text-muted-foreground transition-opacity"
+                    className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-xs text-muted-foreground transition-opacity"
                     onClick={() => navigator.clipboard.writeText(getTextFromMessage(msg))}
                   >
                     Copy
                   </button>
                   <button
-                    className="opacity-0 group-hover:opacity-100 text-xs text-destructive transition-opacity"
+                    className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-xs text-destructive transition-opacity"
                     onClick={() => onDelete(msg.id)}
                     disabled={isLoading}
                   >

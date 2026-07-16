@@ -36,6 +36,7 @@ export function MobileNav({ authSlot }: { authSlot: React.ReactNode }) {
           {NAV_LINKS.map((l) => (
             <SheetClose
               key={l.href}
+              nativeButton={false}
               render={
                 <Link
                   href={l.href}

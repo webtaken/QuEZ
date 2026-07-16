@@ -51,7 +51,7 @@ export function StudentPodium({
   const yourEntry = leaderboard.find((p) => p.id === you?.id)
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 space-y-8 text-center">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 text-center">
       <div className="space-y-2">
         <h1 className="font-display font-bold text-2xl text-foreground">Final results</h1>
         {yourEntry && (
@@ -104,7 +104,7 @@ export function StudentPodium({
             >
               <span className="flex items-center gap-3">
                 <span className="w-6 text-muted-foreground font-mono">{p.rank}</span>
-                <span className={p.id === you?.id ? 'text-accent font-semibold' : 'text-foreground'}>
+                <span className={cn('truncate', p.id === you?.id ? 'text-accent font-semibold' : 'text-foreground')}>
                   {p.nickname}
                   {p.id === you?.id && ' (you)'}
                 </span>
